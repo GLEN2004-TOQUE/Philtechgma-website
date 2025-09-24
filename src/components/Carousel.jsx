@@ -3,13 +3,13 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 export default function Carousel() {
   const slides = [
     {
-      img: "/src/assets/images/carousel-backgrounds/3.jpg",
+      img: "/public/images/carousel-backgrounds/3.jpg",
     },
     {
-      img: "/src/assets/images/carousel-backgrounds/1.jpg",
+      img: "/public/images/carousel-backgrounds/1.jpg",
     },
     {
-      img: "/src/assets/images/carousel-backgrounds/2.jpg",
+      img: "/public/images/carousel-backgrounds/2.jpg",
     },
   ];
 

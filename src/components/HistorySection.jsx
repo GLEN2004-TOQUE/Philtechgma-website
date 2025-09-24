@@ -20,7 +20,7 @@ export default function HistorySection() {
               >
                 {/* Logo with bounce animation */}
                 <img
-                  src="/assets/images/logo/logo.png"
+                  src="/images/logo/logo.png"
                   alt="Philtech Logo"
                   className="w-16 h-16 mb-2 animate-bounce"
                 />

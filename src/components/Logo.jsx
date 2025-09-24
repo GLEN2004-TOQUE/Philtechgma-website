@@ -2,7 +2,7 @@ export default function Logo() {
   return (
     <a href="/" className="flex items-center space-x-2 group">
       <img
-        src="public/images/logo/logo.png"
+        src="/images/logo/logo.png"
         alt="Logo"
         className="h-10 w-10 transition-transform duration-700 group-hover:animate-spin-vertical"
       />

@@ -2,15 +2,9 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 
 export default function Carousel() {
   const slides = [
-    {
-      img: "/public/images/carousel-backgrounds/3.jpg",
-    },
-    {
-      img: "/public/images/carousel-backgrounds/1.jpg",
-    },
-    {
-      img: "/public/images/carousel-backgrounds/2.jpg",
-    },
+    { img: "/images/carousel-backgrounds/3.jpg" },
+    { img: "/images/carousel-backgrounds/1.jpg" },
+    { img: "/images/carousel-backgrounds/2.jpg" },
   ];
 
   const [current, setCurrent] = useState(0);

@@ -1,10 +1,9 @@
 import React from "react";
 
 import Navbar from "./components/Navbar";
-
 import Carousel from "./components/Carousel";
-
 import HistorySection from "./components/HistorySection";
+import CampusSection from "./components/CampusSection";
 import Footer from "./components/Footer";
 
 export default function App() {
@@ -13,6 +12,7 @@ export default function App() {
       <Navbar />
       <Carousel />
       <HistorySection />
+      <CampusSection />
       <main className="container mx-auto p-4">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
           Main Content

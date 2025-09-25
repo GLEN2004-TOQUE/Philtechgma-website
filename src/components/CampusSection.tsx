@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { MapPin, Users, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
-export default function CampusSection() {
+const CampusSection: React.FC = () => {
   const campuses = [
     {
       id: 1,
@@ -41,10 +41,10 @@ export default function CampusSection() {
     }
   ];
 
-  const [current, setCurrent] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const intervalRef = useRef(null);
+  const [current, setCurrent] = useState<number>(0);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-advance carousel
   useEffect(() => {
@@ -63,23 +63,23 @@ export default function CampusSection() {
     };
   }, [isPaused, isTransitioning, campuses.length]);
 
-  const handleSlideChange = useCallback((direction) => {
+  const handleSlideChange = useCallback((direction: string) => {
     if (isTransitioning) return;
-    
+
     setIsTransitioning(true);
-    
+
     if (direction === 'next') {
       setCurrent((prev) => (prev + 1) % campuses.length);
     } else {
       setCurrent((prev) => (prev - 1 + campuses.length) % campuses.length);
     }
-    
+
     setTimeout(() => {
       setIsTransitioning(false);
     }, 300);
   }, [isTransitioning, campuses.length]);
 
-  const goToSlide = (index) => {
+  const goToSlide = (index: number) => {
     if (index !== current && !isTransitioning) {
       setIsTransitioning(true);
       setCurrent(index);
@@ -113,7 +113,7 @@ export default function CampusSection() {
         </div>
 
         {/* Carousel Container */}
-        <div 
+        <div
           className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-3xl overflow-hidden border border-gray-200 dark:border-gray-700"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
@@ -133,8 +133,8 @@ export default function CampusSection() {
                     src={campus.image}
                     alt={campus.name}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = `https://picsum.photos/800/600?random=${campus.id}`;
+                    onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                      (e.target as HTMLImageElement).src = `https://picsum.photos/800/600?random=${campus.id}`;
                     }}
                   />
                   <div className="absolute inset-0 bg-black/50"></div>
@@ -150,7 +150,7 @@ export default function CampusSection() {
                   <h3 className="text-3xl lg:text-5xl font-bold mb-4 animate-fade-in-up">
                     {currentCampus.name}
                   </h3>
-                  
+
                   <div className="flex items-center mb-6 text-yellow-200 animate-fade-in-up delay-100">
                     <MapPin size={20} className="mr-2" />
                     <span className="text-lg">{currentCampus.location}</span>
@@ -223,7 +223,7 @@ export default function CampusSection() {
             >
               <ChevronLeft size={24} />
             </button>
-            
+
             <button
               className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full p-3 transition-all duration-200 z-20"
               onClick={() => handleSlideChange('next')}
@@ -254,10 +254,10 @@ export default function CampusSection() {
                 </button>
               ))}
             </div>
-            
+
             {/* Progress Bar */}
             <div className="mt-4 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
-              <div 
+              <div
                 className="bg-gradient-to-r from-red-700 to-yellow-500 h-1 rounded-full transition-all duration-300"
                 style={{ width: `${((current + 1) / campuses.length) * 100}%` }}
               />
@@ -299,4 +299,6 @@ export default function CampusSection() {
       `}</style>
     </section>
   );
-}
+};
+
+export default CampusSection;

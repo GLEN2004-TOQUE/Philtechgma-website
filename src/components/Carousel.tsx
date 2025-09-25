@@ -1,24 +1,29 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 
-export default function Carousel() {
-  const slides = [
+interface Slide {
+  img: string;
+}
+
+const Carousel: React.FC = () => {
+  const slides: Slide[] = [
     { img: "/images/carousel-backgrounds/3.jpg" },
     { img: "/images/carousel-backgrounds/1.jpg" },
     { img: "/images/carousel-backgrounds/2.jpg" },
   ];
 
-  const [current, setCurrent] = useState(0);
-  const [typewriterText, setTypewriterText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [typeIndex, setTypeIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [showDots, setShowDots] = useState(true);
+  const [current, setCurrent] = useState<number>(0);
+  const [typewriterText, setTypewriterText] = useState<string>("");
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [typeIndex, setTypeIndex] = useState<number>(0);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
+  const [showDots, setShowDots] = useState<boolean>(true);
 
-  const carouselRef = useRef(null);
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const isDragging = useRef(false);
-  const intervalRef = useRef(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number>(0);
+  const touchStartY = useRef<number>(0);
+  const isDragging = useRef<boolean>(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   // Hide dots when carousel is not in view (e.g., scrolled past navbar)
   useEffect(() => {
     const observer = new window.IntersectionObserver(
@@ -40,7 +45,7 @@ export default function Carousel() {
     const startInterval = () => {
       intervalRef.current = setInterval(() => {
         if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev) => (prev + 1) % slides.length);
+          setCurrent((prev: number) => (prev + 1) % slides.length);
         }
       }, 5000);
     };
@@ -56,10 +61,10 @@ export default function Carousel() {
   // Typewriter effect for subtitle
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
-    let timeout;
+    let timeout: NodeJS.Timeout;
     if (!isDeleting && typeIndex < text.length) {
       timeout = setTimeout(() => {
-        setTypewriterText((prev) => prev + text.charAt(typeIndex));
+        setTypewriterText((prev: string) => prev + text.charAt(typeIndex));
         setTypeIndex(typeIndex + 1);
       }, 100);
     } else if (!isDeleting && typeIndex === text.length) {
@@ -79,57 +84,57 @@ export default function Carousel() {
     return () => clearTimeout(timeout);
   }, [typeIndex, isDeleting]);
 
-  const handleSlideChange = useCallback((direction) => {
+  const handleSlideChange = useCallback((direction: 'next' | 'prev') => {
     if (isTransitioning) return;
-    
+
     setIsTransitioning(true);
-    
+
     if (direction === 'next') {
-      setCurrent((prev) => (prev + 1) % slides.length);
+      setCurrent((prev: number) => (prev + 1) % slides.length);
     } else {
-      setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
+      setCurrent((prev: number) => (prev - 1 + slides.length) % slides.length);
     }
-    
+
     setTimeout(() => {
       setIsTransitioning(false);
     }, 300);
   }, [isTransitioning]);
 
-  const handleTouchStart = useCallback((e) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     isDragging.current = true;
-    
+
     // Pause auto-slide during touch
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
   }, []);
 
-  const handleTouchMove = useCallback((e) => {
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     if (!isDragging.current) return;
-    
+
     // Prevent default scrolling behavior during horizontal swipes
     const touchCurrentX = e.touches[0].clientX;
     const touchCurrentY = e.touches[0].clientY;
     const deltaX = Math.abs(touchCurrentX - touchStartX.current);
     const deltaY = Math.abs(touchCurrentY - touchStartY.current);
-    
+
     if (deltaX > deltaY && deltaX > 10) {
       e.preventDefault();
     }
   }, []);
 
-  const handleTouchEnd = useCallback((e) => {
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     if (!isDragging.current) return;
-    
+
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
     const deltaX = touchStartX.current - touchEndX;
     const deltaY = Math.abs(touchStartY.current - touchEndY);
-    
+
     isDragging.current = false;
-    
+
     // Only trigger slide change if horizontal swipe is more significant than vertical
     if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > deltaY) {
       if (deltaX > 0) {
@@ -138,12 +143,12 @@ export default function Carousel() {
         handleSlideChange('prev');
       }
     }
-    
+
     // Resume auto-slide
     setTimeout(() => {
       intervalRef.current = setInterval(() => {
         if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev) => (prev + 1) % slides.length);
+          setCurrent((prev: number) => (prev + 1) % slides.length);
         }
       }, 5000);
     }, 1000);
@@ -151,7 +156,7 @@ export default function Carousel() {
 
   return (
     <>
-  <div ref={carouselRef} className="w-full min-h-screen h-[100dvh] max-h-[100dvh] rounded-none overflow-hidden shadow-2xl bg-white dark:bg-gray-900 relative">
+      <div ref={carouselRef} className="w-full min-h-screen h-[100dvh] max-h-[100dvh] rounded-none overflow-hidden shadow-2xl bg-white dark:bg-gray-900 relative">
         <div className="relative w-full h-full flex items-center justify-center">
           {slides.map((slide, index) => (
             <img
@@ -162,8 +167,7 @@ export default function Carousel() {
                 index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
               }`}
               draggable="false"
-              style={{ 
-                WebkitUserDrag: 'none',
+              style={{
                 pointerEvents: 'none',
                 WebkitTouchCallout: 'none',
                 WebkitUserSelect: 'none',
@@ -171,10 +175,10 @@ export default function Carousel() {
               }}
             />
           ))}
-          
+
           {/* Responsive overlay backgrounds */}
           <div className="absolute inset-0 bg-black/70 pointer-events-none z-20" />
-          
+
           <div className="absolute bottom-0 left-0 right-0 px-1 xs:px-2 sm:px-4 pb-4 xs:pb-6 sm:pb-12 flex flex-col items-center justify-center text-center w-full h-full z-30">
             <div className="flex flex-col items-center justify-center w-full animate-fade-in-up mt-2 xs:mt-4 sm:mt-8">
               <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">WELCOME TO</span>
@@ -185,7 +189,7 @@ export default function Carousel() {
               </span>
             </div>
           </div>
-          
+
           {/* Touch/Swipe handler overlay */}
           <div
             className="absolute inset-0 z-40 touch-pan-y"
@@ -199,7 +203,7 @@ export default function Carousel() {
               userSelect: 'none'
             }}
           />
-          
+
           {/* Slide indicators */}
           {showDots && (
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50">
@@ -207,8 +211,8 @@ export default function Carousel() {
                 <button
                   key={index}
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === current 
-                      ? 'bg-[#FFB302] w-6' 
+                    index === current
+                      ? 'bg-[#FFB302] w-6'
                       : 'bg-white/50 hover:bg-white/75'
                   }`}
                   onClick={() => !isTransitioning && setCurrent(index)}
@@ -219,7 +223,7 @@ export default function Carousel() {
           )}
         </div>
       </div>
-      
+
       {/* Animations */}
       <style>{`
         @keyframes blink {
@@ -245,4 +249,6 @@ export default function Carousel() {
       `}</style>
     </>
   );
-}
+};
+
+export default Carousel;

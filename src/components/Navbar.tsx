@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Menu, X, Sun, Moon, User } from "lucide-react";
-import Logo from "./Logo";
-import NavLinks from "./NavLinks";
-import { useDarkMode } from "../hooks/use-dark-mode";
+import Logo from "./Logo.tsx";
+import NavLinks from "./NavLinks.tsx";
+import { useDarkMode } from "../hooks/useDarkMode";
 
-export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const Navbar: React.FC = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isDarkMode, toggleDarkMode] = useDarkMode();
 
   const toggleMenu = () => {
@@ -74,4 +74,6 @@ export default function Navbar() {
       )}
     </header>
   );
-}
+};
+
+export default Navbar;

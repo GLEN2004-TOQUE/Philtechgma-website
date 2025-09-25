@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "strict": true,   // ✅ enable strict mode
+    "forceConsistentCasingInFileNames": true  // ✅ check filename case consistency
+  },
+  "include": ["vite.config.ts"]
+}

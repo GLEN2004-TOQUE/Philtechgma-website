@@ -2,11 +2,11 @@ import React from "react";
 
 import Navbar from "./components/Navbar";
 import Carousel from "./components/Carousel";
-import HistorySection from "./components/HistorySection";
-import CampusSection from "./components/CampusSection";
-import Footer from "./components/Footer";
+import HistorySection from "./components/HistorySection.tsx";
+import CampusSection from "./components/CampusSection.tsx";
+import Footer from "./components/Footer.tsx";
 
-export default function App() {
+const App: React.FC = () => {
   return (
     <div className="bg-white dark:bg-gray-800 min-h-screen">
       <Navbar />
@@ -24,4 +24,6 @@ export default function App() {
       <Footer />
     </div>
   );
-}
+};
+
+export default App;

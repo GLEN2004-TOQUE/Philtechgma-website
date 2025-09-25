@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 
-export default function HistorySection() {
-  const [open, setOpen] = useState(false);
+const HistorySection: React.FC = () => {
+  const [open, setOpen] = useState<boolean>(false);
 
   return (
     <section className="w-full py-20 px-4 bg-gradient-to-br from-slate-50 via-orange-50 to-amber-50 dark:from-gray-900 dark:via-red-950/20 dark:to-gray-900 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-10 w-40 h-40 rounded-full bg-gradient-to-r from-red-400 to-yellow-400 blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-32 h-32 rounded-full bg-gradient-to-r from-yellow-400 to-red-400 blur-2xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-20 right-10 w-32 h-32 rounded-full bg-gradient-to-r from-yellow-400 to-red-400 blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/3 w-24 h-24 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 blur-xl animate-pulse delay-500"></div>
       </div>
 
@@ -53,7 +53,7 @@ export default function HistorySection() {
                       </div>
                       <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full animate-ping"></div>
                     </div>
-                    
+
                     <h3 className="text-2xl sm:text-3xl font-bold text-[#BC1F27] dark:text-[#FFB302] mb-2 group-hover:text-[#7b1112] dark:group-hover:text-yellow-400 transition-colors">
                       Discover Our Story
                     </h3>
@@ -68,7 +68,7 @@ export default function HistorySection() {
                   </div>
 
                   {/* Enhanced envelope flap */}
-                  <div 
+                  <div
                     className="envelope-flap absolute -top-1 left-1/2 -translate-x-1/2 w-40 h-20 bg-gradient-to-b from-[#FFB302] to-[#BC1F27] shadow-lg transition-all duration-500 group-hover:shadow-xl"
                     style={{ clipPath: "polygon(0 0, 100% 0, 50% 100%)" }}
                   >
@@ -105,7 +105,7 @@ export default function HistorySection() {
                 <div className="p-8 overflow-y-auto max-h-96">
                   {/* Timeline dots decoration */}
                   <div className="absolute left-8 top-20 bottom-8 w-1 bg-gradient-to-b from-[#FFB302] to-[#BC1F27] opacity-20 hidden lg:block"></div>
-                  
+
                   <div className="relative">
                     {/* Key milestones */}
                     <div className="space-y-6 mb-8">
@@ -137,19 +137,19 @@ export default function HistorySection() {
                       <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8">
                         Philippine Technological Institute of Science Arts and Trade Inc., founded in 2010 as a non-stock non-profit non-sectarian private Educational Institution to blaze the trail in the field of technical education. Its eleven founders were a mixture of engineers, a scientist/inventor and practitioner in the IT industry, school administrators, managers and academic professionals in both public and private institutions.
                       </p>
-                      
+
                       <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8">
                         The first school was established in November of 2010 and is presently located at F.T. Catapusan St. in Tanay, Rizal. In June 2011, Philippine Technological Institute opened and offered two-year programs in Information Technology, Hotel and Restaurant Services, and Business Outsourcing Management.
                       </p>
-                      
+
                       <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8">
                         By November of 2012, negotiations for additional branches went underway. The Board of Trustees resolved that two new PHILTECH branches should be established in Sta. Rosa, Laguna and General Mariano Alvarez, Cavite, both opening in the first semester of school year 2013-2014.
                       </p>
-                      
+
                       <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8">
                         By 2021, the GMA branch offered its first bachelor's program: Bachelor in Technical Vocational Teacher Education Major in Food and Beverage Management. The institution continued to grow, adding Bachelor of Science in Computer Science and Bachelor of Science in Office Administration by school year 2022-2023.
                       </p>
-                      
+
                       <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-700 dark:to-red-900/20 p-6 rounded-2xl mt-8 border-l-4 border-[#FFB302]">
                         <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-center italic font-medium">
                           "To date, the institution has been giving its best in proving its objective to provide <span className="text-[#BC1F27] dark:text-[#FFB302] font-bold">global success through academic excellence</span> with admiration for knowledge and appreciation for skills."
@@ -183,9 +183,6 @@ export default function HistorySection() {
         .animate-scale-in-up {
           animation: scale-in-up 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .animate-spin-slow {
-          animation: spin-slow 8s linear infinite;
-        }
         .shadow-3xl {
           box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
@@ -195,4 +192,6 @@ export default function HistorySection() {
       `}</style>
     </section>
   );
-}
+};
+
+export default HistorySection;

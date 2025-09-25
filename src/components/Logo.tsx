@@ -1,4 +1,6 @@
-export default function Logo() {
+import React from 'react';
+
+const Logo: React.FC = () => {
   return (
     <a href="/" className="flex items-center space-x-2 group">
       <img
@@ -9,4 +11,6 @@ export default function Logo() {
       <span className="text-xl font-bold text-white">PHILTECH</span>
     </a>
   );
-}
+};
+
+export default Logo;

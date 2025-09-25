@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import React, { useState } from "react";
 
 const navLinks = [
   { href: "/", title: "Home" },
@@ -11,18 +10,17 @@ const navLinks = [
   { href: "/developer", title: "Developer" },
 ];
 
-export default function NavLinks() {
+const NavLinks: React.FC = () => {
+  const [showPrograms, setShowPrograms] = useState<boolean>(false);
+  const [showCollege, setShowCollege] = useState<boolean>(false);
 
-  const [showPrograms, setShowPrograms] = useState(false);
-  const [showCollege, setShowCollege] = useState(false);
-
-  const handleProgramsClick = (e) => {
+  const handleProgramsClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setShowPrograms((prev) => !prev);
     setShowCollege(false);
   };
 
-  const handleCollegeClick = (e) => {
+  const handleCollegeClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setShowCollege((prev) => !prev);
   };
@@ -90,4 +88,6 @@ export default function NavLinks() {
       </div>
     </div>
   );
-}
+};
+
+export default NavLinks;

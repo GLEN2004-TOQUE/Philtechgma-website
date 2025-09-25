@@ -1,11 +1,11 @@
 import React from "react";
 
-export default function Footer() {
+const Footer: React.FC = () => {
   return (
     <footer className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-16 overflow-hidden">
       {/* Top border or accent line */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-yellow-500 to-red-500"></div>
-      
+
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-red-400 blur-xl"></div>
@@ -13,7 +13,7 @@ export default function Footer() {
       </div>
 
       <div className="max-w-6xl mx-auto py-12 px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
-        
+
         {/* Company Info - Left Column */}
         <div className="lg:col-span-1">
           <div className="flex items-center space-x-2 mb-4">
@@ -25,7 +25,7 @@ export default function Footer() {
           <p className="text-gray-300 mb-6 max-w-xs">
             Innovating technology solutions for a better tomorrow. We provide cutting-edge services to help your business grow.
           </p>
-          
+
           {/* Social Icons */}
           <div className="flex gap-4">
             {[
@@ -168,9 +168,9 @@ export default function Footer() {
             <h4 className="text-lg font-semibold text-white mb-2">Stay Updated</h4>
             <p className="text-gray-300 text-sm mb-3">Subscribe to our newsletter for the latest updates.</p>
             <div className="flex">
-              <input 
-                type="email" 
-                placeholder="Your email address" 
+              <input
+                type="email"
+                placeholder="Your email address"
                 className="flex-grow px-3 py-2 bg-white/10 border border-white/20 rounded-l text-white placeholder-gray-400 focus:outline-none focus:border-yellow-500"
               />
               <button className="bg-gradient-to-r from-red-500 to-yellow-500 text-white px-4 py-2 rounded-r font-medium hover:opacity-90 transition-opacity">
@@ -196,4 +196,6 @@ export default function Footer() {
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;

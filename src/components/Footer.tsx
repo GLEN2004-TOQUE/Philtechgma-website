@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function Footer() {
+const Footer: React.FC = () => {
   return (
     <footer className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-16 overflow-hidden">
       {/* Top border or accent line */}
@@ -196,4 +196,6 @@ export default function Footer() {
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;

@@ -1,27 +1,31 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 
-export default function Carousel() {
-  const slides = [
+interface Slide {
+  img: string;
+}
+
+const Carousel: React.FC = () => {
+  const slides: Slide[] = [
     { img: "/images/carousel-backgrounds/3.jpg" },
     { img: "/images/carousel-backgrounds/1.jpg" },
     { img: "/images/carousel-backgrounds/2.jpg" },
   ];
 
-  const [current, setCurrent] = useState(0);
-  const [typewriterText, setTypewriterText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [typeIndex, setTypeIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [showDots, setShowDots] = useState(true);
+  const [current, setCurrent] = useState<number>(0);
+  const [typewriterText, setTypewriterText] = useState<string>("");
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [typeIndex, setTypeIndex] = useState<number>(0);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
+  const [showDots, setShowDots] = useState<boolean>(true);
 
-  const carouselRef = useRef(null);
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const isDragging = useRef(false);
-  const intervalRef = useRef(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number>(0);
+  const touchStartY = useRef<number>(0);
+  const isDragging = useRef<boolean>(false);
+  const intervalRef = useRef<number | null>(null);
   // Hide dots when carousel is not in view (e.g., scrolled past navbar)
   useEffect(() => {
-    const observer = new window.IntersectionObserver(
+    const observer = new IntersectionObserver(
       ([entry]) => {
         setShowDots(entry.isIntersecting);
       },
@@ -56,7 +60,7 @@ export default function Carousel() {
   // Typewriter effect for subtitle
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
-    let timeout;
+    let timeout: number | undefined;
     if (!isDeleting && typeIndex < text.length) {
       timeout = setTimeout(() => {
         setTypewriterText((prev) => prev + text.charAt(typeIndex));
@@ -76,10 +80,12 @@ export default function Carousel() {
         setIsDeleting(false);
       }, 500);
     }
-    return () => clearTimeout(timeout);
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
   }, [typeIndex, isDeleting]);
 
-  const handleSlideChange = useCallback((direction) => {
+  const handleSlideChange = useCallback((direction: 'next' | 'prev') => {
     if (isTransitioning) return;
     
     setIsTransitioning(true);
@@ -90,12 +96,13 @@ export default function Carousel() {
       setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
     }
     
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       setIsTransitioning(false);
     }, 300);
+    return () => clearTimeout(timeout);
   }, [isTransitioning]);
 
-  const handleTouchStart = useCallback((e) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     isDragging.current = true;
@@ -106,7 +113,7 @@ export default function Carousel() {
     }
   }, []);
 
-  const handleTouchMove = useCallback((e) => {
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     if (!isDragging.current) return;
     
     // Prevent default scrolling behavior during horizontal swipes
@@ -120,7 +127,7 @@ export default function Carousel() {
     }
   }, []);
 
-  const handleTouchEnd = useCallback((e) => {
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     if (!isDragging.current) return;
     
     const touchEndX = e.changedTouches[0].clientX;
@@ -140,13 +147,14 @@ export default function Carousel() {
     }
     
     // Resume auto-slide
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       intervalRef.current = setInterval(() => {
         if (!isDragging.current && !isTransitioning) {
           setCurrent((prev) => (prev + 1) % slides.length);
         }
       }, 5000);
     }, 1000);
+    return () => clearTimeout(timeout);
   }, [handleSlideChange, isTransitioning]);
 
   return (
@@ -162,8 +170,7 @@ export default function Carousel() {
                 index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
               }`}
               draggable="false"
-              style={{ 
-                WebkitUserDrag: 'none',
+              style={{
                 pointerEvents: 'none',
                 WebkitTouchCallout: 'none',
                 WebkitUserSelect: 'none',
@@ -196,7 +203,8 @@ export default function Carousel() {
               touchAction: 'pan-y',
               WebkitTouchCallout: 'none',
               WebkitUserSelect: 'none',
-              userSelect: 'none'
+              userSelect: 'none',
+              pointerEvents: 'none'
             }}
           />
           
@@ -245,4 +253,6 @@ export default function Carousel() {
       `}</style>
     </>
   );
-}
+};
+
+export default Carousel;

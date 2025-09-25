@@ -6,7 +6,7 @@ import HistorySection from "./components/HistorySection";
 import CampusSection from "./components/CampusSection";
 import Footer from "./components/Footer";
 
-export default function App() {
+const App: React.FC = () => {
   return (
     <div className="bg-white dark:bg-gray-800 min-h-screen">
       <Navbar />
@@ -24,4 +24,6 @@ export default function App() {
       <Footer />
     </div>
   );
-}
+};
+
+export default App;

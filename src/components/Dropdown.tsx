@@ -1,7 +1,17 @@
-import React from "react";
 import { ChevronDown } from "lucide-react";
 
-export default function Dropdown({ title, items }) {
+interface DropdownItem {
+  title: string;
+  href?: string;
+  submenu?: DropdownItem[];
+}
+
+interface DropdownProps {
+  title: string;
+  items: DropdownItem[];
+}
+
+export default function Dropdown({ title, items }: DropdownProps) {
   return (
     <div className="relative group">
       <button className="flex items-center space-x-1 focus:outline-none">

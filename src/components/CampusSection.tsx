@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { MapPin, Users, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
-export default function CampusSection() {
+const CampusSection: React.FC = () => {
   const campuses = [
     {
       id: 1,
@@ -44,7 +44,7 @@ export default function CampusSection() {
   const [current, setCurrent] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const intervalRef = useRef(null);
+  const intervalRef = useRef<number | null>(null);
 
   // Auto-advance carousel
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function CampusSection() {
     };
   }, [isPaused, isTransitioning, campuses.length]);
 
-  const handleSlideChange = useCallback((direction) => {
+  const handleSlideChange = useCallback((direction: string) => {
     if (isTransitioning) return;
     
     setIsTransitioning(true);
@@ -79,7 +79,7 @@ export default function CampusSection() {
     }, 300);
   }, [isTransitioning, campuses.length]);
 
-  const goToSlide = (index) => {
+  const goToSlide = (index: number) => {
     if (index !== current && !isTransitioning) {
       setIsTransitioning(true);
       setCurrent(index);
@@ -134,7 +134,7 @@ export default function CampusSection() {
                     alt={campus.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.target.src = `https://picsum.photos/800/600?random=${campus.id}`;
+                      (e.target as HTMLImageElement).src = `https://picsum.photos/800/600?random=${campus.id}`;
                     }}
                   />
                   <div className="absolute inset-0 bg-black/50"></div>
@@ -299,4 +299,6 @@ export default function CampusSection() {
       `}</style>
     </section>
   );
-}
+};
+
+export default CampusSection;

@@ -1,7 +1,12 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 
-const navLinks = [
+interface NavLink {
+  href: string;
+  title: string;
+}
+
+const navLinks: NavLink[] = [
   { href: "/", title: "Home" },
   { href: "/about", title: "About" },
   { href: "/faculties", title: "Faculties" },
@@ -12,17 +17,16 @@ const navLinks = [
 ];
 
 export default function NavLinks() {
+  const [showPrograms, setShowPrograms] = useState<boolean>(false);
+  const [showCollege, setShowCollege] = useState<boolean>(false);
 
-  const [showPrograms, setShowPrograms] = useState(false);
-  const [showCollege, setShowCollege] = useState(false);
-
-  const handleProgramsClick = (e) => {
+  const handleProgramsClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setShowPrograms((prev) => !prev);
     setShowCollege(false);
   };
 
-  const handleCollegeClick = (e) => {
+  const handleCollegeClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setShowCollege((prev) => !prev);
   };

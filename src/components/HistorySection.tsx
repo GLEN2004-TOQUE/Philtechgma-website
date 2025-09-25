@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export default function HistorySection() {
+const HistorySection: React.FC = () => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -195,4 +195,6 @@ export default function HistorySection() {
       `}</style>
     </section>
   );
-}
+};
+
+export default HistorySection;

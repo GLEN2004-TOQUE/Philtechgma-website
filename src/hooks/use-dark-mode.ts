@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
-export function useDarkMode() {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
+export function useDarkMode(): [boolean, () => void] {
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
       const savedMode = window.localStorage.getItem("darkMode");
       return savedMode ? JSON.parse(savedMode) : false;

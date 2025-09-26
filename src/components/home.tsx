@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { MapPin, Users, Calendar, ChevronLeft, ChevronRight, Menu, X, Sun, Moon, User, ChevronDown } from "lucide-react";
+import { MapPin, Users, Calendar, ChevronLeft, ChevronRight, Menu, X, Sun, Moon, User, ChevronDown, Clock, Mail } from "lucide-react";
 import { useDarkMode } from "../hooks/useDarkMode";
 
 const Logo: React.FC = () => {
@@ -106,19 +106,59 @@ const NavLinks: React.FC = () => {
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isDarkMode, toggleDarkMode] = useDarkMode();
+  const [isVisible, setIsVisible] = useState<boolean>(true);
+  const [lastScrollY, setLastScrollY] = useState<number>(0);
+  const navbarRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  useEffect(() => {
+    const controlNavbar = () => {
+      if (typeof window !== 'undefined') {
+        const currentScrollY = window.scrollY;
+
+        // Show navbar when scrolling up or at the top
+        if (currentScrollY < lastScrollY || currentScrollY < 100) {
+          setIsVisible(true);
+        } 
+        // Hide navbar when scrolling down
+        else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+          setIsVisible(false);
+        }
+
+        setLastScrollY(currentScrollY);
+      }
+    };
+
+    // Throttle the scroll event for better performance
+    let ticking = false;
+    const throttledControlNavbar = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          controlNavbar();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', throttledControlNavbar, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', throttledControlNavbar);
+    };
+  }, [lastScrollY]);
+
   return (
     <header
-      className={
-        `sticky top-0 z-50 text-gray-800 dark:text-white shadow-md ` +
-        (!isDarkMode
-          ? 'bg-[#7b1112]'
-          : 'bg-black')
-      }
+      ref={navbarRef}
+      className={`
+        fixed top-0 left-0 right-0 z-50 text-gray-800 dark:text-white shadow-md transition-transform duration-300 ease-in-out
+        ${isVisible ? 'translate-y-0' : '-translate-y-full'}
+        ${!isDarkMode ? 'bg-[#7b1112]' : 'bg-black'}
+      `}
     >
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Logo />
@@ -898,7 +938,7 @@ const CampusSection: React.FC = () => {
         </div>
 
         <div className="text-center mt-12">
-          <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+          <button className="bg-gradient-to-r from-[#7b1112] to-[#FFB302] hover:from-[#BC1F27] hover:to-[#FFD700] text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
             Explore All Campuses
           </button>
         </div>
@@ -932,6 +972,875 @@ const CampusSection: React.FC = () => {
   );
 };
 
+const OngoingEventsSection: React.FC = () => {
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  const events = [
+    {
+      id: 1,
+      title: "Tech Innovation Summit 2024",
+      category: "academic",
+      date: "2024-03-15",
+      time: "9:00 AM - 4:00 PM",
+      location: "PHILTECH GMA Auditorium",
+      image: "/images/events/3.jpg",
+      description: "Annual technology conference featuring industry experts, workshops, and innovation showcases.",
+      status: "ongoing",
+      attendees: 150,
+      maxAttendees: 200,
+      tags: ["Technology", "Workshop", "Networking"],
+      organizer: "Computer Science Department",
+      requirements: ["Student ID", "Registration"],
+      contact: "techsummit@philtech.edu"
+    },
+    {
+      id: 2,
+      title: "Cultural Festival Week",
+      category: "cultural",
+      date: "2024-03-10",
+      time: "10:00 AM - 8:00 PM",
+      location: "PHILTECH GMA Grounds",
+      image: "/images/events/1.jpg",
+      description: "Celebrate diversity with cultural performances, food fairs, and traditional arts exhibition.",
+      status: "ongoing",
+      attendees: 300,
+      maxAttendees: 500,
+      tags: ["Culture", "Food", "Performance"],
+      organizer: "Student Affairs Office",
+      requirements: ["Open to all"],
+      contact: "culture@philtech.edu"
+    },
+    {
+      id: 3,
+      title: "Career Fair 2024",
+      category: "career",
+      date: "2024-03-20",
+      time: "8:00 AM - 5:00 PM",
+      location: "PHILTECH GMA Gymnasium",
+      image: "/images/events/2.jpg",
+      description: "Connect with top employers and explore internship and job opportunities.",
+      status: "upcoming",
+      attendees: 0,
+      maxAttendees: 400,
+      tags: ["Employment", "Networking", "Career"],
+      organizer: "Career Development Center",
+      requirements: ["Resume", "Business Attire"],
+      contact: "career@philtech.edu"
+    }
+  ];
+
+  const categories = [
+    { id: 'all', name: ' ' },
+  ];
+
+  const filteredEvents = events.filter(event => {
+    if (activeCategory === 'all') return true;
+    if (activeCategory === 'ongoing') return event.status === 'ongoing';
+    if (activeCategory === 'upcoming') return event.status === 'upcoming';
+    return event.category === activeCategory;
+  });
+
+  const handleEventClick = (event: any) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    };
+    return new Date(dateString).toLocaleDateString('en-US', options);
+  };
+
+  const getStatusBadge = (status: string) => {
+    const styles = {
+      ongoing: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      upcoming: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+    };
+    
+    return (
+      <span className={`px-3 py-1 rounded-full text-sm font-medium ${styles[status as keyof typeof styles]}`}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
+  };
+
+  const getCategoryColor = (category: string) => {
+    const colors = {
+      academic: 'from-purple-500 to-blue-500',
+      cultural: 'from-orange-500 to-red-500',
+      sports: 'from-green-500 to-teal-500',
+      career: 'from-indigo-500 to-purple-500',
+      social: 'from-pink-500 to-rose-500'
+    };
+    return colors[category as keyof typeof colors] || 'from-gray-500 to-gray-600';
+  };
+
+  return (
+    <section className="w-full py-20 px-4 bg-gradient-to-br from-red-50 via-amber-50 to-red-50 dark:from-gray-900 dark:via-red-950/20 dark:to-amber-950/20 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-10 left-10 w-32 h-32 bg-[#7b1112] rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-40 h-40 bg-[#FFB302] rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-[#BC1F27] rounded-full blur-2xl animate-pulse delay-500"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-red-700 via-red-800 to-yellow-600 bg-clip-text text-transparent animate-fade-in-up">
+            Ongoing Events
+          </h2>
+          <div className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg"></div>
+          <p className="text-lg text-gray-600 dark:text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed">
+            Stay updated with the latest events, activities, and opportunities at PHILTECH GMA
+          </p>
+        </div>
+
+        {/* Category Filter */}
+        <div className="flex flex-wrap justify-center gap-4 mb-12">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => setActiveCategory(category.id)}
+              className={` ${
+                activeCategory === category.id
+                  ? 'bg-gradient-to-r from-[#7b1112] to-[#FFB302] text-white shadow-lg'
+                  : 'bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 shadow-md'
+              }`}
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Events Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          {filteredEvents.map((event, index) => (
+            <div
+              key={event.id}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:scale-105 hover:shadow-2xl animate-fade-in-up"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <div className="relative">
+                <img
+                  src={event.image}
+                  alt={event.title}
+                  className="w-full h-48 object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://picsum.photos/400/300?random=${event.id}`;
+                  }}
+                />
+                <div className="absolute top-4 right-4">
+                  {getStatusBadge(event.status)}
+                </div>
+                <div className="absolute bottom-4 left-4">
+                  <span className={`px-3 py-1 rounded-full text-white text-sm font-medium bg-gradient-to-r ${getCategoryColor(event.category)}`}>
+                    {event.category.charAt(0).toUpperCase() + event.category.slice(1)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-3 line-clamp-2">
+                  {event.title}
+                </h3>
+                
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Calendar size={16} className="mr-2 text-blue-500" />
+                    <span className="text-sm">{formatDate(event.date)}</span>
+                  </div>
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Clock size={16} className="mr-2 text-green-500" />
+                    <span className="text-sm">{event.time}</span>
+                  </div>
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
+                    <MapPin size={16} className="mr-2 text-red-500" />
+                    <span className="text-sm">{event.location}</span>
+                  </div>
+                </div>
+
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+                  {event.description}
+                </p>
+
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <Users size={16} className="text-gray-500" />
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      {event.attendees}/{event.maxAttendees}
+                    </span>
+                  </div>
+                  <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${(event.attendees / event.maxAttendees) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {event.tags.slice(0, 2).map((tag, tagIndex) => (
+                    <span
+                      key={tagIndex}
+                      className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                  {event.tags.length > 2 && (
+                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded">
+                      +{event.tags.length - 2}
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => handleEventClick(event)}
+                  className="w-full bg-gradient-to-r from-[#7b1112] to-[#FFB302] hover:from-[#BC1F27] hover:to-[#FFD700] text-white py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredEvents.length === 0 && (
+          <div className="text-center py-12">
+            <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+              <Calendar size={40} className="text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">
+              No events found
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400">
+              There are no events matching your selected category.
+            </p>
+          </div>
+        )}
+
+        <div className="text-center">
+          <button className="bg-gradient-to-r from-[#7b1112] to-[#FFB302] hover:from-[#BC1F27] hover:to-[#FFD700] text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            View All Events Calendar
+          </button>
+        </div>
+      </div>
+
+      {/* Event Detail Modal */}
+      {isModalOpen && selectedEvent && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in-up">
+            <div className="relative">
+              <img
+                src={selectedEvent.image}
+                alt={selectedEvent.title}
+                className="w-full h-64 object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = `https://picsum.photos/800/400?random=${selectedEvent.id}`;
+                }}
+              />
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200"
+                aria-label="Close event details"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-white">
+                  {selectedEvent.title}
+                </h3>
+                {getStatusBadge(selectedEvent.status)}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="space-y-3">
+                  <div className="flex items-center">
+                    <Calendar className="w-5 h-5 text-blue-500 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-500">Date</p>
+                      <p className="font-semibold">{formatDate(selectedEvent.date)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <Clock className="w-5 h-5 text-green-500 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-500">Time</p>
+                      <p className="font-semibold">{selectedEvent.time}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <MapPin className="w-5 h-5 text-red-500 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-500">Location</p>
+                      <p className="font-semibold">{selectedEvent.location}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center">
+                    <Users className="w-5 h-5 text-purple-500 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-500">Attendees</p>
+                      <p className="font-semibold">{selectedEvent.attendees}/{selectedEvent.maxAttendees}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <User className="w-5 h-5 text-orange-500 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-500">Organizer</p>
+                      <p className="font-semibold">{selectedEvent.organizer}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <Mail className="w-5 h-5 text-indigo-500 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-500">Contact</p>
+                      <p className="font-semibold">{selectedEvent.contact}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Description</h4>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  {selectedEvent.description}
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Requirements</h4>
+                <ul className="space-y-2">
+                  {selectedEvent.requirements.map((req: string, index: number) => (
+                    <li key={index} className="flex items-center text-gray-600 dark:text-gray-300">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                      {req}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="flex flex-wrap gap-2 mb-6">
+                {selectedEvent.tags.map((tag: string, index: number) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex gap-4">
+                <button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-lg font-semibold transition-all duration-300">
+                  Register Now
+                </button>
+                <button className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300">
+                  Add to Calendar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scale-in-up {
+          from { opacity: 0; transform: scale(0.95) translateY(20px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-fade-in-up {
+          animation: fade-in-up 0.6s ease-out;
+        }
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
+        }
+        .animate-scale-in-up {
+          animation: scale-in-up 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+      `}</style>
+    </section>
+  );
+};
+
+const TestimonialsSection: React.FC = () => {
+  const [currentTestimonial, setCurrentTestimonial] = useState<number>(0);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
+
+  const testimonials = [
+    {
+      id: 1,
+      name: "Maria Santos",
+      role: "BSCS Graduate, Class of 2023",
+      image: "/images/testimonials/student1.jpg",
+      text: "PHILTECH GMA provided me with the perfect balance of theoretical knowledge and practical skills. The supportive faculty and modern facilities helped me secure a job even before graduation!",
+      rating: 5,
+      program: "Computer Science",
+      campus: "GMA Campus"
+    },
+    {
+      id: 2,
+      name: "John Michael Reyes",
+      role: "BTVTED-FBM Student",
+      image: "/images/testimonials/student2.jpg",
+      text: "The hands-on approach to learning at PHILTECH is exceptional. The industry partnerships and real-world projects have prepared me well for my future career in food and beverage management.",
+      rating: 5,
+      program: "Technical Vocational Education",
+      campus: "GMA Campus"
+    },
+    {
+      id: 3,
+      name: "Dr. Roberto Dela Cruz",
+      role: "Faculty Member, IT Department",
+      image: "/images/testimonials/faculty1.jpg",
+      text: "Teaching at PHILTECH has been incredibly rewarding. The institution's commitment to academic excellence and student success creates an environment where both students and faculty can thrive.",
+      rating: 5,
+      program: "Information Technology",
+      campus: "All Campuses"
+    },
+    {
+      id: 4,
+      name: "Andrea Lopez",
+      role: "Alumni, Business Management",
+      image: "/images/testimonials/alumni1.jpg",
+      text: "My PHILTECH education was the foundation of my successful career. The practical skills and industry connections I gained have been invaluable in my professional journey.",
+      rating: 5,
+      program: "Business Management",
+      campus: "Santa Rosa Campus"
+    },
+    {
+      id: 5,
+      name: "Mark Johnson Tan",
+      role: "Senior High School Student",
+      image: "/images/testimonials/student3.jpg",
+      text: "The Senior High program at PHILTECH has amazing facilities and teachers who genuinely care about our future. I feel well-prepared for college and beyond.",
+      rating: 5,
+      program: "Senior High School",
+      campus: "GMA Campus"
+    }
+  ];
+
+  const handleNext = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const handlePrev = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const goToTestimonial = (index: number) => {
+    if (isTransitioning || index === currentTestimonial) return;
+    setIsTransitioning(true);
+    setCurrentTestimonial(index);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const currentTestimony = testimonials[currentTestimonial];
+
+  return (
+    <section className="w-full py-20 px-4 bg-gradient-to-br from-amber-50 via-red-50 to-amber-50 dark:from-gray-900 dark:via-red-950/20 dark:to-amber-950/20 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-10 left-10 w-32 h-32 bg-[#BC1F27] rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-40 h-40 bg-[#FFB302] rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-[#7b1112] rounded-full blur-2xl animate-pulse delay-500"></div>
+      </div>
+
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-[#7b1112] via-[#BC1F27] to-[#FFB302] bg-clip-text text-transparent animate-fade-in-up">
+            What They Say
+          </h2>
+          <div className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg"></div>
+          <p className="text-lg text-gray-600 dark:text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed">
+            Hear from our students, alumni, and faculty about their PHILTECH experience
+          </p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 relative overflow-hidden border border-amber-200 dark:border-amber-800">
+          {/* Background decorative elements */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#FFB302]/10 to-[#BC1F27]/10 rounded-full -translate-y-16 translate-x-16"></div>
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-[#7b1112]/10 to-[#FFB302]/10 rounded-full translate-y-20 -translate-x-20"></div>
+
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row items-center gap-8">
+              {/* Profile Image */}
+              <div className="flex-shrink-0">
+                <div className="relative">
+                  <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full p-1 animate-scale-in-up">
+                    <img
+                      src={currentTestimony.image}
+                      alt={currentTestimony.name}
+                      className="w-full h-full object-cover rounded-full border-4 border-white dark:border-gray-800"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face&auto=format&q=60`;
+                      }}
+                    />
+                  </div>
+                </div>
+              </div> 
+
+              {/* Testimonial Content */}
+              <div className="flex-1 text-center lg:text-left">
+                <div className={`transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+                  {/* Stars Rating */}
+                  <div className="flex justify-center lg:justify-start mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <svg
+                        key={i}
+                        className={`w-5 h-5 ${i < currentTestimony.rating ? 'text-[#FFB302]' : 'text-gray-300'}`}
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+
+                  {/* Testimonial Text */}
+                  <blockquote className="text-xl md:text-2xl font-medium text-gray-800 dark:text-white mb-6 leading-relaxed italic">
+                    "{currentTestimony.text}"
+                  </blockquote>
+
+                  {/* Person Info */}
+                  <div className="space-y-2">
+                    <h4 className="text-2xl font-bold bg-gradient-to-r from-[#7b1112] to-[#BC1F27] bg-clip-text text-transparent">
+                      {currentTestimony.name}
+                    </h4>
+                    <p className="text-gray-600 dark:text-gray-300 font-medium">{currentTestimony.role}</p>
+                    <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-sm text-gray-500 dark:text-gray-400">
+                      <span className="flex items-center">
+                        <MapPin size={14} className="mr-1 text-[#BC1F27]" />
+                        {currentTestimony.campus}
+                      </span>
+                      <span className="flex items-center">
+                        <Users size={14} className="mr-1 text-[#FFB302]" />
+                        {currentTestimony.program}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Navigation */}
+                <div className="flex items-center justify-center lg:justify-start space-x-4 mt-8">
+                  <button
+                    onClick={handlePrev}
+                    className="w-12 h-12 bg-gradient-to-r from-[#7b1112] to-[#BC1F27] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200 shadow-lg hover:shadow-xl"
+                    aria-label="Previous testimonial"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+
+                  <div className="flex space-x-2">
+                    {testimonials.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => goToTestimonial(index)}
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          index === currentTestimonial
+                            ? 'bg-gradient-to-r from-[#FFB302] to-[#BC1F27] w-8'
+                            : 'bg-gray-300 hover:bg-gray-400'
+                        }`}
+                        aria-label={`Go to testimonial ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleNext}
+                    className="w-12 h-12 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200 shadow-lg hover:shadow-xl"
+                    aria-label="Next testimonial"
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scale-in-up {
+          from { opacity: 0; transform: scale(0.95) translateY(20px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-fade-in-up {
+          animation: fade-in-up 1s ease-out;
+        }
+        .animate-scale-in-up {
+          animation: scale-in-up 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
+    </section>
+  );
+};
+
+const EnrollmentCTASection: React.FC = () => {
+  const [isHovered, setIsHovered] = useState<boolean>(false);
+
+  return (
+    <section className="w-full py-20 px-4 bg-gradient-to-br from-[#7b1112] via-[#BC1F27] to-[#FFB302] relative overflow-hidden">
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-0 left-0 w-full h-full bg-black/30"></div>
+        <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-40 h-40 bg-amber-200 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-red-300 rounded-full blur-2xl animate-pulse delay-500"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="flex flex-col lg:flex-row items-center gap-12">
+          {/* Left Content - Enrollment Message */}
+          <div className="flex-1 text-white animate-fade-in-up">
+            <div className="max-w-2xl">
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6">
+                Your Future Starts{" "}
+                <span className="bg-gradient-to-r from-amber-300 to-yellow-400 bg-clip-text text-transparent">
+                  Here
+                </span>
+              </h2>
+              
+              <div className="w-24 h-1 bg-gradient-to-r from-amber-300 to-yellow-400 rounded-full mb-8"></div>
+
+              <p className="text-xl mb-8 leading-relaxed text-white/90">
+                Join the PHILTECH family and embark on an educational journey that transforms 
+                dreams into reality. Our dedicated registrar team is ready to guide you every step of the way.
+              </p>
+
+              {/* Key Benefits */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <Users className="w-6 h-6 text-amber-300" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-amber-300">Expert Faculty</h4>
+                    <p className="text-sm text-white/80">Industry professionals</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <Calendar className="w-6 h-6 text-amber-300" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-amber-300">Flexible Schedule</h4>
+                    <p className="text-sm text-white/80">Multiple program options</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <MapPin className="w-6 h-6 text-amber-300" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-amber-300">Modern Facilities</h4>
+                    <p className="text-sm text-white/80">State-of-the-art labs</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <User className="w-6 h-6 text-amber-300" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-amber-300">Career Support</h4>
+                    <p className="text-sm text-white/80">Job placement assistance</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Call to Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <button 
+                  className="group bg-white text-[#7b1112] px-8 py-4 rounded-full font-bold text-lg shadow-2xl hover:bg-amber-100 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
+                >
+                  <span>Start Your Enrollment Now</span>
+                  <svg 
+                    className={`w-5 h-5 transition-transform duration-300 ${isHovered ? 'translate-x-1' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+
+                <button className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
+                  Schedule a Consultation
+                </button>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-amber-300">2,000+</div>
+                  <div className="text-sm text-white/80">Students</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-amber-300">50+</div>
+                  <div className="text-sm text-white/80">Programs</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-amber-300">95%</div>
+                  <div className="text-sm text-white/80">Graduation Rate</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Content - Registrar Image */}
+          <div className="flex-1 animate-scale-in-up">
+            <div className="relative">
+              {/* Main Image Container */}
+              <div className="relative bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20 shadow-2xl">
+                <div className="relative z-10">
+                  <img
+                    src="/images/registrar/registrar-teacher.jpg"
+                    alt="Friendly PHILTECH Registrar Officer"
+                    className="w-full h-96 object-cover rounded-2xl shadow-2xl border-4 border-white"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1580894894513-541e068a3e2b?w=600&h=600&fit=crop&crop=face&auto=format&q=60`;
+                    }}
+                  />
+                  
+                  {/* Floating Info Cards */}
+                  <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-4 shadow-2xl border-2 border-amber-300 animate-float">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex items-center justify-center">
+                        <User className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-gray-800">Ms. Rodriguez</div>
+                        <div className="text-sm text-gray-600">Registrar Officer</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="absolute -top-6 -right-6 bg-amber-100 rounded-2xl p-4 shadow-2xl border-2 border-amber-400 animate-float-delayed">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-[#7b1112]">"</div>
+                      <div className="text-sm font-medium text-gray-700">Ready to assist you!</div>
+                      <div className="text-xs text-gray-600 mt-1">10+ years experience</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Background Decorative Elements */}
+                <div className="absolute top-4 right-4 w-20 h-20 bg-amber-300/30 rounded-full blur-xl"></div>
+                <div className="absolute bottom-4 left-4 w-16 h-16 bg-red-400/30 rounded-full blur-xl"></div>
+              </div>
+
+              {/* Contact Information Box */}
+              <div className="mt-8 bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20">
+                <h4 className="text-xl font-bold text-[#7b1112] mb-4 flex items-center">
+                  <Mail className="w-5 h-5 mr-2 text-[#BC1F27]" />
+                  Quick Contact
+                </h4>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Email:</span>
+                    <a href="mailto:registrar@philtech.edu" className="text-[#BC1F27] font-medium hover:text-[#7b1112]">
+                      registrar@philtech.edu
+                    </a>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Phone:</span>
+                    <a href="tel:+6321234567" className="text-[#BC1F27] font-medium hover:text-[#7b1112]">
+                      (02) 123-4567
+                    </a>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Hours:</span>
+                    <span className="text-gray-800 font-medium">8:00 AM - 5:00 PM</span>
+                  </div>
+                </div>
+
+                <button className="w-full mt-4 bg-gradient-to-r from-[#7b1112] to-[#BC1F27] text-white py-3 rounded-lg font-semibold hover:from-[#BC1F27] hover:to-[#FFB302] transition-all duration-300">
+                  Request Callback
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scale-in-up {
+          from { opacity: 0; transform: scale(0.95) translateY(20px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes float-delayed {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        .animate-fade-in-up {
+          animation: fade-in-up 1s ease-out;
+        }
+        .animate-scale-in-up {
+          animation: scale-in-up 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+        .animate-float-delayed {
+          animation: float-delayed 3s ease-in-out infinite 1.5s;
+        }
+      `}</style>
+    </section>
+  );
+};
 
 const Footer: React.FC = () => {
   return (
@@ -1121,13 +2030,16 @@ const Footer: React.FC = () => {
   );
 };
 
-export { 
-  Logo, 
-  NavLinks, 
-  Navbar, 
-  Dropdown, 
+export {
+  Logo,
+  NavLinks,
+  Navbar,
+  Dropdown,
   Carousel,
   HistorySection,
-  CampusSection, 
-  Footer 
+  CampusSection,
+  OngoingEventsSection,
+  TestimonialsSection,
+  EnrollmentCTASection,
+  Footer
 };

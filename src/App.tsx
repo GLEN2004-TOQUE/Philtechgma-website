@@ -1,5 +1,5 @@
 import React from "react";
-import { Navbar, Carousel, CampusSection, HistorySection, Footer } from "./components/home";
+import { Navbar, Carousel, CampusSection, HistorySection, OngoingEventsSection, TestimonialsSection, EnrollmentCTASection, Footer } from "./components/home";
 
 const App: React.FC = () => {
   return (
@@ -8,6 +8,9 @@ const App: React.FC = () => {
       <Carousel />
       <HistorySection />
       <CampusSection />
+      <OngoingEventsSection/>
+      <TestimonialsSection/>
+      <EnrollmentCTASection/>
       <Footer />
     </div>
   );

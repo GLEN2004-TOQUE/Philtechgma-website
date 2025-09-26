@@ -1,7 +1,9 @@
 import React from "react";
+import { Routes, Route } from "react-router-dom";
 import { Navbar, Carousel, CampusSection, HistorySection, OngoingEventsSection, TestimonialsSection, EnrollmentCTASection, Footer } from "./components/home";
+import About from "./components/about";
 
-const App: React.FC = () => {
+const Home: React.FC = () => {
   return (
     <div className="bg-white dark:bg-gray-800 min-h-screen">
       <Navbar />
@@ -13,6 +15,15 @@ const App: React.FC = () => {
       <EnrollmentCTASection/>
       <Footer />
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+    </Routes>
   );
 };
 

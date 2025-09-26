@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { MapPin, Users, Calendar, ChevronLeft, ChevronRight, Menu, X, Sun, Moon, User, ChevronDown, Clock, Mail } from "lucide-react";
 import { useDarkMode } from "../hooks/useDarkMode";
 
@@ -32,18 +33,18 @@ const NavLinks: React.FC = () => {
 
   return (
     <div className="relative flex flex-col md:flex-row gap-2 md:gap-4 items-start md:items-center w-full">
-      {[
-        { href: "/", title: "Home" },
-        { href: "/about", title: "About" },
-        { href: "/faculties", title: "Faculties" },
-        { href: "/events", title: "Events" },
-        { href: "/enrollment-process", title: "Enrollment Process" },
-        { href: "/contacts", title: "Contacts" },
-        { href: "/developer", title: "Developer" },
+      {[ 
+        { to: "/", title: "Home" },
+        { to: "/about", title: "About" },
+        { to: "/faculties", title: "Faculties" },
+        { to: "/events", title: "Events" },
+        { to: "/enrollment-process", title: "Enrollment Process" },
+        { to: "/contacts", title: "Contacts" },
+        { to: "/developer", title: "Developer" },
       ].map((link) => (
-        <a
-          key={link.href}
-          href={link.href}
+        <Link
+          key={link.to}
+          to={link.to}
           className="relative px-2 py-2 md:px-0 md:py-0 w-full md:w-auto transition-colors text-white dark:text-gray-300 hover:text-[goldenrod] group"
         >
           {link.title}
@@ -55,7 +56,7 @@ const NavLinks: React.FC = () => {
               display: 'block',
             }}
           />
-        </a>
+        </Link>
       ))}
       <div className="relative w-full md:w-auto">
         <button
@@ -76,26 +77,26 @@ const NavLinks: React.FC = () => {
             </button>
             {showCollege && (
               <div className="ml-0 md:ml-6 mt-1 bg-gray-50 dark:bg-gray-900 rounded shadow-inner">
-                <a
-                  href="/programs/college/regular"
+                <Link
+                  to="/programs/college/regular"
                   className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   Regular
-                </a>
-                <a
-                  href="/programs/college/sunday"
+                </Link>
+                <Link
+                  to="/programs/college/sunday"
                   className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   Sunday
-                </a>
+                </Link>
               </div>
             )}
-            <a
-              href="/programs/senior"
+            <Link
+              to="/programs/senior"
               className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white"
             >
               Senior High
-            </a>
+            </Link>
           </div>
         )}
       </div>
@@ -177,13 +178,13 @@ const Navbar: React.FC = () => {
               ? <Sun size={20} className="text-white group-hover:text-[goldenrod]" />
               : <Moon size={20} className="text-white group-hover:text-[goldenrod]" />}
           </button>
-          <a
-            href="/login"
+          <Link
+            to="/login"
             className="transition-colors group"
             aria-label="Login"
           >
             <User size={20} className="text-white group-hover:text-[goldenrod]" />
-          </a>
+          </Link>
           <div className="md:hidden">
             <button
               onClick={toggleMenu}
@@ -254,14 +255,14 @@ const Dropdown: React.FC<DropdownProps> = ({ title, items }) => {
                   ))}
                 </div>
               </div>
-            ) : (
-              <a
-                href={item.href}
-                className="block px-4 py-2 hover:bg-gray-600"
-              >
-                {item.title}
-              </a>
-            )}
+          ) : (
+            <a
+              href={item.href}
+              className="block px-4 py-2 hover:bg-gray-600"
+            >
+              {item.title}
+            </a>
+          )}
           </div>
         ))}
       </div>
@@ -1763,16 +1764,16 @@ const EnrollmentCTASection: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Email:</span>
-                    <a href="mailto:registrar@philtech.edu" className="text-[#BC1F27] font-medium hover:text-[#7b1112]">
-                      registrar@philtech.edu
-                    </a>
+                <a href="mailto:registrar@philtech.edu" className="text-[#BC1F27] font-medium hover:text-[#7b1112]">
+                  registrar@philtech.edu
+                </a>
                   </div>
                   
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Phone:</span>
-                    <a href="tel:+6321234567" className="text-[#BC1F27] font-medium hover:text-[#7b1112]">
-                      (02) 123-4567
-                    </a>
+                <a href="tel:+6321234567" className="text-[#BC1F27] font-medium hover:text-[#7b1112]">
+                  (02) 123-4567
+                </a>
                   </div>
                   
                   <div className="flex items-center justify-between">
@@ -1956,7 +1957,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Email us at</p>
-                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
+              <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -1965,7 +1966,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Call us</p>
-                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
+              <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -2002,9 +2003,9 @@ const Footer: React.FC = () => {
             &copy; {new Date().getFullYear()} <span className="font-semibold text-gray-200">Philtech GMA</span>. All rights reserved.
           </p>
           <div className="flex gap-6 text-sm text-gray-400">
-            <a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="/terms" className="hover:text-white transition-colors">Terms of Service</a>
-            <a href="/sitemap" className="hover:text-white transition-colors">Sitemap</a>
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link to="/sitemap" className="hover:text-white transition-colors">Sitemap</Link>
           </div>
         </div>
       </div>

@@ -1,10 +1,5 @@
 import React from "react";
-
-import Navbar from "./components/Navbar";
-import Carousel from "./components/Carousel";
-import HistorySection from "./components/HistorySection.tsx";
-import CampusSection from "./components/CampusSection.tsx";
-import Footer from "./components/Footer.tsx";
+import { Navbar, Carousel, CampusSection, HistorySection, Footer } from "./components/home";
 
 const App: React.FC = () => {
   return (
@@ -13,14 +8,6 @@ const App: React.FC = () => {
       <Carousel />
       <HistorySection />
       <CampusSection />
-      <main className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Main Content
-        </h1>
-        <p className="mt-4 text-gray-700 dark:text-gray-300">
-          This is where the main content of the page will be displayed.
-        </p>
-      </main>
       <Footer />
     </div>
   );

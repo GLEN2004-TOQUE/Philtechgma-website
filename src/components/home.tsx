@@ -77,22 +77,22 @@ const NavLinks: React.FC = () => {
             </button>
             {showCollege && (
               <div className="ml-0 md:ml-6 mt-1 bg-gray-50 dark:bg-gray-900 rounded shadow-inner">
-                <Link
-                  to="/programs/college/regular"
-                  className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  Regular
-                </Link>
-                <Link
-                  to="/programs/college/sunday"
-                  className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  Sunday
-                </Link>
+            <Link
+              to="/regular"
+              className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              Regular
+            </Link>
+            <Link
+              to="/sunday"
+              className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              Sunday
+            </Link>
               </div>
             )}
             <Link
-              to="/programs/senior"
+              to="/senior-high"
               className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white"
             >
               Senior High

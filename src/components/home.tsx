@@ -589,11 +589,11 @@ const HistorySection: React.FC = () => {
                       <p className="text-amber-200 text-sm mt-1">Est. 2010 - Science, Arts & Trade</p>
                     </div>
                     <button
-                      className="bg-white/20 hover:bg-white/30 rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200 group"
+                      className="text-white text-xl cursor-pointer transition-colors hover:text-amber-200"
                       onClick={() => setOpen(false)}
                       aria-label="Close history envelope"
                     >
-                      <span className="text-white text-xl group-hover:rotate-90 transition-transform duration-200">&times;</span>
+                      &times;
                     </button>
                   </div>
                 </div>
@@ -868,24 +868,6 @@ const CampusSection: React.FC = () => {
                       ))}
                     </div>
                   </div>
-                </div>
-              </div>
-
-              <div className="lg:w-96 p-8 lg:p-12 flex items-center justify-center">
-                <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 animate-scale-in-up">
-                  <h4 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white text-center">
-                    Campus Highlights
-                  </h4>
-                  <ul className="space-y-4">
-                    {currentCampus.highlights.map((highlight, index) => (
-                      <li key={index} className="flex items-start">
-                        <div className="w-3 h-3 bg-gradient-to-r from-red-700 to-yellow-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                        <span className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                          {highlight}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               </div>
             </div>

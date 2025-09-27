@@ -529,7 +529,6 @@ const Carousel: React.FC = () => {
           min-height: 500px;
         }
 
-        /* Para sa mobile devices - maintain rectangular aspect ratio */
         @media (max-width: 768px) {
           .carousel-container {
             height: 70vh;
@@ -538,7 +537,6 @@ const Carousel: React.FC = () => {
           }
         }
 
-        /* Para sa mas maliit na mobile devices */
         @media (max-width: 480px) {
           .carousel-container {
             height: 60vh;
@@ -693,25 +691,39 @@ const HistorySection: React.FC = () => {
 
                   <div className="relative">
                     <div className="space-y-6 mb-8">
-                      <div className="flex items-center gap-4" data-aos="fade-right" data-aos-delay="100">
+                      <div className="flex items-center gap-4" >
                         <div className="w-4 h-4 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex-shrink-0 shadow-lg"></div>
                         <div>
                           <h4 className="font-bold text-[#BC1F27] dark:text-[#FFB302]">2010 - Foundation</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-300">Established by 11 visionary founders</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4" data-aos="fade-right" data-aos-delay="200">
+                      <div className="flex items-center gap-4" >
                         <div className="w-4 h-4 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex-shrink-0 shadow-lg"></div>
                         <div>
                           <h4 className="font-bold text-[#BC1F27] dark:text-[#FFB302]">2011 - First Programs</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-300">IT, Hotel Services & Business Management</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4" data-aos="fade-right" data-aos-delay="300">
+                      <div className="flex items-center gap-4" >
                         <div className="w-4 h-4 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex-shrink-0 shadow-lg"></div>
                         <div>
                           <h4 className="font-bold text-[#BC1F27] dark:text-[#FFB302]">2013 - Expansion</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-300">Santa Rosa & GMA branches opened</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4" >
+                        <div className="w-4 h-4 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex-shrink-0 shadow-lg"></div>
+                        <div>
+                          <h4 className="font-bold text-[#BC1F27] dark:text-[#FFB302]">2021 - Bachelor Programs</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">First bachelor's degree program launched</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4" >
+                        <div className="w-4 h-4 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex-shrink-0 shadow-lg"></div>
+                        <div>
+                          <h4 className="font-bold text-[#BC1F27] dark:text-[#FFB302]">2022-2023 - Continued Growth</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">Added Computer Science and Office Administration</p>
                         </div>
                       </div>
                     </div>
@@ -719,40 +731,35 @@ const HistorySection: React.FC = () => {
                     <div className="prose prose-gray dark:prose-invert max-w-none">
                       <p 
                         className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8"
-                        data-aos="fade-up"
-                        data-aos-delay="100"
+                        
                       >
                         Philippine Technological Institute of Science Arts and Trade Inc., founded in 2010 as a non-stock non-profit non-sectarian private Educational Institution to blaze the trail in the field of technical education. Its eleven founders were a mixture of engineers, a scientist/inventor and practitioner in the IT industry, school administrators, managers and academic professionals in both public and private institutions.
                       </p>
 
                       <p 
                         className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8"
-                        data-aos="fade-up"
-                        data-aos-delay="200"
+                        
                       >
                         The first school was established in November of 2010 and is presently located at F.T. Catapusan St. in Tanay, Rizal. In June 2011, Philippine Technological Institute opened and offered two-year programs in Information Technology, Hotel and Restaurant Services, and Business Outsourcing Management.
                       </p>
 
                       <p 
                         className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8"
-                        data-aos="fade-up"
-                        data-aos-delay="300"
+                        
                       >
                         By November of 2012, negotiations for additional branches went underway. The Board of Trustees resolved that two new PHILTECH branches should be established in Sta. Rosa, Laguna and General Mariano Alvarez, Cavite, both opening in the first semester of school year 2013-2014.
                       </p>
 
                       <p 
                         className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8"
-                        data-aos="fade-up"
-                        data-aos-delay="400"
+                        
                       >
                         By 2021, the GMA branch offered its first bachelor's program: Bachelor in Technical Vocational Teacher Education Major in Food and Beverage Management. The institution continued to grow, adding Bachelor of Science in Computer Science and Bachelor of Science in Office Administration by school year 2022-2023.
                       </p>
 
                       <div 
                         className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-700 dark:to-red-900/20 p-6 rounded-2xl mt-8 border-l-4 border-[#FFB302]"
-                        data-aos="zoom-in"
-                        data-aos-delay="500"
+                        
                       >
                         <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-center italic font-medium">
                           "To date, the institution has been giving its best in proving its objective to provide <span className="text-[#BC1F27] dark:text-[#FFB302] font-bold">global success through academic excellence</span> with admiration for knowledge and appreciation for skills."
@@ -798,6 +805,11 @@ const HistorySection: React.FC = () => {
 };
 
 const CampusSection: React.FC = () => {
+  useAOS();
+  const parallax1 = useParallax(0.2, 'left');
+  const parallax2 = useParallax(0.3, 'right');
+  const parallax3 = useParallax(0.4, 'left');
+
   const campuses = [
     {
       id: 1,
@@ -889,9 +901,9 @@ const CampusSection: React.FC = () => {
   return (
     <section className="w-full py-20 px-4 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 dark:from-gray-900 dark:via-red-950/20 dark:to-gray-900 relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-10 left-20 w-32 h-32 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-r from-red-600 to-red-800 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full blur-2xl animate-pulse delay-500"></div>
+        <div className="absolute top-10 left-20 w-32 h-32 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full blur-3xl animate-pulse" style={parallax1}></div>
+        <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-r from-red-600 to-red-800 rounded-full blur-3xl animate-pulse delay-1000" style={parallax2}></div>
+        <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full blur-2xl animate-pulse delay-500" style={parallax3}></div>
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">

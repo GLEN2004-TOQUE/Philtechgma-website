@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Users, Calendar, ChevronLeft, ChevronRight, Menu, X, Sun, Moon, User, ChevronDown, Clock, Mail } from "lucide-react";
+import { MapPin, Users, Calendar, ChevronLeft, ChevronRight, X, Sun, Moon, User, ChevronDown, Clock, Mail } from "lucide-react";
 import { useDarkMode } from "../hooks/useDarkMode";
+import { useParallax } from "../hooks/Parallax";
+import { useAOS } from "../hooks/useAOS";
 
 const Logo: React.FC = () => {
   return (
@@ -192,8 +194,8 @@ const Navbar: React.FC = () => {
               aria-label="Toggle menu"
             >
               {isMenuOpen
-                ? <X size={24} className="text-white group-hover:text-[goldenrod]" />
-                : <Menu size={24} className="text-white group-hover:text-[goldenrod]" />}
+                ? <X size={20} className="text-white group-hover:text-[goldenrod]" />
+                : <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-menu text-white group-hover:text-[goldenrod]" aria-hidden="true"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>}
             </button>
           </div>
         </div>
@@ -283,6 +285,7 @@ const Carousel: React.FC = () => {
   const [typeIndex, setTypeIndex] = useState<number>(0);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const [showDots, setShowDots] = useState<boolean>(true);
+  const [isDarkMode] = useDarkMode(); // Kunin ang dark mode state
 
   const carouselRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
@@ -320,7 +323,7 @@ const Carousel: React.FC = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isTransitioning]);
+  }, [isTransitioning, slides.length]);
 
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
@@ -361,7 +364,7 @@ const Carousel: React.FC = () => {
     setTimeout(() => {
       setIsTransitioning(false);
     }, 300);
-  }, [isTransitioning]);
+  }, [isTransitioning, slides.length]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = e.touches[0].clientX;
@@ -415,39 +418,60 @@ const Carousel: React.FC = () => {
 
   return (
     <>
-      <div ref={carouselRef} className="w-full min-h-screen h-[100dvh] max-h-[100dvh] rounded-none overflow-hidden shadow-2xl bg-white dark:bg-gray-900 relative">
-        <div className="relative w-full h-full flex items-center justify-center">
+      <div 
+        ref={carouselRef} 
+        className="w-full carousel-container relative overflow-hidden bg-gray-900"
+      >
+        <div className="relative w-full h-full">
           {slides.map((slide, index) => (
-            <img
+            <div
               key={index}
-              src={slide.img}
-              alt={`Slide ${index + 1}`}
-              className={`absolute inset-0 object-cover w-full h-full transition-opacity duration-500 ease-in-out select-none ${
+              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
                 index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
               }`}
-              draggable="false"
-              style={{
-                pointerEvents: 'none',
-                WebkitTouchCallout: 'none',
-                WebkitUserSelect: 'none',
-                userSelect: 'none'
-              }}
-            />
+            >
+              {/* Background Image Container */}
+              <div className="absolute inset-0">
+                <img
+                  src={slide.img}
+                  alt={`Slide ${index + 1}`}
+                  className="carousel-image w-full h-full object-cover object-center"
+                  draggable="false"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://picsum.photos/1920/1080?random=${index}`;
+                  }}
+                />
+              </div>
+
+              {/* Background Overlay - nagbabago base sa dark mode */}
+              <div 
+                className={`absolute inset-0 pointer-events-none z-20 ${
+                  isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
+                }`}
+              />
+
+              {/* Content */}
+              <div className="absolute inset-0 flex items-center justify-center z-30">
+                <div className="text-center px-4 max-w-4xl mx-auto">
+                  <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
+                    <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
+                      WELCOME TO
+                    </span>
+                    <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
+                      PHILTECH GMA
+                    </span>
+                    <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
+                          style={{paddingRight: '5px'}}>
+                      {typewriterText}
+                      <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
 
-          <div className="absolute inset-0 bg-black/70 pointer-events-none z-20" />
-
-          <div className="absolute bottom-0 left-0 right-0 px-1 xs:px-2 sm:px-4 pb-4 xs:pb-6 sm:pb-12 flex flex-col items-center justify-center text-center w-full h-full z-30">
-            <div className="flex flex-col items-center justify-center w-full animate-fade-in-up mt-2 xs:mt-4 sm:mt-8">
-              <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">WELCOME TO</span>
-              <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">PHILTECH GMA</span>
-              <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" style={{paddingRight: '5px'}}>
-                {typewriterText}
-                <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
-              </span>
-            </div>
-          </div>
-
+          {/* Touch Area for Mobile Swiping */}
           <div
             className="absolute inset-0 z-40 touch-pan-y"
             onTouchStart={handleTouchStart}
@@ -461,6 +485,7 @@ const Carousel: React.FC = () => {
             }}
           />
 
+          {/* Navigation Dots */}
           {showDots && (
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50">
               {slides.map((_, index) => (
@@ -471,16 +496,64 @@ const Carousel: React.FC = () => {
                       ? 'bg-[#FFB302] w-6'
                       : 'bg-white/50 hover:bg-white/75'
                   }`}
-                  onClick={(_e) => { if (!isTransitioning) setCurrent(index); }}
+                  onClick={() => { if (!isTransitioning) setCurrent(index); }}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
             </div>
           )}
+
+          {/* Navigation Arrows */}
+          <button
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+            onClick={() => handleSlideChange('prev')}
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={24} />
+          </button>
+
+          <button
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+            onClick={() => handleSlideChange('next')}
+            aria-label="Next slide"
+          >
+            <ChevronRight size={24} />
+          </button>
         </div>
       </div>
 
       <style>{`
+        .carousel-container {
+          /* Para sa desktop - full viewport height */
+          height: 100vh;
+          min-height: 500px;
+        }
+
+        /* Para sa mobile devices - maintain rectangular aspect ratio */
+        @media (max-width: 768px) {
+          .carousel-container {
+            height: 70vh;
+            min-height: 400px;
+            max-height: 600px;
+          }
+        }
+
+        /* Para sa mas maliit na mobile devices */
+        @media (max-width: 480px) {
+          .carousel-container {
+            height: 60vh;
+            min-height: 350px;
+            max-height: 500px;
+          }
+        }
+
+        .carousel-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
+        }
+
         @keyframes blink {
           0%, 50% { opacity: 1; }
           51%, 100% { opacity: 0; }
@@ -509,34 +582,50 @@ const Carousel: React.FC = () => {
 const HistorySection: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
 
+  useAOS();
+  const parallax1 = useParallax(0.2);
+  const parallax2 = useParallax(0.3);
+  const parallax3 = useParallax(0.4);
+
   return (
     <section className="w-full py-20 px-4 bg-gradient-to-br from-slate-50 via-orange-50 to-amber-50 dark:from-gray-900 dark:via-red-950/20 dark:to-gray-900 relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-10 w-40 h-40 rounded-full bg-gradient-to-r from-red-400 to-yellow-400 blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-32 h-32 rounded-full bg-gradient-to-r from-yellow-400 to-red-400 blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/3 w-24 h-24 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 blur-xl animate-pulse delay-500"></div>
+        <div className="absolute top-20 left-10 w-40 h-40 rounded-full bg-gradient-to-r from-red-400 to-yellow-400 blur-3xl animate-pulse" style={parallax1}></div>
+        <div className="absolute bottom-20 right-10 w-32 h-32 rounded-full bg-gradient-to-r from-yellow-400 to-red-400 blur-3xl animate-pulse delay-1000" style={parallax2}></div>
+        <div className="absolute top-1/2 left-1/3 w-24 h-24 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 blur-xl animate-pulse delay-500" style={parallax3}></div>
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-[#7b1112] via-[#BC1F27] to-[#FFB302] bg-clip-text text-transparent animate-fade-in-up">
+          <h2 
+            data-aos="fade-up" 
+            className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-[#7b1112] via-[#BC1F27] to-[#FFB302] bg-clip-text text-transparent"
+          >
             Philtech History
           </h2>
-          <div className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed">
+          <div 
+            data-aos="fade-up"
+            data-aos-delay="200"
+            className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg"
+          ></div>
+          <p 
+            data-aos="fade-up"
+            data-aos-delay="300"
+            className="text-lg text-gray-600 dark:text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed"
+          >
             Discover the inspiring journey of Philippine Technological Institute of Science Arts and Trade Inc.
           </p>
         </div>
 
-        <div className="flex justify-center">
-          <div className="relative max-w-2xl w-full">
-            {!open && (
-              <div className="relative">
-                <button
-                  className="envelope-container group w-full h-64 sm:h-72 md:h-80 bg-gradient-to-br from-amber-100 via-orange-100 to-red-100 dark:from-gray-800 dark:via-red-900/30 dark:to-gray-800 rounded-3xl shadow-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-700 hover:scale-105 hover:shadow-3xl border-4 border-gradient-to-r from-[#FFB302] to-[#BC1F27] relative overflow-hidden"
-                  onClick={() => setOpen(true)}
-                  aria-label="Open history envelope"
-                >
+            <div className="flex justify-center">
+              <div className="relative max-w-2xl w-full" data-aos="zoom-in" data-aos-delay="400">
+                {!open && (
+                  <div className="relative">
+                    <button
+                      className="envelope-container group w-full h-64 sm:h-72 md:h-80 bg-gradient-to-br from-amber-100 via-orange-100 to-red-100 dark:from-gray-800 dark:via-red-900/30 dark:to-gray-800 rounded-3xl shadow-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-700 hover:scale-105 hover:shadow-3xl border-4 border-gradient-to-r from-[#FFB302] to-[#BC1F27] relative overflow-hidden"
+                      onClick={() => setOpen(true)}
+                      aria-label="Open history envelope"
+                    >
                   <div className="absolute inset-0 opacity-20">
                     <div className="absolute top-4 left-4 w-8 h-8 border-2 border-[#FFB302] rounded rotate-45 animate-spin-slow"></div>
                     <div className="absolute bottom-4 right-4 w-6 h-6 border-2 border-[#BC1F27] rounded-full animate-bounce"></div>
@@ -604,21 +693,21 @@ const HistorySection: React.FC = () => {
 
                   <div className="relative">
                     <div className="space-y-6 mb-8">
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4" data-aos="fade-right" data-aos-delay="100">
                         <div className="w-4 h-4 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex-shrink-0 shadow-lg"></div>
                         <div>
                           <h4 className="font-bold text-[#BC1F27] dark:text-[#FFB302]">2010 - Foundation</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-300">Established by 11 visionary founders</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4" data-aos="fade-right" data-aos-delay="200">
                         <div className="w-4 h-4 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex-shrink-0 shadow-lg"></div>
                         <div>
                           <h4 className="font-bold text-[#BC1F27] dark:text-[#FFB302]">2011 - First Programs</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-300">IT, Hotel Services & Business Management</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4" data-aos="fade-right" data-aos-delay="300">
                         <div className="w-4 h-4 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex-shrink-0 shadow-lg"></div>
                         <div>
                           <h4 className="font-bold text-[#BC1F27] dark:text-[#FFB302]">2013 - Expansion</h4>
@@ -628,23 +717,43 @@ const HistorySection: React.FC = () => {
                     </div>
 
                     <div className="prose prose-gray dark:prose-invert max-w-none">
-                      <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8">
+                      <p 
+                        className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8"
+                        data-aos="fade-up"
+                        data-aos-delay="100"
+                      >
                         Philippine Technological Institute of Science Arts and Trade Inc., founded in 2010 as a non-stock non-profit non-sectarian private Educational Institution to blaze the trail in the field of technical education. Its eleven founders were a mixture of engineers, a scientist/inventor and practitioner in the IT industry, school administrators, managers and academic professionals in both public and private institutions.
                       </p>
 
-                      <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8">
+                      <p 
+                        className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8"
+                        data-aos="fade-up"
+                        data-aos-delay="200"
+                      >
                         The first school was established in November of 2010 and is presently located at F.T. Catapusan St. in Tanay, Rizal. In June 2011, Philippine Technological Institute opened and offered two-year programs in Information Technology, Hotel and Restaurant Services, and Business Outsourcing Management.
                       </p>
 
-                      <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8">
+                      <p 
+                        className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8"
+                        data-aos="fade-up"
+                        data-aos-delay="300"
+                      >
                         By November of 2012, negotiations for additional branches went underway. The Board of Trustees resolved that two new PHILTECH branches should be established in Sta. Rosa, Laguna and General Mariano Alvarez, Cavite, both opening in the first semester of school year 2013-2014.
                       </p>
 
-                      <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8">
+                      <p 
+                        className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8"
+                        data-aos="fade-up"
+                        data-aos-delay="400"
+                      >
                         By 2021, the GMA branch offered its first bachelor's program: Bachelor in Technical Vocational Teacher Education Major in Food and Beverage Management. The institution continued to grow, adding Bachelor of Science in Computer Science and Bachelor of Science in Office Administration by school year 2022-2023.
                       </p>
 
-                      <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-700 dark:to-red-900/20 p-6 rounded-2xl mt-8 border-l-4 border-[#FFB302]">
+                      <div 
+                        className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-700 dark:to-red-900/20 p-6 rounded-2xl mt-8 border-l-4 border-[#FFB302]"
+                        data-aos="zoom-in"
+                        data-aos-delay="500"
+                      >
                         <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-center italic font-medium">
                           "To date, the institution has been giving its best in proving its objective to provide <span className="text-[#BC1F27] dark:text-[#FFB302] font-bold">global success through academic excellence</span> with admiration for knowledge and appreciation for skills."
                         </p>
@@ -787,11 +896,22 @@ const CampusSection: React.FC = () => {
 
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-red-700 via-red-800 to-yellow-600 bg-clip-text text-transparent animate-fade-in-up">
+          <h2 
+            className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-red-700 via-red-800 to-yellow-600 bg-clip-text text-transparent"
+            data-aos="fade-up"
+          >
             Our Campuses
           </h2>
-          <div className="w-32 h-1 bg-gradient-to-r from-red-700 to-yellow-500 mx-auto rounded-full shadow-lg"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed">
+          <div 
+            className="w-32 h-1 bg-gradient-to-r from-red-700 to-yellow-500 mx-auto rounded-full shadow-lg"
+            data-aos="fade-up"
+            data-aos-delay="200"
+          ></div>
+          <p 
+            className="text-lg text-gray-600 dark:text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed"
+            data-aos="fade-up"
+            data-aos-delay="300"
+          >
             Discover our three strategic locations across Luzon, each serving their communities with excellence
           </p>
         </div>
@@ -800,6 +920,8 @@ const CampusSection: React.FC = () => {
           className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-3xl overflow-hidden border border-gray-200 dark:border-gray-700"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
+          data-aos="zoom-in"
+          data-aos-delay="400"
         >
           <div className="relative h-[600px] lg:h-[500px]">
             <div className="absolute inset-0">
@@ -826,28 +948,40 @@ const CampusSection: React.FC = () => {
             <div className="absolute inset-0 flex flex-col lg:flex-row">
               <div className="flex-1 p-8 lg:p-12 flex flex-col justify-center text-white">
                 <div className="max-w-2xl">
-                  <h3 className="text-3xl lg:text-5xl font-bold mb-4 animate-fade-in-up">
+                  <h3 
+                    className="text-3xl lg:text-5xl font-bold mb-4"
+                    data-aos="fade-right"
+                    data-aos-delay="500"
+                  >
                     {currentCampus.name}
                   </h3>
 
-                  <div className="flex items-center mb-6 text-yellow-200 animate-fade-in-up delay-100">
+                  <div 
+                    className="flex items-center mb-6 text-yellow-200"
+                    data-aos="fade-right"
+                    data-aos-delay="600"
+                  >
                     <MapPin size={20} className="mr-2" />
                     <span className="text-lg">{currentCampus.location}</span>
                   </div>
 
-                  <p className="text-lg leading-relaxed mb-8 text-amber-100 animate-fade-in-up delay-200">
+                  <p 
+                    className="text-lg leading-relaxed mb-8 text-amber-100"
+                    data-aos="fade-right"
+                    data-aos-delay="700"
+                  >
                     {currentCampus.description}
                   </p>
 
                   <div className="grid grid-cols-2 gap-6 mb-8">
-                    <div className="animate-fade-in-up delay-300">
+                    <div data-aos="fade-up" data-aos-delay="800">
                       <div className="flex items-center mb-2">
                         <Calendar size={18} className="mr-2 text-yellow-300" />
                         <span className="text-sm text-yellow-200">Established</span>
                       </div>
                       <div className="text-2xl font-bold">{currentCampus.established}</div>
                     </div>
-                    <div className="animate-fade-in-up delay-400">
+                    <div data-aos="fade-up" data-aos-delay="900">
                       <div className="flex items-center mb-2">
                         <Users size={18} className="mr-2 text-yellow-300" />
                         <span className="text-sm text-yellow-200">Students</span>
@@ -856,7 +990,7 @@ const CampusSection: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="animate-fade-in-up delay-500">
+                  <div data-aos="fade-up" data-aos-delay="1000">
                     <h4 className="text-lg font-semibold mb-3 text-yellow-200">Programs Offered:</h4>
                     <div className="flex flex-wrap gap-2">
                       {currentCampus.programs.map((program, index) => (
@@ -920,7 +1054,7 @@ const CampusSection: React.FC = () => {
           </div>
         </div>
 
-        <div className="text-center mt-12">
+        <div className="text-center mt-12" data-aos="fade-up" data-aos-delay="1100">
           <button className="bg-gradient-to-r from-[#7b1112] to-[#FFB302] hover:from-[#BC1F27] hover:to-[#FFD700] text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
             Explore All Campuses
           </button>
@@ -1073,17 +1207,32 @@ const OngoingEventsSection: React.FC = () => {
 
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-red-700 via-red-800 to-yellow-600 bg-clip-text text-transparent animate-fade-in-up">
+          <h2 
+            className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-red-700 via-red-800 to-yellow-600 bg-clip-text text-transparent"
+            data-aos="fade-up"
+          >
             Ongoing Events
           </h2>
-          <div className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed">
+          <div 
+            className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg"
+            data-aos="fade-up"
+            data-aos-delay="200"
+          ></div>
+          <p 
+            className="text-lg text-gray-600 dark:text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed"
+            data-aos="fade-up"
+            data-aos-delay="300"
+          >
             Stay updated with the latest events, activities, and opportunities at PHILTECH GMA
           </p>
         </div>
 
         {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
+        <div 
+          className="flex flex-wrap justify-center gap-4 mb-12"
+          data-aos="fade-up"
+          data-aos-delay="400"
+        >
           {categories.map((category) => (
             <button
               key={category.id}
@@ -1104,8 +1253,9 @@ const OngoingEventsSection: React.FC = () => {
           {filteredEvents.map((event, index) => (
             <div
               key={event.id}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:scale-105 hover:shadow-2xl animate-fade-in-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+              data-aos="fade-up"
+              data-aos-delay={index * 200}
             >
               <div className="relative">
                 <img
@@ -1206,7 +1356,7 @@ const OngoingEventsSection: React.FC = () => {
           </div>
         )}
 
-        <div className="text-center">
+        <div className="text-center" data-aos="fade-up" data-aos-delay="600">
           <button className="bg-gradient-to-r from-[#7b1112] to-[#FFB302] hover:from-[#BC1F27] hover:to-[#FFD700] text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
             View All Events Calendar
           </button>
@@ -1216,7 +1366,10 @@ const OngoingEventsSection: React.FC = () => {
       {/* Event Detail Modal */}
       {isModalOpen && selectedEvent && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in-up">
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in-up"
+            data-aos="zoom-in"
+          >
             <div className="relative">
               <img
                 src={selectedEvent.image}
@@ -1459,16 +1612,31 @@ const TestimonialsSection: React.FC = () => {
 
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-[#7b1112] via-[#BC1F27] to-[#FFB302] bg-clip-text text-transparent animate-fade-in-up">
+          <h2 
+            className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-[#7b1112] via-[#BC1F27] to-[#FFB302] bg-clip-text text-transparent"
+            data-aos="fade-up"
+          >
             What They Say
           </h2>
-          <div className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed">
+          <div 
+            className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg"
+            data-aos="fade-up"
+            data-aos-delay="200"
+          ></div>
+          <p 
+            className="text-lg text-gray-600 dark:text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed"
+            data-aos="fade-up"
+            data-aos-delay="300"
+          >
             Hear from our students, alumni, and faculty about their PHILTECH experience
           </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 relative overflow-hidden border border-amber-200 dark:border-amber-800">
+        <div 
+          className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 relative overflow-hidden border border-amber-200 dark:border-amber-800"
+          data-aos="zoom-in"
+          data-aos-delay="400"
+        >
           {/* Background decorative elements */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#FFB302]/10 to-[#BC1F27]/10 rounded-full -translate-y-16 translate-x-16"></div>
           <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-[#7b1112]/10 to-[#FFB302]/10 rounded-full translate-y-20 -translate-x-20"></div>
@@ -1476,7 +1644,7 @@ const TestimonialsSection: React.FC = () => {
           <div className="relative z-10">
             <div className="flex flex-col lg:flex-row items-center gap-8">
               {/* Profile Image */}
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0" data-aos="fade-right" data-aos-delay="500">
                 <div className="relative">
                   <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full p-1 animate-scale-in-up">
                     <img
@@ -1495,7 +1663,11 @@ const TestimonialsSection: React.FC = () => {
               <div className="flex-1 text-center lg:text-left">
                 <div className={`transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
                   {/* Stars Rating */}
-                  <div className="flex justify-center lg:justify-start mb-4">
+                  <div 
+                    className="flex justify-center lg:justify-start mb-4"
+                    data-aos="fade-up"
+                    data-aos-delay="600"
+                  >
                     {[...Array(5)].map((_, i) => (
                       <svg
                         key={i}
@@ -1509,17 +1681,35 @@ const TestimonialsSection: React.FC = () => {
                   </div>
 
                   {/* Testimonial Text */}
-                  <blockquote className="text-xl md:text-2xl font-medium text-gray-800 dark:text-white mb-6 leading-relaxed italic">
+                  <blockquote 
+                    className="text-xl md:text-2xl font-medium text-gray-800 dark:text-white mb-6 leading-relaxed italic"
+                    data-aos="fade-up"
+                    data-aos-delay="700"
+                  >
                     "{currentTestimony.text}"
                   </blockquote>
 
                   {/* Person Info */}
                   <div className="space-y-2">
-                    <h4 className="text-2xl font-bold bg-gradient-to-r from-[#7b1112] to-[#BC1F27] bg-clip-text text-transparent">
+                    <h4 
+                      className="text-2xl font-bold bg-gradient-to-r from-[#7b1112] to-[#BC1F27] bg-clip-text text-transparent"
+                      data-aos="fade-up"
+                      data-aos-delay="800"
+                    >
                       {currentTestimony.name}
                     </h4>
-                    <p className="text-gray-600 dark:text-gray-300 font-medium">{currentTestimony.role}</p>
-                    <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-sm text-gray-500 dark:text-gray-400">
+                    <p 
+                      className="text-gray-600 dark:text-gray-300 font-medium"
+                      data-aos="fade-up"
+                      data-aos-delay="900"
+                    >
+                      {currentTestimony.role}
+                    </p>
+                    <div 
+                      className="flex flex-wrap justify-center lg:justify-start gap-4 text-sm text-gray-500 dark:text-gray-400"
+                      data-aos="fade-up"
+                      data-aos-delay="1000"
+                    >
                       <span className="flex items-center">
                         <MapPin size={14} className="mr-1 text-[#BC1F27]" />
                         {currentTestimony.campus}
@@ -1533,7 +1723,11 @@ const TestimonialsSection: React.FC = () => {
                 </div>
 
                 {/* Navigation */}
-                <div className="flex items-center justify-center lg:justify-start space-x-4 mt-8">
+                <div 
+                  className="flex items-center justify-center lg:justify-start space-x-4 mt-8"
+                  data-aos="fade-up"
+                  data-aos-delay="1100"
+                >
                   <button
                     onClick={handlePrev}
                     className="w-12 h-12 bg-gradient-to-r from-[#7b1112] to-[#BC1F27] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200 shadow-lg hover:shadow-xl"
@@ -1612,25 +1806,40 @@ const EnrollmentCTASection: React.FC = () => {
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex flex-col lg:flex-row items-center gap-12">
           {/* Left Content - Enrollment Message */}
-          <div className="flex-1 text-white animate-fade-in-up">
+          <div className="flex-1 text-white">
             <div className="max-w-2xl">
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6">
+              <h2 
+                className="text-4xl sm:text-5xl md:text-6xl font-black mb-6"
+                data-aos="fade-right"
+              >
                 Your Future Starts{" "}
                 <span className="bg-gradient-to-r from-amber-300 to-yellow-400 bg-clip-text text-transparent">
                   Here
                 </span>
               </h2>
               
-              <div className="w-24 h-1 bg-gradient-to-r from-amber-300 to-yellow-400 rounded-full mb-8"></div>
+              <div 
+                className="w-24 h-1 bg-gradient-to-r from-amber-300 to-yellow-400 rounded-full mb-8"
+                data-aos="fade-right"
+                data-aos-delay="200"
+              ></div>
 
-              <p className="text-xl mb-8 leading-relaxed text-white/90">
+              <p 
+                className="text-xl mb-8 leading-relaxed text-white/90"
+                data-aos="fade-right"
+                data-aos-delay="300"
+              >
                 Join the PHILTECH family and embark on an educational journey that transforms 
                 dreams into reality. Our dedicated registrar team is ready to guide you every step of the way.
               </p>
 
               {/* Key Benefits */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-                <div className="flex items-center space-x-3">
+                <div 
+                  className="flex items-center space-x-3"
+                  data-aos="fade-up"
+                  data-aos-delay="400"
+                >
                   <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                     <Users className="w-6 h-6 text-amber-300" />
                   </div>
@@ -1640,7 +1849,11 @@ const EnrollmentCTASection: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3">
+                <div 
+                  className="flex items-center space-x-3"
+                  data-aos="fade-up"
+                  data-aos-delay="500"
+                >
                   <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                     <Calendar className="w-6 h-6 text-amber-300" />
                   </div>
@@ -1650,7 +1863,11 @@ const EnrollmentCTASection: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3">
+                <div 
+                  className="flex items-center space-x-3"
+                  data-aos="fade-up"
+                  data-aos-delay="600"
+                >
                   <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                     <MapPin className="w-6 h-6 text-amber-300" />
                   </div>
@@ -1660,7 +1877,11 @@ const EnrollmentCTASection: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3">
+                <div 
+                  className="flex items-center space-x-3"
+                  data-aos="fade-up"
+                  data-aos-delay="700"
+                >
                   <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                     <User className="w-6 h-6 text-amber-300" />
                   </div>
@@ -1672,7 +1893,11 @@ const EnrollmentCTASection: React.FC = () => {
               </div>
 
               {/* Call to Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <div 
+                className="flex flex-col sm:flex-row gap-4 mb-8"
+                data-aos="fade-up"
+                data-aos-delay="800"
+              >
                 <button 
                   className="group bg-white text-[#7b1112] px-8 py-4 rounded-full font-bold text-lg shadow-2xl hover:bg-amber-100 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
                   onMouseEnter={() => setIsHovered(true)}
@@ -1695,7 +1920,11 @@ const EnrollmentCTASection: React.FC = () => {
               </div>
 
               {/* Quick Stats */}
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div 
+                className="grid grid-cols-3 gap-4 text-center"
+                data-aos="fade-up"
+                data-aos-delay="900"
+              >
                 <div>
                   <div className="text-2xl font-bold text-amber-300">2,000+</div>
                   <div className="text-sm text-white/80">Students</div>
@@ -1713,10 +1942,14 @@ const EnrollmentCTASection: React.FC = () => {
           </div>
 
           {/* Right Content - Registrar Image */}
-          <div className="flex-1 animate-scale-in-up">
+          <div className="flex-1">
             <div className="relative">
               {/* Main Image Container */}
-              <div className="relative bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20 shadow-2xl">
+              <div 
+                className="relative bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20 shadow-2xl"
+                data-aos="zoom-in"
+                data-aos-delay="400"
+              >
                 <div className="relative z-10">
                   <img
                     src="/images/registrar/registrar-teacher.jpg"
@@ -1728,7 +1961,11 @@ const EnrollmentCTASection: React.FC = () => {
                   />
                   
                   {/* Floating Info Cards */}
-                  <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-4 shadow-2xl border-2 border-amber-300 animate-float">
+                  <div 
+                    className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-4 shadow-2xl border-2 border-amber-300 animate-float"
+                    data-aos="fade-right"
+                    data-aos-delay="600"
+                  >
                     <div className="flex items-center space-x-3">
                       <div className="w-12 h-12 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex items-center justify-center">
                         <User className="w-6 h-6 text-white" />
@@ -1740,7 +1977,11 @@ const EnrollmentCTASection: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="absolute -top-6 -right-6 bg-amber-100 rounded-2xl p-4 shadow-2xl border-2 border-amber-400 animate-float-delayed">
+                  <div 
+                    className="absolute -top-6 -right-6 bg-amber-100 rounded-2xl p-4 shadow-2xl border-2 border-amber-400 animate-float-delayed"
+                    data-aos="fade-left"
+                    data-aos-delay="700"
+                  >
                     <div className="text-center">
                       <div className="text-2xl font-bold text-[#7b1112]">"</div>
                       <div className="text-sm font-medium text-gray-700">Ready to assist you!</div>
@@ -1755,7 +1996,11 @@ const EnrollmentCTASection: React.FC = () => {
               </div>
 
               {/* Contact Information Box */}
-              <div className="mt-8 bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20">
+              <div 
+                className="mt-8 bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20"
+                data-aos="fade-up"
+                data-aos-delay="800"
+              >
                 <h4 className="text-xl font-bold text-[#7b1112] mb-4 flex items-center">
                   <Mail className="w-5 h-5 mr-2 text-[#BC1F27]" />
                   Quick Contact
@@ -1827,7 +2072,10 @@ const EnrollmentCTASection: React.FC = () => {
 
 const Footer: React.FC = () => {
   return (
-    <footer className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-16 overflow-hidden">
+    <footer 
+      className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-16 overflow-hidden"
+      data-aos="fade-up"
+    >
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-yellow-500 to-red-500"></div>
 
       <div className="absolute inset-0 opacity-10">
@@ -1836,11 +2084,13 @@ const Footer: React.FC = () => {
       </div>
 
       <div className="max-w-6xl mx-auto py-12 px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1" data-aos="fade-right" data-aos-delay="200">
           <div className="flex items-center space-x-2 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-yellow-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">P</span>
-            </div>
+             <img 
+                src="/images/logo/logo.png" 
+                alt="Philtech GMA Logo" 
+                className="w-10 h-10 object-contain"
+              />
             <h2 className="text-2xl font-bold text-white">Philtech GMA</h2>
           </div>
           <p className="text-gray-300 mb-6 max-w-xs">
@@ -1902,7 +2152,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div>
+        <div data-aos="fade-up" data-aos-delay="300">
           <h3 className="text-xl font-bold text-white mb-4">Quick Links</h3>
           <ul className="space-y-3">
             {[
@@ -1924,40 +2174,17 @@ const Footer: React.FC = () => {
             ))}
           </ul>
         </div>
-
-        <div>
-          <h3 className="text-xl font-bold text-white mb-4">Our Services</h3>
-          <ul className="space-y-3">
-            {[
-              { href: "/web-development", label: "Web Development" },
-              { href: "/mobile-apps", label: "Mobile Applications" },
-              { href: "/cloud-solutions", label: "Cloud Solutions" },
-              { href: "/it-consulting", label: "IT Consulting" },
-              { href: "/digital-transformation", label: "Digital Transformation" },
-            ].map((link, i) => (
-              <li key={i}>
-                <a
-                  href={link.href}
-                  className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
-                >
-                  <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3 group-hover:bg-red-500 transition-colors"></span>
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
+        
+        <div data-aos="fade-up" data-aos-delay="400">
           <h3 className="text-xl font-bold text-white mb-4">Contact Us</h3>
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4">
             <div className="flex items-start">
               <svg className="w-5 h-5 text-yellow-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
               </svg>
               <div>
                 <p className="text-gray-300">Email us at</p>
-              <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
+                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -1966,7 +2193,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Call us</p>
-              <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
+                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -1979,33 +2206,23 @@ const Footer: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+        {/* Stay Updated Section - After Contact Us */}
+        <div data-aos="fade-left" data-aos-delay="500">
+          <div className="bg-white/5 p-4 rounded-lg border border-white/10 h-full">
             <h4 className="text-lg font-semibold text-white mb-2">Stay Updated</h4>
             <p className="text-gray-300 text-sm mb-3">Subscribe to our newsletter for the latest updates.</p>
-            <div className="flex">
+            <div className="relative">
               <input
                 type="email"
-                placeholder="Your email address"
-                className="flex-grow px-3 py-2 bg-white/10 border border-white/20 rounded-l text-white placeholder-gray-400 focus:outline-none focus:border-yellow-500"
+                placeholder="Your email"
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-500 pr-24"
               />
-              <button className="bg-gradient-to-r from-red-500 to-yellow-500 text-white px-4 py-2 rounded-r font-medium hover:opacity-90 transition-opacity">
+              <button className="absolute right-1 top-1 bottom-1 bg-gradient-to-r from-red-500 to-yellow-500 text-white px-4 rounded-md font-medium hover:opacity-90 transition-opacity text-sm">
                 Send
               </button>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="border-t border-white/10 mt-8 pt-6 pb-4">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm mb-2 md:mb-0">
-            &copy; {new Date().getFullYear()} <span className="font-semibold text-gray-200">Philtech GMA</span>. All rights reserved.
-          </p>
-          <div className="flex gap-6 text-sm text-gray-400">
-            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-            <Link to="/sitemap" className="hover:text-white transition-colors">Sitemap</Link>
           </div>
         </div>
       </div>

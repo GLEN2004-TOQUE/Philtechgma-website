@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { Navbar, Carousel, CampusSection, HistorySection, OngoingEventsSection, TestimonialsSection, EnrollmentCTASection, Footer } from "./components/home";
+import { useAOS } from "./hooks/useAOS";
 import About from "./components/about";
 import Faculties from "./components/faculties";
 import Events from "./components/events";
@@ -12,6 +13,8 @@ import Sunday from "./components/sunday";
 import SeniorHigh from "./components/seniorhigh";
 
 const Home: React.FC = () => {
+  useAOS(); // Enable AOS animations
+
   return (
     <div className="bg-white dark:bg-gray-800 min-h-screen">
       <Navbar />

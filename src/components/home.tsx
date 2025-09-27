@@ -181,7 +181,7 @@ const Navbar: React.FC = () => {
               : <Moon size={20} className="text-white group-hover:text-[goldenrod]" />}
           </button>
           <Link
-            to="/login"
+            to="/dblogin/login"
             className="transition-colors group"
             aria-label="Login"
           >

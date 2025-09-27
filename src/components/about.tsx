@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Sun, Moon, User, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Sun, Moon, User, ChevronDown } from "lucide-react";
 import { useDarkMode } from "../hooks/useDarkMode";
+import { useParallax } from "../hooks/Parallax";
+import { useAOS } from "../hooks/useAOS";
 
 const Logo: React.FC = () => {
   return (
@@ -77,22 +79,22 @@ const NavLinks: React.FC = () => {
             </button>
             {showCollege && (
               <div className="ml-0 md:ml-6 mt-1 bg-gray-50 dark:bg-gray-900 rounded shadow-inner">
-                <Link
-                  to="/programs/college/regular"
-                  className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  Regular
-                </Link>
-                <Link
-                  to="/programs/college/sunday"
-                  className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  Sunday
-                </Link>
+            <Link
+              to="/regular"
+              className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              Regular
+            </Link>
+            <Link
+              to="/sunday"
+              className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              Sunday
+            </Link>
               </div>
             )}
             <Link
-              to="/programs/senior"
+              to="/senior-high"
               className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white"
             >
               Senior High
@@ -179,7 +181,7 @@ const Navbar: React.FC = () => {
               : <Moon size={20} className="text-white group-hover:text-[goldenrod]" />}
           </button>
           <Link
-            to="/login"
+            to="/dblogin/login"
             className="transition-colors group"
             aria-label="Login"
           >
@@ -192,8 +194,8 @@ const Navbar: React.FC = () => {
               aria-label="Toggle menu"
             >
               {isMenuOpen
-                ? <X size={24} className="text-white group-hover:text-[goldenrod]" />
-                : <Menu size={24} className="text-white group-hover:text-[goldenrod]" />}
+                ? <X size={20} className="text-white group-hover:text-[goldenrod]" />
+                : <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-menu text-white group-hover:text-[goldenrod]" aria-hidden="true"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>}
             </button>
           </div>
         </div>
@@ -283,6 +285,7 @@ const Carousel: React.FC = () => {
   const [typeIndex, setTypeIndex] = useState<number>(0);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const [showDots, setShowDots] = useState<boolean>(true);
+  const [isDarkMode] = useDarkMode(); // Kunin ang dark mode state
 
   const carouselRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
@@ -320,7 +323,7 @@ const Carousel: React.FC = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isTransitioning]);
+  }, [isTransitioning, slides.length]);
 
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
@@ -361,7 +364,7 @@ const Carousel: React.FC = () => {
     setTimeout(() => {
       setIsTransitioning(false);
     }, 300);
-  }, [isTransitioning]);
+  }, [isTransitioning, slides.length]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = e.touches[0].clientX;
@@ -415,39 +418,60 @@ const Carousel: React.FC = () => {
 
   return (
     <>
-      <div ref={carouselRef} className="w-full h-[70vh] min-h-[70vh] max-h-[70vh] rounded-none overflow-hidden shadow-2xl bg-white dark:bg-gray-900 relative">
-        <div className="relative w-full h-full flex items-center justify-center">
+      <div 
+        ref={carouselRef} 
+        className="w-full carousel-container relative overflow-hidden bg-gray-900"
+      >
+        <div className="relative w-full h-full">
           {slides.map((slide, index) => (
-            <img
+            <div
               key={index}
-              src={slide.img}
-              alt={`Slide ${index + 1}`}
-              className={`absolute inset-0 object-cover w-full h-full transition-opacity duration-500 ease-in-out select-none ${
+              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
                 index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
               }`}
-              draggable="false"
-              style={{
-                pointerEvents: 'none',
-                WebkitTouchCallout: 'none',
-                WebkitUserSelect: 'none',
-                userSelect: 'none'
-              }}
-            />
+            >
+              {/* Background Image Container */}
+              <div className="absolute inset-0">
+                <img
+                  src={slide.img}
+                  alt={`Slide ${index + 1}`}
+                  className="carousel-image w-full h-full object-cover object-center"
+                  draggable="false"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://picsum.photos/1920/1080?random=${index}`;
+                  }}
+                />
+              </div>
+
+              {/* Background Overlay - nagbabago base sa dark mode */}
+              <div 
+                className={`absolute inset-0 pointer-events-none z-20 ${
+                  isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
+                }`}
+              />
+
+              {/* Content */}
+              <div className="absolute inset-0 flex items-center justify-center z-30">
+                <div className="text-center px-4 max-w-4xl mx-auto">
+                  <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
+                    <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
+                      WELCOME TO
+                    </span>
+                    <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
+                      PHILTECH GMA
+                    </span>
+                    <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
+                          style={{paddingRight: '5px'}}>
+                      {typewriterText}
+                      <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
 
-          <div className="absolute inset-0 bg-black/70 pointer-events-none z-20" />
-
-          <div className="absolute bottom-0 left-0 right-0 px-1 xs:px-2 sm:px-4 pb-4 xs:pb-6 sm:pb-12 flex flex-col items-center justify-center text-center w-full h-full z-30">
-            <div className="flex flex-col items-center justify-center w-full animate-fade-in-up mt-2 xs:mt-4 sm:mt-8">
-              <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">WELCOME TO</span>
-              <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">PHILTECH GMA</span>
-              <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" style={{paddingRight: '5px'}}>
-                {typewriterText}
-                <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
-              </span>
-            </div>
-          </div>
-
+          {/* Touch Area for Mobile Swiping */}
           <div
             className="absolute inset-0 z-40 touch-pan-y"
             onTouchStart={handleTouchStart}
@@ -461,6 +485,7 @@ const Carousel: React.FC = () => {
             }}
           />
 
+          {/* Navigation Dots */}
           {showDots && (
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50">
               {slides.map((_, index) => (
@@ -471,16 +496,62 @@ const Carousel: React.FC = () => {
                       ? 'bg-[#FFB302] w-6'
                       : 'bg-white/50 hover:bg-white/75'
                   }`}
-                  onClick={(_e) => { if (!isTransitioning) setCurrent(index); }}
+                  onClick={() => { if (!isTransitioning) setCurrent(index); }}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
             </div>
           )}
+
+          {/* Navigation Arrows */}
+          <button
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+            onClick={() => handleSlideChange('prev')}
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={24} />
+          </button>
+
+          <button
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+            onClick={() => handleSlideChange('next')}
+            aria-label="Next slide"
+          >
+            <ChevronRight size={24} />
+          </button>
         </div>
       </div>
 
       <style>{`
+        .carousel-container {
+          /* Para sa desktop - full viewport height */
+          height: 100vh;
+          min-height: 500px;
+        }
+
+        @media (max-width: 768px) {
+          .carousel-container {
+            height: 70vh;
+            min-height: 400px;
+            max-height: 600px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .carousel-container {
+            height: 60vh;
+            min-height: 350px;
+            max-height: 500px;
+          }
+        }
+
+        .carousel-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
+        }
+
         @keyframes blink {
           0%, 50% { opacity: 1; }
           51%, 100% { opacity: 0; }
@@ -506,9 +577,217 @@ const Carousel: React.FC = () => {
   );
 };
 
+const About: React.FC = () => {
+  useAOS();
+  const [isDarkMode] = useDarkMode();
+
+  return (
+    <div className="bg-white dark:bg-gray-800 min-h-screen">
+      <Navbar />
+      <Carousel />
+      
+      {/* About Section Content */}
+      <section className={`py-16 px-4 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div className="container mx-auto max-w-4xl">
+          {/* Main Title */}
+          <div className="text-center mb-12" data-aos="fade-up">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-4">
+              About <span className="text-[#BC1F27]">Philtech College of GMA</span>
+            </h1>
+            <div className="w-24 h-1 bg-gradient-to-r from-[#BC1F27] to-[#FFB302] mx-auto mb-6" data-aos="fade-up" data-aos-delay="200"></div>
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              A premier educational institution offering quality education in GMA, Cavite.
+            </p>
+          </div>
+
+          {/* School Information Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {/* School Name and Location */}
+            <div className={`p-6 rounded-2xl shadow-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} data-aos="zoom-in" data-aos-delay="300">
+              <div className="flex items-center mb-4">
+                <div className={`p-3 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} mr-4`}>
+                  <svg className="w-6 h-6 text-[#BC1F27]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white">School Name and Location</h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300">
+                <strong>Philtech College of GMA</strong><br/>
+                GMA, Cavite, Philippines
+              </p>
+            </div>
+
+            {/* Year Established */}
+            <div className={`p-6 rounded-2xl shadow-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} data-aos="zoom-in" data-aos-delay="400">
+              <div className="flex items-center mb-4">
+                <div className={`p-3 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-yellow-50'} mr-4`}>
+                  <svg className="w-6 h-6 text-[#FFB302]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white">Year Established</h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300">
+                <strong>Established in 2003</strong><br/>
+                20+ years of educational service
+              </p>
+            </div>
+
+            {/* School Type */}
+            <div className={`p-6 rounded-2xl shadow-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} data-aos="zoom-in" data-aos-delay="500">
+              <div className="flex items-center mb-4">
+                <div className={`p-3 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} mr-4`}>
+                  <svg className="w-6 h-6 text-[#781112]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/>
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white">School Type</h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300">
+                <strong>Private Educational Institution</strong>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <span className="px-3 py-1 bg-[#BC1F27] text-white text-sm rounded-full">College</span>
+                  <span className="px-3 py-1 bg-[#FFB302] text-gray-800 text-sm rounded-full">Senior High School</span>
+                  <span className="px-3 py-1 bg-[#781112] text-white text-sm rounded-full">Technical-Vocational</span>
+                </div>
+              </p>
+            </div>
+          </div>
+
+          {/* Detailed Information */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column - School History */}
+            <div data-aos="fade-right" data-aos-delay="300">
+              <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">History of Philtech GMA</h2>
+              <div className="space-y-4">
+                <p className="text-gray-600 dark:text-gray-300">
+                  <strong>Philtech College of GMA</strong> was established in <strong>2003</strong> as a private higher education institution in GMA, Cavite.
+                </p>
+                <p className="text-gray-600 dark:text-gray-300">
+                  From humble beginnings, the school has grown and become a premier destination for quality education in the region.
+                </p>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Today, Philtech GMA offers <strong>College, Senior High School, and Technical-Vocational</strong> programs designed to prepare students for global competition.
+                </p>
+              </div>
+            </div>
+
+            {/* Right Column - School Image */}
+            <div data-aos="fade-left" data-aos-delay="400">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <img 
+                  src="/images/about/school-campus.jpg" 
+                  alt="Philtech GMA Campus"
+                  className="w-full h-64 object-cover transition-transform duration-500 hover:scale-105"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`;
+                  }}
+                />
+                <div className={`absolute inset-0 bg-gradient-to-t ${isDarkMode ? 'from-gray-900/80' : 'from-gray-800/80'} to-transparent`}></div>
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h3 className="text-xl font-bold">Modern Philtech GMA Campus</h3>
+                  <p className="text-gray-200">GMA, Cavite</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mission and Vision */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className={`p-8 rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-lg'} border-l-4 border-[#BC1F27]`} data-aos="fade-up" data-aos-delay="500">
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">📜 Mission</h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                To provide quality education that prepares students for global success through academic excellence, technological innovation, and character formation.
+              </p>
+            </div>
+
+            <div className={`p-8 rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-lg'} border-l-4 border-[#FFB302]`} data-aos="fade-up" data-aos-delay="600">
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">👁️ Vision</h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                To be the leading educational institution producing globally competitive professionals ready to face the challenges of industry and society.
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="mt-12 text-center" data-aos="fade-up" data-aos-delay="700">
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-8">Success in Numbers</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-md'}`}>
+                <div className="text-3xl font-bold text-[#BC1F27] mb-2">20+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Years of Service</div>
+              </div>
+              <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-md'}`}>
+                <div className="text-3xl font-bold text-[#FFB302] mb-2">50+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Expert Faculty</div>
+              </div>
+              <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-md'}`}>
+                <div className="text-3xl font-bold text-[#781112] mb-2">1000+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Students</div>
+              </div>
+              <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-md'}`}>
+                <div className="text-3xl font-bold text-[#BC1F27] mb-2">15+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Courses Offered</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Core Values */}
+          <div className="mt-16" data-aos="fade-up" data-aos-delay="800">
+            <h3 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-8">Our Core Values</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className={`text-center p-6 rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-lg'}`}>
+                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} mb-4`}>
+                  <svg className="w-8 h-8 text-[#BC1F27]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+                <h4 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Excellence</h4>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Commitment to the highest standards of academic quality and professional practice.
+                </p>
+              </div>
+              
+              <div className={`text-center p-6 rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-lg'}`}>
+                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-yellow-50'} mb-4`}>
+                  <svg className="w-8 h-8 text-[#FFB302]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23 12l-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68L23 12zm-10 5h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                  </svg>
+                </div>
+                <h4 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Innovation</h4>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Embracing technological advancements and creative solutions for education.
+                </p>
+              </div>
+              
+              <div className={`text-center p-6 rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-lg'}`}>
+                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} mb-4`}>
+                  <svg className="w-8 h-8 text-[#781112]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                </div>
+                <h4 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Integrity</h4>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Upholding ethical standards and building character among students and faculty.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+};
+
 const Footer: React.FC = () => {
   return (
-    <footer className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-16 overflow-hidden">
+    <footer 
+      className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-16 overflow-hidden"
+      data-aos="fade-up"
+    >
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-yellow-500 to-red-500"></div>
 
       <div className="absolute inset-0 opacity-10">
@@ -517,11 +796,13 @@ const Footer: React.FC = () => {
       </div>
 
       <div className="max-w-6xl mx-auto py-12 px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1" data-aos="fade-right" data-aos-delay="200">
           <div className="flex items-center space-x-2 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-yellow-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">P</span>
-            </div>
+             <img 
+                src="/images/logo/logo.png" 
+                alt="Philtech GMA Logo" 
+                className="w-10 h-10 object-contain"
+              />
             <h2 className="text-2xl font-bold text-white">Philtech GMA</h2>
           </div>
           <p className="text-gray-300 mb-6 max-w-xs">
@@ -583,7 +864,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div>
+        <div data-aos="fade-up" data-aos-delay="300">
           <h3 className="text-xl font-bold text-white mb-4">Quick Links</h3>
           <ul className="space-y-3">
             {[
@@ -605,40 +886,17 @@ const Footer: React.FC = () => {
             ))}
           </ul>
         </div>
-
-        <div>
-          <h3 className="text-xl font-bold text-white mb-4">Our Services</h3>
-          <ul className="space-y-3">
-            {[
-              { href: "/web-development", label: "Web Development" },
-              { href: "/mobile-apps", label: "Mobile Applications" },
-              { href: "/cloud-solutions", label: "Cloud Solutions" },
-              { href: "/it-consulting", label: "IT Consulting" },
-              { href: "/digital-transformation", label: "Digital Transformation" },
-            ].map((link, i) => (
-              <li key={i}>
-                <a
-                  href={link.href}
-                  className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
-                >
-                  <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3 group-hover:bg-red-500 transition-colors"></span>
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
+        
+        <div data-aos="fade-up" data-aos-delay="400">
           <h3 className="text-xl font-bold text-white mb-4">Contact Us</h3>
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4">
             <div className="flex items-start">
               <svg className="w-5 h-5 text-yellow-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
               </svg>
               <div>
                 <p className="text-gray-300">Email us at</p>
-              <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
+                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -647,7 +905,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Call us</p>
-              <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
+                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -660,47 +918,27 @@ const Footer: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+        {/* Stay Updated Section - After Contact Us */}
+        <div data-aos="fade-left" data-aos-delay="500">
+          <div className="bg-white/5 p-4 rounded-lg border border-white/10 h-full">
             <h4 className="text-lg font-semibold text-white mb-2">Stay Updated</h4>
             <p className="text-gray-300 text-sm mb-3">Subscribe to our newsletter for the latest updates.</p>
-            <div className="flex">
+            <div className="relative">
               <input
                 type="email"
-                placeholder="Your email address"
-                className="flex-grow px-3 py-2 bg-white/10 border border-white/20 rounded-l text-white placeholder-gray-400 focus:outline-none focus:border-yellow-500"
+                placeholder="Your email"
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-500 pr-24"
               />
-              <button className="bg-gradient-to-r from-red-500 to-yellow-500 text-white px-4 py-2 rounded-r font-medium hover:opacity-90 transition-opacity">
+              <button className="absolute right-1 top-1 bottom-1 bg-gradient-to-r from-red-500 to-yellow-500 text-white px-4 rounded-md font-medium hover:opacity-90 transition-opacity text-sm">
                 Send
               </button>
             </div>
           </div>
         </div>
       </div>
-
-      <div className="border-t border-white/10 mt-8 pt-6 pb-4">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm mb-2 md:mb-0">
-            &copy; {new Date().getFullYear()} <span className="font-semibold text-gray-200">Philtech GMA</span>. All rights reserved.
-          </p>
-          <div className="flex gap-6 text-sm text-gray-400">
-            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-            <Link to="/sitemap" className="hover:text-white transition-colors">Sitemap</Link>
-          </div>
-        </div>
-      </div>
     </footer>
-  );
-};
-
-const About: React.FC = () => {
-  return (
-    <div className="bg-white dark:bg-gray-800 min-h-screen">
-      <Navbar />
-      <Carousel />
-      <Footer />
-    </div>
   );
 };
 

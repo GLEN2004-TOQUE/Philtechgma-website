@@ -11,6 +11,7 @@ import Developer from "./components/developer";
 import Regular from "./components/regular";
 import Sunday from "./components/sunday";
 import SeniorHigh from "./components/seniorhigh";
+import Login from "./dblogin/login";
 
 const Home: React.FC = () => {
   useAOS(); // Enable AOS animations
@@ -39,6 +40,7 @@ const App: React.FC = () => {
       <Route path="/enrollment-process" element={<EnrollmentProcess />} />
       <Route path="/contacts" element={<Contact />} />
       <Route path="/developer" element={<Developer />} />
+      <Route path="/dblogin/login" element={<Login />} />
       <Route path="/programs/college/regular" element={<Regular />} />
       <Route path="/programs/college/sunday" element={<Sunday />} />
       <Route path="/programs/senior" element={<SeniorHigh />} />

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Users, Calendar, ChevronLeft, ChevronRight, X, Sun, Moon, User, ChevronDown, Clock, Mail } from "lucide-react";
-import { useDarkMode } from "../hooks/useDarkMode";
+import { MapPin, Users, Calendar, X, Sun, Moon, User, ChevronDown, Clock, Mail } from "lucide-react";
 import { useParallax } from "../hooks/Parallax";
 import { useAOS } from "../hooks/useAOS";
 
@@ -271,7 +270,38 @@ const Dropdown: React.FC<DropdownProps> = ({ title, items }) => {
     </div>
   );
 };
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
+// Dark Mode Hook
+export function useDarkMode(): [boolean, () => void] {
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const savedMode = window.localStorage.getItem("darkMode");
+      return savedMode ? JSON.parse(savedMode) : false;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (isDarkMode) {
+        document.documentElement.classList.add("dark");
+        window.localStorage.setItem("darkMode", JSON.stringify(true));
+      } else {
+        document.documentElement.classList.remove("dark");
+        window.localStorage.setItem("darkMode", JSON.stringify(false));
+      }
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode((prevMode: boolean) => !prevMode);
+  };
+
+  return [isDarkMode, toggleDarkMode];
+}
+
+// Main Carousel Component
 const Carousel: React.FC = () => {
   const slides = [
     { img: "/images/carousel-backgrounds/3.jpg" },
@@ -293,6 +323,7 @@ const Carousel: React.FC = () => {
   const isDragging = useRef<boolean>(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Intersection Observer for dots visibility
   useEffect(() => {
     const observer = new window.IntersectionObserver(
       ([entry]) => {
@@ -308,6 +339,7 @@ const Carousel: React.FC = () => {
     };
   }, []);
 
+  // Auto-slide interval
   useEffect(() => {
     const startInterval = () => {
       intervalRef.current = setInterval(() => {
@@ -325,6 +357,7 @@ const Carousel: React.FC = () => {
     };
   }, [isTransitioning, slides.length]);
 
+  // Typewriter effect
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
     let timeout: NodeJS.Timeout;
@@ -350,6 +383,21 @@ const Carousel: React.FC = () => {
     return () => clearTimeout(timeout);
   }, [typeIndex, isDeleting]);
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        handleSlideChange('prev');
+      } else if (e.key === 'ArrowRight') {
+        handleSlideChange('next');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isTransitioning]);
+
+  // Slide change handler
   const handleSlideChange = useCallback((direction: 'next' | 'prev') => {
     if (isTransitioning) return;
 
@@ -366,6 +414,7 @@ const Carousel: React.FC = () => {
     }, 300);
   }, [isTransitioning, slides.length]);
 
+  // Touch handlers
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
@@ -414,13 +463,24 @@ const Carousel: React.FC = () => {
         }
       }, 5000);
     }, 1000);
-  }, [handleSlideChange, isTransitioning]);
+  }, [handleSlideChange, isTransitioning, slides.length]);
+
+  // Go to specific slide
+  const goToSlide = (index: number) => {
+    if (!isTransitioning && index !== current) {
+      setIsTransitioning(true);
+      setCurrent(index);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
+    }
+  };
 
   return (
     <>
       <div 
         ref={carouselRef} 
-        className="w-full carousel-container relative overflow-hidden bg-gray-900"
+        className="w-full carousel-container relative overflow-hidden bg-gray-900 group"
       >
         <div className="relative w-full h-full">
           {slides.map((slide, index) => (
@@ -496,7 +556,7 @@ const Carousel: React.FC = () => {
                       ? 'bg-[#FFB302] w-6'
                       : 'bg-white/50 hover:bg-white/75'
                   }`}
-                  onClick={() => { if (!isTransitioning) setCurrent(index); }}
+                  onClick={() => goToSlide(index)}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
@@ -505,7 +565,7 @@ const Carousel: React.FC = () => {
 
           {/* Navigation Arrows */}
           <button
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
             onClick={() => handleSlideChange('prev')}
             aria-label="Previous slide"
           >
@@ -513,7 +573,7 @@ const Carousel: React.FC = () => {
           </button>
 
           <button
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
             onClick={() => handleSlideChange('next')}
             aria-label="Next slide"
           >
@@ -615,19 +675,19 @@ const HistorySection: React.FC = () => {
           </p>
         </div>
 
-            <div className="flex justify-center">
-              <div className="relative max-w-2xl w-full" data-aos="zoom-in" data-aos-delay="400">
-                {!open && (
-                  <div className="relative">
-                    <button
-                      className="envelope-container group w-full h-64 sm:h-72 md:h-80 bg-gradient-to-br from-amber-100 via-orange-100 to-red-100 dark:from-gray-800 dark:via-red-900/30 dark:to-gray-800 rounded-3xl shadow-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-700 hover:scale-105 hover:shadow-3xl border-4 border-gradient-to-r from-[#FFB302] to-[#BC1F27] relative overflow-hidden"
-                      onClick={() => setOpen(true)}
-                      aria-label="Open history envelope"
-                    >
+        <div className="flex justify-center">
+          <div className="relative max-w-2xl w-full" data-aos="zoom-in" data-aos-delay="400">
+            {!open && (
+              <div className="relative">
+                <button
+                  className="envelope-container group w-full h-64 sm:h-72 md:h-80 bg-gradient-to-br from-amber-100 via-orange-100 to-red-100 dark:from-gray-800 dark:via-red-900/30 dark:to-gray-800 rounded-3xl shadow-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-700 hover:scale-105 hover:shadow-3xl border-4 border-[#7b1112] relative overflow-hidden"
+                  onClick={() => setOpen(true)}
+                  aria-label="Open history envelope"
+                >
                   <div className="absolute inset-0 opacity-20">
-                    <div className="absolute top-4 left-4 w-8 h-8 border-2 border-[#FFB302] rounded rotate-45 animate-spin-slow"></div>
-                    <div className="absolute bottom-4 right-4 w-6 h-6 border-2 border-[#BC1F27] rounded-full animate-bounce"></div>
-                    <div className="absolute top-1/2 right-8 w-4 h-4 bg-[#FFB302] rounded-full animate-pulse"></div>
+                    <div className="absolute top-4 left-4 w-8 h-8 border-2 border-[#7b1112] rounded rotate-45 animate-spin-slow"></div>
+                    <div className="absolute bottom-4 right-4 w-6 h-6 border-2 border-[#7b1112] rounded-full animate-bounce"></div>
+                    <div className="absolute top-1/2 right-8 w-4 h-4 bg-[#7b1112] rounded-full animate-pulse"></div>
                   </div>
 
                   <div className="relative z-10 text-center">
@@ -639,10 +699,10 @@ const HistorySection: React.FC = () => {
                           className="w-16 h-16 transition-transform duration-500 group-hover:scale-110"
                         />
                       </div>
-                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full animate-ping"></div>
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#7b1112] rounded-full animate-ping"></div>
                     </div>
 
-                    <h3 className="text-2xl sm:text-3xl font-bold text-[#BC1F27] dark:text-[#FFB302] mb-2 group-hover:text-[#7b1112] dark:group-hover:text-yellow-400 transition-colors">
+                    <h3 className="text-2xl sm:text-3xl font-bold text-[#7b1112] dark:text-[#7b1112] mb-2 group-hover:text-[#5a0d0d] dark:group-hover:text-[#5a0d0d] transition-colors">
                       Discover Our Story
                     </h3>
                     <p className="text-base text-gray-600 dark:text-gray-300 mb-4 px-4">
@@ -656,7 +716,7 @@ const HistorySection: React.FC = () => {
                   </div>
 
                   <div
-                    className="envelope-flap absolute -top-1 left-1/2 -translate-x-1/2 w-40 h-20 bg-gradient-to-b from-[#FFB302] to-[#BC1F27] shadow-lg transition-all duration-500 group-hover:shadow-xl"
+                    className="envelope-flap absolute -top-1 left-1/2 -translate-x-1/2 w-40 h-20 bg-[#7b1112] shadow-lg transition-all duration-500 group-hover:shadow-xl"
                     style={{ clipPath: "polygon(0 0, 100% 0, 50% 100%)" }}
                   >
                     <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white/30 rounded-full"></div>
@@ -666,8 +726,8 @@ const HistorySection: React.FC = () => {
             )}
 
             {open && (
-              <div className="envelope-open bg-white dark:bg-gray-800 rounded-3xl shadow-3xl transition-all duration-1000 animate-scale-in-up relative border-4 border-gradient-to-r from-[#FFB302] to-[#BC1F27] overflow-hidden max-h-[80vh]">
-                <div className="sticky top-0 bg-gradient-to-r from-[#7b1112] to-[#BC1F27] text-white p-6 z-20">
+              <div className="envelope-open bg-white dark:bg-gray-800 rounded-3xl shadow-3xl transition-all duration-1000 animate-scale-in-up relative border-4 border-[#7b1112] overflow-hidden max-h-[80vh]">
+                <div className="sticky top-0 bg-[#7b1112] text-white p-6 z-20">
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="text-2xl font-bold flex items-center gap-3">
@@ -677,7 +737,7 @@ const HistorySection: React.FC = () => {
                       <p className="text-amber-200 text-sm mt-1">Est. 2010 - Science, Arts & Trade</p>
                     </div>
                     <button
-                      className="text-white text-xl cursor-pointer transition-colors hover:text-amber-200"
+                      className="w-10 h-10 rounded-full bg-white text-[#7b1112] flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-[#5a0d0d] hover:text-white text-xl font-bold shadow-lg"
                       onClick={() => setOpen(false)}
                       aria-label="Close history envelope"
                     >
@@ -687,42 +747,42 @@ const HistorySection: React.FC = () => {
                 </div>
 
                 <div className="p-8 overflow-y-auto max-h-96">
-                  <div className="absolute left-8 top-20 bottom-8 w-1 bg-gradient-to-b from-[#FFB302] to-[#BC1F27] opacity-20 hidden lg:block"></div>
+                  <div className="absolute left-8 top-20 bottom-8 w-1 bg-[#7b1112] opacity-20 hidden lg:block"></div>
 
                   <div className="relative">
                     <div className="space-y-6 mb-8">
                       <div className="flex items-center gap-4" >
-                        <div className="w-4 h-4 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex-shrink-0 shadow-lg"></div>
+                        <div className="w-4 h-4 bg-[#7b1112] rounded-full flex-shrink-0 shadow-lg"></div>
                         <div>
-                          <h4 className="font-bold text-[#BC1F27] dark:text-[#FFB302]">2010 - Foundation</h4>
+                          <h4 className="font-bold text-[#7b1112] dark:text-[#7b1112]">2010 - Foundation</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-300">Established by 11 visionary founders</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4" >
-                        <div className="w-4 h-4 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex-shrink-0 shadow-lg"></div>
+                        <div className="w-4 h-4 bg-[#7b1112] rounded-full flex-shrink-0 shadow-lg"></div>
                         <div>
-                          <h4 className="font-bold text-[#BC1F27] dark:text-[#FFB302]">2011 - First Programs</h4>
+                          <h4 className="font-bold text-[#7b1112] dark:text-[#7b1112]">2011 - First Programs</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-300">IT, Hotel Services & Business Management</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4" >
-                        <div className="w-4 h-4 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex-shrink-0 shadow-lg"></div>
+                        <div className="w-4 h-4 bg-[#7b1112] rounded-full flex-shrink-0 shadow-lg"></div>
                         <div>
-                          <h4 className="font-bold text-[#BC1F27] dark:text-[#FFB302]">2013 - Expansion</h4>
+                          <h4 className="font-bold text-[#7b1112] dark:text-[#7b1112]">2013 - Expansion</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-300">Santa Rosa & GMA branches opened</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4" >
-                        <div className="w-4 h-4 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex-shrink-0 shadow-lg"></div>
+                        <div className="w-4 h-4 bg-[#7b1112] rounded-full flex-shrink-0 shadow-lg"></div>
                         <div>
-                          <h4 className="font-bold text-[#BC1F27] dark:text-[#FFB302]">2021 - Bachelor Programs</h4>
+                          <h4 className="font-bold text-[#7b1112] dark:text-[#7b1112]">2021 - Bachelor Programs</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-300">First bachelor's degree program launched</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4" >
-                        <div className="w-4 h-4 bg-gradient-to-r from-[#FFB302] to-[#BC1F27] rounded-full flex-shrink-0 shadow-lg"></div>
+                        <div className="w-4 h-4 bg-[#7b1112] rounded-full flex-shrink-0 shadow-lg"></div>
                         <div>
-                          <h4 className="font-bold text-[#BC1F27] dark:text-[#FFB302]">2022-2023 - Continued Growth</h4>
+                          <h4 className="font-bold text-[#7b1112] dark:text-[#7b1112]">2022-2023 - Continued Growth</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-300">Added Computer Science and Office Administration</p>
                         </div>
                       </div>
@@ -731,38 +791,33 @@ const HistorySection: React.FC = () => {
                     <div className="prose prose-gray dark:prose-invert max-w-none">
                       <p 
                         className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8"
-                        
                       >
                         Philippine Technological Institute of Science Arts and Trade Inc., founded in 2010 as a non-stock non-profit non-sectarian private Educational Institution to blaze the trail in the field of technical education. Its eleven founders were a mixture of engineers, a scientist/inventor and practitioner in the IT industry, school administrators, managers and academic professionals in both public and private institutions.
                       </p>
 
                       <p 
                         className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8"
-                        
                       >
                         The first school was established in November of 2010 and is presently located at F.T. Catapusan St. in Tanay, Rizal. In June 2011, Philippine Technological Institute opened and offered two-year programs in Information Technology, Hotel and Restaurant Services, and Business Outsourcing Management.
                       </p>
 
                       <p 
                         className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8"
-                        
                       >
                         By November of 2012, negotiations for additional branches went underway. The Board of Trustees resolved that two new PHILTECH branches should be established in Sta. Rosa, Laguna and General Mariano Alvarez, Cavite, both opening in the first semester of school year 2013-2014.
                       </p>
 
                       <p 
                         className="text-gray-700 dark:text-gray-200 leading-relaxed text-justify mb-6 indent-8"
-                        
                       >
                         By 2021, the GMA branch offered its first bachelor's program: Bachelor in Technical Vocational Teacher Education Major in Food and Beverage Management. The institution continued to grow, adding Bachelor of Science in Computer Science and Bachelor of Science in Office Administration by school year 2022-2023.
                       </p>
 
                       <div 
-                        className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-700 dark:to-red-900/20 p-6 rounded-2xl mt-8 border-l-4 border-[#FFB302]"
-                        
+                        className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-700 dark:to-red-900/20 p-6 rounded-2xl mt-8 border-l-4 border-[#7b1112]"
                       >
                         <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-center italic font-medium">
-                          "To date, the institution has been giving its best in proving its objective to provide <span className="text-[#BC1F27] dark:text-[#FFB302] font-bold">global success through academic excellence</span> with admiration for knowledge and appreciation for skills."
+                          "To date, the institution has been giving its best in proving its objective to provide <span className="text-[#7b1112] dark:text-[#7b1112] font-bold">global success through academic excellence</span> with admiration for knowledge and appreciation for skills."
                         </p>
                       </div>
                     </div>
@@ -909,13 +964,13 @@ const CampusSection: React.FC = () => {
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-16">
           <h2 
-            className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-red-700 via-red-800 to-yellow-600 bg-clip-text text-transparent"
+            className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-[#7b1112] via-[#BC1F27] to-[#FFB302] bg-clip-text text-transparent"
             data-aos="fade-up"
           >
             Our Campuses
           </h2>
           <div 
-            className="w-32 h-1 bg-gradient-to-r from-red-700 to-yellow-500 mx-auto rounded-full shadow-lg"
+            className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg"
             data-aos="fade-up"
             data-aos-delay="200"
           ></div>
@@ -1019,57 +1074,60 @@ const CampusSection: React.FC = () => {
               </div>
             </div>
 
+            {/* Previous Button - Maroon with hover animation */}
             <button
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full p-3 transition-all duration-200 z-20"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-[#7b1112] hover:bg-gradient-to-r hover:from-[#7b1112] hover:to-[#FFB302] text-white rounded-full p-4 transition-all duration-300 z-20 shadow-lg hover:shadow-xl transform hover:scale-110 group"
               onClick={() => handleSlideChange('prev')}
               aria-label="Previous campus"
             >
-              <ChevronLeft size={24} />
+              <ChevronLeft size={24} className="group-hover:animate-pulse" />
             </button>
 
+            {/* Next Button - Maroon with hover animation */}
             <button
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full p-3 transition-all duration-200 z-20"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-[#7b1112] hover:bg-gradient-to-r hover:from-[#7b1112] hover:to-[#FFB302] text-white rounded-full p-4 transition-all duration-300 z-20 shadow-lg hover:shadow-xl transform hover:scale-110 group"
               onClick={() => handleSlideChange('next')}
               aria-label="Next campus"
             >
-              <ChevronRight size={24} />
+              <ChevronRight size={24} className="group-hover:animate-pulse" />
             </button>
           </div>
 
+          {/* Campus Indicator Buttons */}
           <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-6">
             <div className="flex justify-center items-center space-x-4">
               {campuses.map((campus, index) => (
                 <button
                   key={campus.id}
-                  className={`flex items-center space-x-3 px-4 py-2 rounded-full transition-all duration-300 ${
+                  className={`flex items-center space-x-3 px-6 py-3 rounded-full transition-all duration-300 group relative overflow-hidden ${
                     index === current
-                      ? 'bg-gradient-to-r from-red-700 to-yellow-500 text-white shadow-lg'
-                      : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-amber-100 dark:hover:bg-gray-500 hover:text-red-700'
+                      ? 'bg-gradient-to-r from-[#7b1112] to-[#FFB302] text-white shadow-lg transform scale-105'
+                      : 'bg-[#7b1112] text-white hover:bg-gradient-to-r hover:from-[#7b1112] hover:to-[#FFB302] shadow-md'
                   }`}
                   onClick={() => goToSlide(index)}
                   aria-label={`Go to ${campus.name}`}
                 >
-                  <div className={`w-3 h-3 rounded-full ${
-                    index === current ? 'bg-white' : 'bg-current'
+                  {/* Hover animation effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#FFB302] to-[#7b1112] opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full"></div>
+                  
+                  <div className={`w-3 h-3 rounded-full relative z-10 ${
+                    index === current ? 'bg-white animate-pulse' : 'bg-amber-200'
                   }`} />
-                  <span className="font-medium hidden sm:block">{campus.name.split(' ')[1]}</span>
+                  <span className="font-medium hidden sm:block relative z-10 group-hover:text-white transition-colors duration-300">
+                    {campus.name.split(' ')[1]}
+                  </span>
                 </button>
               ))}
             </div>
 
-            <div className="mt-4 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
+            {/* Progress Bar */}
+            <div className="mt-4 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
-                className="bg-gradient-to-r from-red-700 to-yellow-500 h-1 rounded-full transition-all duration-300"
+                className="bg-gradient-to-r from-[#7b1112] to-[#FFB302] h-2 rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${((current + 1) / campuses.length) * 100}%` }}
               />
             </div>
           </div>
-        </div>
-
-        <div className="text-center mt-12" data-aos="fade-up" data-aos-delay="1100">
-          <button className="bg-gradient-to-r from-[#7b1112] to-[#FFB302] hover:from-[#BC1F27] hover:to-[#FFD700] text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-            Explore All Campuses
-          </button>
         </div>
       </div>
 
@@ -1082,11 +1140,18 @@ const CampusSection: React.FC = () => {
           from { opacity: 0; transform: scale(0.95) translateY(20px); }
           to { opacity: 1; transform: scale(1) translateY(0); }
         }
+        @keyframes maroon-gold-pulse {
+          0%, 100% { background-color: #7b1112; }
+          50% { background-color: #FFB302; }
+        }
         .animate-fade-in-up {
           animation: fade-in-up 1s ease-out;
         }
         .animate-scale-in-up {
           animation: scale-in-up 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .animate-maroon-gold-pulse {
+          animation: maroon-gold-pulse 2s ease-in-out infinite;
         }
         .delay-100 { animation-delay: 0.1s; }
         .delay-200 { animation-delay: 0.2s; }
@@ -1095,6 +1160,11 @@ const CampusSection: React.FC = () => {
         .delay-500 { animation-delay: 0.5s; }
         .shadow-3xl {
           box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Custom hover animations */
+        .hover-glow:hover {
+          box-shadow: 0 0 20px rgba(255, 179, 2, 0.5);
         }
       `}</style>
     </section>
@@ -1151,17 +1221,13 @@ const OngoingEventsSection: React.FC = () => {
       image: "/images/events/2.jpg",
       description: "Connect with top employers and explore internship and job opportunities.",
       status: "upcoming",
-      attendees: 0,
+      attendees: 200,
       maxAttendees: 400,
       tags: ["Employment", "Networking", "Career"],
       organizer: "Career Development Center",
       requirements: ["Resume", "Business Attire"],
       contact: "career@philtech.edu"
     }
-  ];
-
-  const categories = [
-    { id: 'all', name: ' ' },
   ];
 
   const filteredEvents = events.filter(event => {
@@ -1187,8 +1253,8 @@ const OngoingEventsSection: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      ongoing: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      upcoming: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+      ongoing: 'bg-[#7b1112] text-white dark:bg-[#BC1F27] dark:text-white',
+      upcoming: 'bg-[#FFB302] text-gray-800 dark:bg-[#FFD700] dark:text-gray-800'
     };
     
     return (
@@ -1200,13 +1266,13 @@ const OngoingEventsSection: React.FC = () => {
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      academic: 'from-purple-500 to-blue-500',
-      cultural: 'from-orange-500 to-red-500',
-      sports: 'from-green-500 to-teal-500',
-      career: 'from-indigo-500 to-purple-500',
-      social: 'from-pink-500 to-rose-500'
+      academic: 'from-[#7b1112] to-[#BC1F27]',
+      cultural: 'from-[#FFB302] to-[#FFD700]',
+      sports: 'from-[#7b1112] to-[#FFB302]',
+      career: 'from-[#BC1F27] to-[#FFB302]',
+      social: 'from-[#FFB302] to-[#BC1F27]'
     };
-    return colors[category as keyof typeof colors] || 'from-gray-500 to-gray-600';
+    return colors[category as keyof typeof colors] || 'from-[#7b1112] to-[#FFB302]';
   };
 
   return (
@@ -1220,7 +1286,7 @@ const OngoingEventsSection: React.FC = () => {
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-16">
           <h2 
-            className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-red-700 via-red-800 to-yellow-600 bg-clip-text text-transparent"
+            className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-[#7b1112] via-[#BC1F27] to-[#FFB302] bg-clip-text text-transparent"
             data-aos="fade-up"
           >
             Ongoing Events
@@ -1245,19 +1311,6 @@ const OngoingEventsSection: React.FC = () => {
           data-aos="fade-up"
           data-aos-delay="400"
         >
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setActiveCategory(category.id)}
-              className={` ${
-                activeCategory === category.id
-                  ? 'bg-gradient-to-r from-[#7b1112] to-[#FFB302] text-white shadow-lg'
-                  : 'bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 shadow-md'
-              }`}
-            >
-              {category.name}
-            </button>
-          ))}
         </div>
 
         {/* Events Grid */}
@@ -1295,15 +1348,15 @@ const OngoingEventsSection: React.FC = () => {
                 
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
-                    <Calendar size={16} className="mr-2 text-blue-500" />
+                    <Calendar size={16} className="mr-2 text-[#7b1112]" />
                     <span className="text-sm">{formatDate(event.date)}</span>
                   </div>
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
-                    <Clock size={16} className="mr-2 text-green-500" />
+                    <Clock size={16} className="mr-2 text-[#FFB302]" />
                     <span className="text-sm">{event.time}</span>
                   </div>
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
-                    <MapPin size={16} className="mr-2 text-red-500" />
+                    <MapPin size={16} className="mr-2 text-[#BC1F27]" />
                     <span className="text-sm">{event.location}</span>
                   </div>
                 </div>
@@ -1314,14 +1367,14 @@ const OngoingEventsSection: React.FC = () => {
 
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
-                    <Users size={16} className="text-gray-500" />
+                    <Users size={16} className="text-[#7b1112]" />
                     <span className="text-sm text-gray-600 dark:text-gray-300">
                       {event.attendees}/{event.maxAttendees}
                     </span>
                   </div>
                   <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div 
-                      className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-500"
+                      className="bg-gradient-to-r from-[#7b1112] to-[#FFB302] h-2 rounded-full transition-all duration-500"
                       style={{ width: `${(event.attendees / event.maxAttendees) * 100}%` }}
                     />
                   </div>
@@ -1331,24 +1384,17 @@ const OngoingEventsSection: React.FC = () => {
                   {event.tags.slice(0, 2).map((tag, tagIndex) => (
                     <span
                       key={tagIndex}
-                      className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded"
+                      className="px-2 py-1 bg-[#7b1112]/10 text-[#7b1112] dark:bg-[#FFB302]/20 dark:text-[#FFB302] text-xs rounded"
                     >
                       #{tag}
                     </span>
                   ))}
                   {event.tags.length > 2 && (
-                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded">
+                    <span className="px-2 py-1 bg-[#7b1112]/10 text-[#7b1112] dark:bg-[#FFB302]/20 dark:text-[#FFB302] text-xs rounded">
                       +{event.tags.length - 2}
                     </span>
                   )}
                 </div>
-
-                <button
-                  onClick={() => handleEventClick(event)}
-                  className="w-full bg-gradient-to-r from-[#7b1112] to-[#FFB302] hover:from-[#BC1F27] hover:to-[#FFD700] text-white py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
-                >
-                  View Details
-                </button>
               </div>
             </div>
           ))}
@@ -1356,8 +1402,8 @@ const OngoingEventsSection: React.FC = () => {
 
         {filteredEvents.length === 0 && (
           <div className="text-center py-12">
-            <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-              <Calendar size={40} className="text-gray-400" />
+            <div className="w-24 h-24 mx-auto mb-4 bg-[#7b1112]/10 rounded-full flex items-center justify-center">
+              <Calendar size={40} className="text-[#7b1112]" />
             </div>
             <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">
               No events found
@@ -1369,9 +1415,9 @@ const OngoingEventsSection: React.FC = () => {
         )}
 
         <div className="text-center" data-aos="fade-up" data-aos-delay="600">
-          <button className="bg-gradient-to-r from-[#7b1112] to-[#FFB302] hover:from-[#BC1F27] hover:to-[#FFD700] text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-            View All Events Calendar
-          </button>
+          <Link to="/events" className="bg-gradient-to-r from-[#7b1112] to-[#7b1112] hover:from-[#f7a102] hover:to-[#f7a102] text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 inline-block text-center">
+            View All Events
+          </Link>
         </div>
       </div>
 
@@ -1393,7 +1439,7 @@ const OngoingEventsSection: React.FC = () => {
               />
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200"
+                className="absolute top-4 right-4 bg-[#7b1112] hover:bg-[#BC1F27] text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200 shadow-lg"
                 aria-label="Close event details"
               >
                 <X size={24} />
@@ -1411,90 +1457,38 @@ const OngoingEventsSection: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className="space-y-3">
                   <div className="flex items-center">
-                    <Calendar className="w-5 h-5 text-blue-500 mr-3" />
+                    <Calendar className="w-5 h-5 text-[#7b1112] mr-3" />
                     <div>
                       <p className="text-sm text-gray-500">Date</p>
                       <p className="font-semibold">{formatDate(selectedEvent.date)}</p>
                     </div>
                   </div>
                   <div className="flex items-center">
-                    <Clock className="w-5 h-5 text-green-500 mr-3" />
+                    <Clock className="w-5 h-5 text-[#FFB302] mr-3" />
                     <div>
                       <p className="text-sm text-gray-500">Time</p>
                       <p className="font-semibold">{selectedEvent.time}</p>
                     </div>
                   </div>
                   <div className="flex items-center">
-                    <MapPin className="w-5 h-5 text-red-500 mr-3" />
+                    <MapPin className="w-5 h-5 text-[#BC1F27] mr-3" />
                     <div>
                       <p className="text-sm text-gray-500">Location</p>
                       <p className="font-semibold">{selectedEvent.location}</p>
                     </div>
                   </div>
                 </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center">
-                    <Users className="w-5 h-5 text-purple-500 mr-3" />
-                    <div>
-                      <p className="text-sm text-gray-500">Attendees</p>
-                      <p className="font-semibold">{selectedEvent.attendees}/{selectedEvent.maxAttendees}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <User className="w-5 h-5 text-orange-500 mr-3" />
-                    <div>
-                      <p className="text-sm text-gray-500">Organizer</p>
-                      <p className="font-semibold">{selectedEvent.organizer}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <Mail className="w-5 h-5 text-indigo-500 mr-3" />
-                    <div>
-                      <p className="text-sm text-gray-500">Contact</p>
-                      <p className="font-semibold">{selectedEvent.contact}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <h4 className="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Description</h4>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  {selectedEvent.description}
-                </p>
-              </div>
-
-              <div className="mb-6">
-                <h4 className="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Requirements</h4>
-                <ul className="space-y-2">
-                  {selectedEvent.requirements.map((req: string, index: number) => (
-                    <li key={index} className="flex items-center text-gray-600 dark:text-gray-300">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                      {req}
-                    </li>
-                  ))}
-                </ul>
               </div>
 
               <div className="flex flex-wrap gap-2 mb-6">
                 {selectedEvent.tags.map((tag: string, index: number) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full"
+                    className="px-3 py-1 bg-[#7b1112]/10 text-[#7b1112] dark:bg-[#FFB302]/20 dark:text-[#FFB302] text-sm rounded-full"
                   >
                     #{tag}
                   </span>
                 ))}
-              </div>
-
-              <div className="flex gap-4">
-                <button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-lg font-semibold transition-all duration-300">
-                  Register Now
-                </button>
-                <button className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300">
-                  Add to Calendar
-                </button>
               </div>
             </div>
           </div>

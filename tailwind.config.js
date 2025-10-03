@@ -10,6 +10,8 @@ export default {
         primary3: '#FFB302',
         primary4: '#DB9101',
         primary5: '#6E090C',
+        maroon: '#800000',
+        gold: '#FFD700',
       },
       backgroundImage: {
         'palette-gradient': 'linear-gradient(90deg, #781112, #BC1F27, #FFB302, #DB9101, #6E090C)',
@@ -32,3 +34,5 @@ export default {
   },
   plugins: [],
 };
+
+

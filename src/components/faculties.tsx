@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Sun, Moon, User, ChevronDown } from "lucide-react";
-import { useDarkMode } from "../hooks/useDarkMode";
+import { X, Sun, Moon, User, ChevronDown} from "lucide-react";
+import { useAOS } from "../hooks/useAOS";
 
 const Logo: React.FC = () => {
   return (
@@ -77,22 +77,22 @@ const NavLinks: React.FC = () => {
             </button>
             {showCollege && (
               <div className="ml-0 md:ml-6 mt-1 bg-gray-50 dark:bg-gray-900 rounded shadow-inner">
-                <Link
-                  to="/programs/college/regular"
-                  className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  Regular
-                </Link>
-                <Link
-                  to="/programs/college/sunday"
-                  className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  Sunday
-                </Link>
+            <Link
+              to="/regular"
+              className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              Regular
+            </Link>
+            <Link
+              to="/sunday"
+              className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              Sunday
+            </Link>
               </div>
             )}
             <Link
-              to="/programs/senior"
+              to="/senior-high"
               className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white"
             >
               Senior High
@@ -179,7 +179,7 @@ const Navbar: React.FC = () => {
               : <Moon size={20} className="text-white group-hover:text-[goldenrod]" />}
           </button>
           <Link
-            to="/login"
+            to="/dblogin/login"
             className="transition-colors group"
             aria-label="Login"
           >
@@ -192,8 +192,8 @@ const Navbar: React.FC = () => {
               aria-label="Toggle menu"
             >
               {isMenuOpen
-                ? <X size={24} className="text-white group-hover:text-[goldenrod]" />
-                : <Menu size={24} className="text-white group-hover:text-[goldenrod]" />}
+                ? <X size={20} className="text-white group-hover:text-[goldenrod]" />
+                : <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-menu text-white group-hover:text-[goldenrod]" aria-hidden="true"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>}
             </button>
           </div>
         </div>
@@ -269,7 +269,38 @@ const Dropdown: React.FC<DropdownProps> = ({ title, items }) => {
     </div>
   );
 };
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
+// Dark Mode Hook
+export function useDarkMode(): [boolean, () => void] {
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const savedMode = window.localStorage.getItem("darkMode");
+      return savedMode ? JSON.parse(savedMode) : false;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (isDarkMode) {
+        document.documentElement.classList.add("dark");
+        window.localStorage.setItem("darkMode", JSON.stringify(true));
+      } else {
+        document.documentElement.classList.remove("dark");
+        window.localStorage.setItem("darkMode", JSON.stringify(false));
+      }
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode((prevMode: boolean) => !prevMode);
+  };
+
+  return [isDarkMode, toggleDarkMode];
+}
+
+// Main Carousel Component
 const Carousel: React.FC = () => {
   const slides = [
     { img: "/images/carousel-backgrounds/3.jpg" },
@@ -283,6 +314,7 @@ const Carousel: React.FC = () => {
   const [typeIndex, setTypeIndex] = useState<number>(0);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const [showDots, setShowDots] = useState<boolean>(true);
+  const [isDarkMode] = useDarkMode(); // Kunin ang dark mode state
 
   const carouselRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
@@ -290,6 +322,7 @@ const Carousel: React.FC = () => {
   const isDragging = useRef<boolean>(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Intersection Observer for dots visibility
   useEffect(() => {
     const observer = new window.IntersectionObserver(
       ([entry]) => {
@@ -305,6 +338,7 @@ const Carousel: React.FC = () => {
     };
   }, []);
 
+  // Auto-slide interval
   useEffect(() => {
     const startInterval = () => {
       intervalRef.current = setInterval(() => {
@@ -320,8 +354,9 @@ const Carousel: React.FC = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isTransitioning]);
+  }, [isTransitioning, slides.length]);
 
+  // Typewriter effect
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
     let timeout: NodeJS.Timeout;
@@ -347,6 +382,21 @@ const Carousel: React.FC = () => {
     return () => clearTimeout(timeout);
   }, [typeIndex, isDeleting]);
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        handleSlideChange('prev');
+      } else if (e.key === 'ArrowRight') {
+        handleSlideChange('next');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isTransitioning]);
+
+  // Slide change handler
   const handleSlideChange = useCallback((direction: 'next' | 'prev') => {
     if (isTransitioning) return;
 
@@ -361,8 +411,9 @@ const Carousel: React.FC = () => {
     setTimeout(() => {
       setIsTransitioning(false);
     }, 300);
-  }, [isTransitioning]);
+  }, [isTransitioning, slides.length]);
 
+  // Touch handlers
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
@@ -411,43 +462,75 @@ const Carousel: React.FC = () => {
         }
       }, 5000);
     }, 1000);
-  }, [handleSlideChange, isTransitioning]);
+  }, [handleSlideChange, isTransitioning, slides.length]);
+
+  // Go to specific slide
+  const goToSlide = (index: number) => {
+    if (!isTransitioning && index !== current) {
+      setIsTransitioning(true);
+      setCurrent(index);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
+    }
+  };
 
   return (
     <>
-      <div ref={carouselRef} className="w-full h-[70vh] min-h-[70vh] max-h-[70vh] rounded-none overflow-hidden shadow-2xl bg-white dark:bg-gray-900 relative">
-        <div className="relative w-full h-full flex items-center justify-center">
+      <div 
+        ref={carouselRef} 
+        className="w-full carousel-container relative overflow-hidden bg-gray-900 group"
+      >
+        <div className="relative w-full h-full">
           {slides.map((slide, index) => (
-            <img
+            <div
               key={index}
-              src={slide.img}
-              alt={`Slide ${index + 1}`}
-              className={`absolute inset-0 object-cover w-full h-full transition-opacity duration-500 ease-in-out select-none ${
+              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
                 index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
               }`}
-              draggable="false"
-              style={{
-                pointerEvents: 'none',
-                WebkitTouchCallout: 'none',
-                WebkitUserSelect: 'none',
-                userSelect: 'none'
-              }}
-            />
+            >
+              {/* Background Image Container */}
+              <div className="absolute inset-0">
+                <img
+                  src={slide.img}
+                  alt={`Slide ${index + 1}`}
+                  className="carousel-image w-full h-full object-cover object-center"
+                  draggable="false"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://picsum.photos/1920/1080?random=${index}`;
+                  }}
+                />
+              </div>
+
+              {/* Background Overlay - nagbabago base sa dark mode */}
+              <div 
+                className={`absolute inset-0 pointer-events-none z-20 ${
+                  isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
+                }`}
+              />
+
+              {/* Content */}
+              <div className="absolute inset-0 flex items-center justify-center z-30">
+                <div className="text-center px-4 max-w-4xl mx-auto">
+                  <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
+                    <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
+                      WELCOME TO
+                    </span>
+                    <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
+                      PHILTECH GMA
+                    </span>
+                    <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
+                          style={{paddingRight: '5px'}}>
+                      {typewriterText}
+                      <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
 
-          <div className="absolute inset-0 bg-black/70 pointer-events-none z-20" />
-
-          <div className="absolute bottom-0 left-0 right-0 px-1 xs:px-2 sm:px-4 pb-4 xs:pb-6 sm:pb-12 flex flex-col items-center justify-center text-center w-full h-full z-30">
-            <div className="flex flex-col items-center justify-center w-full animate-fade-in-up mt-2 xs:mt-4 sm:mt-8">
-              <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">WELCOME TO</span>
-              <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">PHILTECH GMA</span>
-              <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" style={{paddingRight: '5px'}}>
-                {typewriterText}
-                <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
-              </span>
-            </div>
-          </div>
-
+          {/* Touch Area for Mobile Swiping */}
           <div
             className="absolute inset-0 z-40 touch-pan-y"
             onTouchStart={handleTouchStart}
@@ -461,6 +544,7 @@ const Carousel: React.FC = () => {
             }}
           />
 
+          {/* Navigation Dots */}
           {showDots && (
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50">
               {slides.map((_, index) => (
@@ -471,16 +555,62 @@ const Carousel: React.FC = () => {
                       ? 'bg-[#FFB302] w-6'
                       : 'bg-white/50 hover:bg-white/75'
                   }`}
-                  onClick={(_e) => { if (!isTransitioning) setCurrent(index); }}
+                  onClick={() => goToSlide(index)}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
             </div>
           )}
+
+          {/* Navigation Arrows */}
+          <button
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
+            onClick={() => handleSlideChange('prev')}
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={24} />
+          </button>
+
+          <button
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
+            onClick={() => handleSlideChange('next')}
+            aria-label="Next slide"
+          >
+            <ChevronRight size={24} />
+          </button>
         </div>
       </div>
 
       <style>{`
+        .carousel-container {
+          /* Para sa desktop - full viewport height */
+          height: 100vh;
+          min-height: 500px;
+        }
+
+        @media (max-width: 768px) {
+          .carousel-container {
+            height: 70vh;
+            min-height: 400px;
+            max-height: 600px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .carousel-container {
+            height: 60vh;
+            min-height: 350px;
+            max-height: 500px;
+          }
+        }
+
+        .carousel-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
+        }
+
         @keyframes blink {
           0%, 50% { opacity: 1; }
           51%, 100% { opacity: 0; }
@@ -506,9 +636,296 @@ const Carousel: React.FC = () => {
   );
 };
 
+const FacultyShowcaseSection: React.FC = () => {
+  useAOS();
+
+  const facultyMembers = [
+    {
+      id: 1,
+      name: "Dr. Maria Santos",
+      role: "Dean of Computer Science",
+      department: "Information Technology",
+      image: "/images/faculty/dean-maria.jpg",
+      specialization: "Artificial Intelligence & Machine Learning",
+      experience: "15+ years",
+      education: "PhD Computer Science, MIT",
+      email: "maria.santos@philtech.edu",
+      achievements: ["Published 50+ research papers", "IEEE Senior Member", "Best Teacher Award 2022"]
+    },
+    {
+      id: 2,
+      name: "Prof. Juan Dela Cruz",
+      role: "Head of Business Department",
+      department: "Business Management",
+      image: "/images/faculty/prof-juan.jpg",
+      specialization: "Entrepreneurship & Finance",
+      experience: "12+ years",
+      education: "MBA, Harvard Business School",
+      email: "juan.delacruz@philtech.edu",
+      achievements: ["Former CEO of Tech Startup", "Business Excellence Award", "Industry Consultant"]
+    },
+    {
+      id: 3,
+      name: "Engr. Ana Reyes",
+      role: "Technical Education Specialist",
+      department: "Engineering & Technology",
+      image: "/images/faculty/engr-ana.jpg",
+      specialization: "Food & Beverage Technology",
+      experience: "10+ years",
+      education: "MS Food Technology, UP Diliman",
+      email: "ana.reyes@philtech.edu",
+      achievements: ["Industry Certifications", "Research Collaborations", "Student Mentorship"]
+    },
+    {
+      id: 4,
+      name: "Dr. Roberto Garcia",
+      role: "Senior Lecturer",
+      department: "Information Technology",
+      image: "/images/faculty/dr-roberto.jpg",
+      specialization: "Cybersecurity & Networks",
+      experience: "18+ years",
+      education: "PhD Information Security, Stanford",
+      email: "roberto.garcia@philtech.edu",
+      achievements: ["CISSP Certified", "Security Consultant", "Published Author"]
+    },
+    {
+      id: 5,
+      name: "Ms. Carmen Lopez",
+      role: "Hospitality Instructor",
+      department: "Hotel & Restaurant Services",
+      image: "/images/faculty/ms-carmen.jpg",
+      specialization: "Culinary Arts & Service Excellence",
+      experience: "14+ years",
+      education: "BS Hotel Management, De La Salle",
+      email: "carmen.lopez@philtech.edu",
+      achievements: ["Michelin Star Experience", "Service Excellence Award", "Industry Trainer"]
+    },
+    {
+      id: 6,
+      name: "Prof. Miguel Torres",
+      role: "Mathematics Coordinator",
+      department: "General Education",
+      image: "/images/faculty/prof-miguel.jpg",
+      specialization: "Applied Mathematics & Statistics",
+      experience: "16+ years",
+      education: "MS Mathematics, Ateneo",
+      email: "miguel.torres@philtech.edu",
+      achievements: ["Math Olympiad Coach", "Research Publications", "Curriculum Developer"]
+    }
+  ];
+
+  return (
+    <section className="w-full py-20 px-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-950/20 dark:to-purple-950/20 relative overflow-hidden">
+      {/* Enhanced Background Animation */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-r from-indigo-400 to-blue-500 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full blur-2xl animate-pulse delay-500"></div>
+        <div className="absolute top-1/3 right-1/4 w-20 h-20 bg-gradient-to-r from-[#7b1112] to-[#FFB302] rounded-full blur-2xl animate-pulse delay-700"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Enhanced Header Section */}
+        <div className="text-center mb-16">
+          <h2
+            className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-[#7b1112] via-[#BC1F27] to-[#FFB302] bg-clip-text text-transparent"
+            data-aos="fade-down"
+            data-aos-duration="800"
+          >
+            Meet Our Faculty
+          </h2>
+          <div
+            className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg mb-6"
+            data-aos="fade-down"
+            data-aos-delay="200"
+            data-aos-duration="600"
+          ></div>
+          <p
+            className="text-lg text-gray-600 dark:text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed"
+            data-aos="fade-up"
+            data-aos-delay="300"
+            data-aos-duration="700"
+          >
+            Our distinguished faculty members bring years of experience, expertise, and passion for teaching to guide our students toward success.
+          </p>
+        </div>
+
+        {/* Enhanced Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {facultyMembers.map((faculty, index) => (
+            <div
+              key={faculty.id}
+              className="group relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-500 hover:scale-105 hover:shadow-3xl"
+              data-aos="fade-up"
+              data-aos-delay={index * 150}
+              data-aos-duration="800"
+              data-aos-once="true"
+            >
+              {/* Card Background Gradient Effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[#7b1112]/5 dark:to-[#FFB302]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              {/* Enhanced Image Container */}
+              <div className="relative h-72 overflow-hidden">
+                <img
+                  src={faculty.image}
+                  alt={faculty.name}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&crop=face&auto=format&q=60`;
+                  }}
+                />
+                
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-60"></div>
+                
+                {/* Enhanced Department Badge */}
+                <div 
+                  className="absolute top-4 right-4"
+                  data-aos="zoom-in"
+                  data-aos-delay={index * 150 + 300}
+                  data-aos-duration="500"
+                >
+                  <span className="px-4 py-2 bg-gradient-to-r from-[#7b1112] to-[#BC1F27] text-white text-sm font-semibold rounded-full shadow-lg border border-white/20">
+                    {faculty.department}
+                  </span>
+                </div>
+
+                {/* Faculty Name Overlay */}
+                <div className="absolute bottom-4 left-4">
+                  <h3 className="text-2xl font-bold text-white drop-shadow-lg">
+                    {faculty.name}
+                  </h3>
+                  <p className="text-[#FFB302] font-semibold drop-shadow-md">
+                    {faculty.role}
+                  </p>
+                </div>
+              </div>
+
+              {/* Enhanced Card Content */}
+              <div className="relative p-6 bg-white dark:bg-gray-800">
+                {/* Specialization Badge */}
+                <div className="mb-4">
+                  <span className="inline-block px-3 py-1 bg-gradient-to-r from-[#FFB302]/20 to-[#FFB302]/10 text-[#BC1F27] dark:text-[#FFB302] text-sm font-medium rounded-full border border-[#FFB302]/30">
+                    {faculty.specialization}
+                  </span>
+                </div>
+
+                {/* Experience & Education */}
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
+                    <div className="w-8 h-8 bg-gradient-to-r from-[#7b1112]/10 to-[#BC1F27]/10 rounded-lg flex items-center justify-center mr-3">
+                      <span className="text-[#7b1112] dark:text-[#BC1F27] text-sm font-bold">🎓</span>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Education</p>
+                      <p className="text-sm font-medium">{faculty.education}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
+                    <div className="w-8 h-8 bg-gradient-to-r from-[#FFB302]/10 to-[#FFB302]/20 rounded-lg flex items-center justify-center mr-3">
+                      <span className="text-[#BC1F27] dark:text-[#FFB302] text-sm font-bold">⏳</span>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Experience</p>
+                      <p className="text-sm font-medium">{faculty.experience}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enhanced Achievements */}
+                <div className="mb-6">
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
+                    <span className="w-2 h-2 bg-gradient-to-r from-[#7b1112] to-[#BC1F27] rounded-full mr-2"></span>
+                    Key Achievements
+                  </h4>
+                  <ul className="space-y-2">
+                    {faculty.achievements.slice(0, 2).map((achievement, idx) => (
+                      <li 
+                        key={idx} 
+                        className="flex items-center text-sm text-gray-600 dark:text-gray-400"
+                        data-aos="fade-right"
+                        data-aos-delay={index * 150 + idx * 100}
+                        data-aos-duration="400"
+                      >
+                        <span className="w-1.5 h-1.5 bg-[#FFB302] rounded-full mr-3 flex-shrink-0"></span>
+                        {achievement}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Enhanced Action Buttons */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <a
+                    href={`mailto:${faculty.email}`}
+                    className="flex items-center text-[#7b1112] hover:text-[#BC1F27] text-sm font-medium transition-all duration-300 hover:translate-x-1"
+                  >
+                    <span className="mr-2">📧</span>
+                    Contact
+                  </a>
+                  <button className="group relative bg-gradient-to-r from-[#7b1112] to-[#BC1F27] hover:from-[#BC1F27] hover:to-[#FFB302] text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl overflow-hidden">
+                    <span className="relative z-10">View Profile</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#BC1F27] to-[#FFB302] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Hover Border Effect */}
+              <div className="absolute inset-0 rounded-3xl border-2 border-transparent bg-gradient-to-r from-[#7b1112] via-[#BC1F27] to-[#FFB302] opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10">
+                <div className="absolute inset-[2px] rounded-3xl bg-white dark:bg-gray-800"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Enhanced CTA Button */}
+        <div 
+          className="text-center mt-16"
+          data-aos="fade-up"
+          data-aos-delay="600"
+          data-aos-duration="700"
+        >
+        </div>
+      </div>
+
+      {/* Enhanced Custom Animation Styles */}
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .hover\\:shadow-3xl:hover {
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 30px rgba(123, 17, 18, 0.1);
+        }
+
+        .group:hover .group-hover\\:scale-110 {
+          transform: scale(1.1);
+        }
+      `}</style>
+    </section>
+  );
+};
+
+const Faculties: React.FC = () => {
+  return (
+    <div className="bg-white dark:bg-gray-800 min-h-screen">
+      <Navbar />
+      <Carousel />
+      <FacultyShowcaseSection />
+      <Footer />
+    </div>
+  );
+};
+
+export default Faculties;
+
 const Footer: React.FC = () => {
   return (
-    <footer className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-16 overflow-hidden">
+    <footer 
+      className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-16 overflow-hidden"
+      data-aos="fade-up"
+    >
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-yellow-500 to-red-500"></div>
 
       <div className="absolute inset-0 opacity-10">
@@ -517,11 +934,13 @@ const Footer: React.FC = () => {
       </div>
 
       <div className="max-w-6xl mx-auto py-12 px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1" data-aos="fade-right" data-aos-delay="200">
           <div className="flex items-center space-x-2 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-yellow-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">P</span>
-            </div>
+             <img 
+                src="/images/logo/logo.png" 
+                alt="Philtech GMA Logo" 
+                className="w-10 h-10 object-contain"
+              />
             <h2 className="text-2xl font-bold text-white">Philtech GMA</h2>
           </div>
           <p className="text-gray-300 mb-6 max-w-xs">
@@ -583,7 +1002,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div>
+        <div data-aos="fade-up" data-aos-delay="300">
           <h3 className="text-xl font-bold text-white mb-4">Quick Links</h3>
           <ul className="space-y-3">
             {[
@@ -605,40 +1024,17 @@ const Footer: React.FC = () => {
             ))}
           </ul>
         </div>
-
-        <div>
-          <h3 className="text-xl font-bold text-white mb-4">Our Services</h3>
-          <ul className="space-y-3">
-            {[
-              { href: "/web-development", label: "Web Development" },
-              { href: "/mobile-apps", label: "Mobile Applications" },
-              { href: "/cloud-solutions", label: "Cloud Solutions" },
-              { href: "/it-consulting", label: "IT Consulting" },
-              { href: "/digital-transformation", label: "Digital Transformation" },
-            ].map((link, i) => (
-              <li key={i}>
-                <a
-                  href={link.href}
-                  className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
-                >
-                  <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3 group-hover:bg-red-500 transition-colors"></span>
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
+        
+        <div data-aos="fade-up" data-aos-delay="400">
           <h3 className="text-xl font-bold text-white mb-4">Contact Us</h3>
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4">
             <div className="flex items-start">
               <svg className="w-5 h-5 text-yellow-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
               </svg>
               <div>
                 <p className="text-gray-300">Email us at</p>
-              <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
+                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -647,7 +1043,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Call us</p>
-              <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
+                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -660,51 +1056,29 @@ const Footer: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+        {/* Stay Updated Section - After Contact Us */}
+        <div data-aos="fade-left" data-aos-delay="500">
+          <div className="bg-white/5 p-4 rounded-lg border border-white/10 h-full">
             <h4 className="text-lg font-semibold text-white mb-2">Stay Updated</h4>
             <p className="text-gray-300 text-sm mb-3">Subscribe to our newsletter for the latest updates.</p>
-            <div className="flex">
+            <div className="relative">
               <input
                 type="email"
-                placeholder="Your email address"
-                className="flex-grow px-3 py-2 bg-white/10 border border-white/20 rounded-l text-white placeholder-gray-400 focus:outline-none focus:border-yellow-500"
+                placeholder="Your email"
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-500 pr-24"
               />
-              <button className="bg-gradient-to-r from-red-500 to-yellow-500 text-white px-4 py-2 rounded-r font-medium hover:opacity-90 transition-opacity">
+              <button className="absolute right-1 top-1 bottom-1 bg-gradient-to-r from-red-500 to-yellow-500 text-white px-4 rounded-md font-medium hover:opacity-90 transition-opacity text-sm">
                 Send
               </button>
             </div>
           </div>
         </div>
       </div>
-
-      <div className="border-t border-white/10 mt-8 pt-6 pb-4">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm mb-2 md:mb-0">
-            &copy; {new Date().getFullYear()} <span className="font-semibold text-gray-200">Philtech GMA</span>. All rights reserved.
-          </p>
-          <div className="flex gap-6 text-sm text-gray-400">
-            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-            <Link to="/sitemap" className="hover:text-white transition-colors">Sitemap</Link>
-          </div>
-        </div>
-      </div>
     </footer>
   );
 };
-
-const About: React.FC = () => {
-  return (
-    <div className="bg-white dark:bg-gray-800 min-h-screen">
-      <Navbar />
-      <Carousel />
-      <Footer />
-    </div>
-  );
-};
-
-export default About;
 
 export {
   Logo,

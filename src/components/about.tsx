@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight, X, Sun, Moon, User, ChevronDown } from "lucide-react";
-import { useDarkMode } from "../hooks/useDarkMode";
-import { useParallax } from "../hooks/Parallax";
+import { X, Sun, Moon, User, ChevronDown} from "lucide-react";
 import { useAOS } from "../hooks/useAOS";
 
 const Logo: React.FC = () => {
@@ -271,7 +269,38 @@ const Dropdown: React.FC<DropdownProps> = ({ title, items }) => {
     </div>
   );
 };
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
+// Dark Mode Hook
+export function useDarkMode(): [boolean, () => void] {
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const savedMode = window.localStorage.getItem("darkMode");
+      return savedMode ? JSON.parse(savedMode) : false;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (isDarkMode) {
+        document.documentElement.classList.add("dark");
+        window.localStorage.setItem("darkMode", JSON.stringify(true));
+      } else {
+        document.documentElement.classList.remove("dark");
+        window.localStorage.setItem("darkMode", JSON.stringify(false));
+      }
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode((prevMode: boolean) => !prevMode);
+  };
+
+  return [isDarkMode, toggleDarkMode];
+}
+
+// Main Carousel Component
 const Carousel: React.FC = () => {
   const slides = [
     { img: "/images/carousel-backgrounds/3.jpg" },
@@ -293,6 +322,7 @@ const Carousel: React.FC = () => {
   const isDragging = useRef<boolean>(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Intersection Observer for dots visibility
   useEffect(() => {
     const observer = new window.IntersectionObserver(
       ([entry]) => {
@@ -308,6 +338,7 @@ const Carousel: React.FC = () => {
     };
   }, []);
 
+  // Auto-slide interval
   useEffect(() => {
     const startInterval = () => {
       intervalRef.current = setInterval(() => {
@@ -325,6 +356,7 @@ const Carousel: React.FC = () => {
     };
   }, [isTransitioning, slides.length]);
 
+  // Typewriter effect
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
     let timeout: NodeJS.Timeout;
@@ -350,6 +382,21 @@ const Carousel: React.FC = () => {
     return () => clearTimeout(timeout);
   }, [typeIndex, isDeleting]);
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        handleSlideChange('prev');
+      } else if (e.key === 'ArrowRight') {
+        handleSlideChange('next');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isTransitioning]);
+
+  // Slide change handler
   const handleSlideChange = useCallback((direction: 'next' | 'prev') => {
     if (isTransitioning) return;
 
@@ -366,6 +413,7 @@ const Carousel: React.FC = () => {
     }, 300);
   }, [isTransitioning, slides.length]);
 
+  // Touch handlers
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
@@ -414,13 +462,24 @@ const Carousel: React.FC = () => {
         }
       }, 5000);
     }, 1000);
-  }, [handleSlideChange, isTransitioning]);
+  }, [handleSlideChange, isTransitioning, slides.length]);
+
+  // Go to specific slide
+  const goToSlide = (index: number) => {
+    if (!isTransitioning && index !== current) {
+      setIsTransitioning(true);
+      setCurrent(index);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
+    }
+  };
 
   return (
     <>
       <div 
         ref={carouselRef} 
-        className="w-full carousel-container relative overflow-hidden bg-gray-900"
+        className="w-full carousel-container relative overflow-hidden bg-gray-900 group"
       >
         <div className="relative w-full h-full">
           {slides.map((slide, index) => (
@@ -496,7 +555,7 @@ const Carousel: React.FC = () => {
                       ? 'bg-[#FFB302] w-6'
                       : 'bg-white/50 hover:bg-white/75'
                   }`}
-                  onClick={() => { if (!isTransitioning) setCurrent(index); }}
+                  onClick={() => goToSlide(index)}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
@@ -505,7 +564,7 @@ const Carousel: React.FC = () => {
 
           {/* Navigation Arrows */}
           <button
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
             onClick={() => handleSlideChange('prev')}
             aria-label="Previous slide"
           >
@@ -513,7 +572,7 @@ const Carousel: React.FC = () => {
           </button>
 
           <button
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
             onClick={() => handleSlideChange('next')}
             aria-label="Next slide"
           >
@@ -578,209 +637,392 @@ const Carousel: React.FC = () => {
 };
 
 const About: React.FC = () => {
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
+  const [expandedVideo, setExpandedVideo] = useState<boolean>(false);
+
   useAOS();
-  const [isDarkMode] = useDarkMode();
+
+  const facilities = [
+    { 
+      name: "Modern Library", 
+      description: "Fully-equipped library with vast collection of books, digital resources, and quiet study areas.",
+      image: "/images/facilities/library.jpg"
+    },
+    { 
+      name: "Computer Laboratories", 
+      description: "Advanced computer labs with latest technology and software for hands-on learning.",
+      image: "/images/facilities/computer-lab.jpg"
+    },
+    { 
+      name: "Science Laboratories", 
+      description: "Well-equipped labs for physics, chemistry, and biology experiments and research.",
+      image: "/images/facilities/science-lab.jpg"
+    },
+    { 
+      name: "Auditorium", 
+      description: "Spacious auditorium for events, seminars, and academic gatherings.",
+      image: "/images/facilities/auditorium.jpg"
+    },
+    { 
+      name: "Sports Complex", 
+      description: "Comprehensive sports facilities for physical education and extracurricular activities.",
+      image: "/images/facilities/sports-complex.jpg"
+    },
+    { 
+      name: "Student Lounge", 
+      description: "Comfortable spaces for students to relax, collaborate, and socialize.",
+      image: "/images/facilities/student-lounge.jpg"
+    }
+  ];
 
   return (
     <div className="bg-white dark:bg-gray-800 min-h-screen">
       <Navbar />
       <Carousel />
       
-      {/* About Section Content */}
-      <section className={`py-16 px-4 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <div className="container mx-auto max-w-4xl">
-          {/* Main Title */}
-          <div className="text-center mb-12" data-aos="fade-up">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-4">
-              About <span className="text-[#BC1F27]">Philtech College of GMA</span>
-            </h1>
-            <div className="w-24 h-1 bg-gradient-to-r from-[#BC1F27] to-[#FFB302] mx-auto mb-6" data-aos="fade-up" data-aos-delay="200"></div>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              A premier educational institution offering quality education in GMA, Cavite.
-            </p>
+      {/* Image Expansion Modal */}
+      {expandedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
+          <button
+            onClick={() => setExpandedImage(null)}
+            className="absolute top-4 right-4 text-white text-4xl bg-red-600 hover:bg-red-700 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 z-60"
+          >
+            ×
+          </button>
+          <div className="relative max-w-4xl max-h-full">
+            <img
+              src={expandedImage}
+              alt="Expanded view"
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
           </div>
+        </div>
+      )}
 
-          {/* School Information Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {/* School Name and Location */}
-            <div className={`p-6 rounded-2xl shadow-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} data-aos="zoom-in" data-aos-delay="300">
-              <div className="flex items-center mb-4">
-                <div className={`p-3 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} mr-4`}>
-                  <svg className="w-6 h-6 text-[#BC1F27]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-800 dark:text-white">School Name and Location</h3>
-              </div>
-              <p className="text-gray-600 dark:text-gray-300">
-                <strong>Philtech College of GMA</strong><br/>
-                GMA, Cavite, Philippines
-              </p>
-            </div>
-
-            {/* Year Established */}
-            <div className={`p-6 rounded-2xl shadow-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} data-aos="zoom-in" data-aos-delay="400">
-              <div className="flex items-center mb-4">
-                <div className={`p-3 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-yellow-50'} mr-4`}>
-                  <svg className="w-6 h-6 text-[#FFB302]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-800 dark:text-white">Year Established</h3>
-              </div>
-              <p className="text-gray-600 dark:text-gray-300">
-                <strong>Established in 2003</strong><br/>
-                20+ years of educational service
-              </p>
-            </div>
-
-            {/* School Type */}
-            <div className={`p-6 rounded-2xl shadow-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} data-aos="zoom-in" data-aos-delay="500">
-              <div className="flex items-center mb-4">
-                <div className={`p-3 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} mr-4`}>
-                  <svg className="w-6 h-6 text-[#781112]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/>
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-800 dark:text-white">School Type</h3>
-              </div>
-              <p className="text-gray-600 dark:text-gray-300">
-                <strong>Private Educational Institution</strong>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <span className="px-3 py-1 bg-[#BC1F27] text-white text-sm rounded-full">College</span>
-                  <span className="px-3 py-1 bg-[#FFB302] text-gray-800 text-sm rounded-full">Senior High School</span>
-                  <span className="px-3 py-1 bg-[#781112] text-white text-sm rounded-full">Technical-Vocational</span>
-                </div>
-              </p>
+      {/* Video Expansion Modal */}
+      {expandedVideo && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
+          <button
+            onClick={() => setExpandedVideo(false)}
+            className="absolute top-4 right-4 text-white text-4xl bg-red-600 hover:bg-red-700 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 z-60"
+          >
+            ×
+          </button>
+          <div className="relative max-w-4xl w-full">
+            <div className="aspect-w-16 aspect-h-9">
+              <iframe
+                src="https://www.youtube.com/embed/VIDEO_ID_HERE"
+                title="Philtech Hymn"
+                className="w-full h-96 md:h-[500px] rounded-lg"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Detailed Information */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left Column - School History */}
-            <div data-aos="fade-right" data-aos-delay="300">
-              <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">History of Philtech GMA</h2>
-              <div className="space-y-4">
-                <p className="text-gray-600 dark:text-gray-300">
-                  <strong>Philtech College of GMA</strong> was established in <strong>2003</strong> as a private higher education institution in GMA, Cavite.
-                </p>
-                <p className="text-gray-600 dark:text-gray-300">
-                  From humble beginnings, the school has grown and become a premier destination for quality education in the region.
-                </p>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Today, Philtech GMA offers <strong>College, Senior High School, and Technical-Vocational</strong> programs designed to prepare students for global competition.
-                </p>
-              </div>
+      {/* New About Details Section */}
+      <section className="max-w-6xl mx-auto px-6 py-16 text-gray-900 dark:text-gray-100">
+        {/* Hero Section */}
+        <div className="text-center mb-16" data-aos="fade-up">
+          <h2 className="text-5xl font-bold mb-6 text-[#BC1F27] dark:text-[#FFB302]">
+            About Philtech GMA
+          </h2>
+          <div className="w-24 h-1 bg-[#BC1F27] dark:bg-[#FFB302] mx-auto mb-8" data-aos="fade-up" data-aos-delay="200"></div>
+        </div>
+
+        {/* Main Content */}
+        <div className="space-y-8 max-w-4xl mx-auto text-lg leading-relaxed">
+          <p className="text-center text-xl text-gray-700 dark:text-gray-300 font-light" data-aos="fade-up" data-aos-delay="300">
+            Philtech GMA is a premier educational institution committed to fostering academic excellence and innovation. Established with the vision to empower students with the skills and knowledge needed to succeed in a rapidly evolving technological landscape.
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-8 mt-12">
+            <div className="space-y-6">
+              <p className="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300" 
+                 data-aos="fade-right" data-aos-delay="400">
+                Our mission is to provide quality education that nurtures critical thinking, creativity, and ethical leadership. We strive to create a supportive and inclusive environment where students can thrive academically and personally.
+              </p>
+              <p className="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300" 
+                 data-aos="fade-right" data-aos-delay="500">
+                With state-of-the-art facilities, experienced faculty, and a vibrant campus life, Philtech GMA is dedicated to producing graduates who are not only proficient in their fields but also socially responsible and globally competitive.
+              </p>
             </div>
-
-            {/* Right Column - School Image */}
-            <div data-aos="fade-left" data-aos-delay="400">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img 
-                  src="/images/about/school-campus.jpg" 
-                  alt="Philtech GMA Campus"
-                  className="w-full h-64 object-cover transition-transform duration-500 hover:scale-105"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`;
-                  }}
+            <div className="flex items-center justify-center" data-aos="fade-left" data-aos-delay="400">
+              <div 
+                className="relative group cursor-pointer"
+                onClick={() => setExpandedImage("/images/campuses/santa-rosa-campus.jpg")}
+              >
+                <img
+                  src="/images/campuses/santa-rosa-campus.jpg"
+                  alt="Santa Rosa Campus"
+                  className="w-full max-w-md rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform group-hover:scale-105"
                 />
-                <div className={`absolute inset-0 bg-gradient-to-t ${isDarkMode ? 'from-gray-900/80' : 'from-gray-800/80'} to-transparent`}></div>
-                <div className="absolute bottom-4 left-4 text-white">
-                  <h3 className="text-xl font-bold">Modern Philtech GMA Campus</h3>
-                  <p className="text-gray-200">GMA, Cavite</p>
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-2xl flex items-center justify-center">
+                  <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black bg-opacity-50 px-3 py-1 rounded-lg">
+                    Click to expand
+                  </span>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Mission and Vision */}
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className={`p-8 rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-lg'} border-l-4 border-[#BC1F27]`} data-aos="fade-up" data-aos-delay="500">
-              <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">📜 Mission</h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                To provide quality education that prepares students for global success through academic excellence, technological innovation, and character formation.
-              </p>
-            </div>
-
-            <div className={`p-8 rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-lg'} border-l-4 border-[#FFB302]`} data-aos="fade-up" data-aos-delay="600">
-              <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">👁️ Vision</h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                To be the leading educational institution producing globally competitive professionals ready to face the challenges of industry and society.
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="mt-12 text-center" data-aos="fade-up" data-aos-delay="700">
-            <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-8">Success in Numbers</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-md'}`}>
-                <div className="text-3xl font-bold text-[#BC1F27] mb-2">20+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Years of Service</div>
-              </div>
-              <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-md'}`}>
-                <div className="text-3xl font-bold text-[#FFB302] mb-2">50+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Expert Faculty</div>
-              </div>
-              <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-md'}`}>
-                <div className="text-3xl font-bold text-[#781112] mb-2">1000+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Students</div>
-              </div>
-              <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-md'}`}>
-                <div className="text-3xl font-bold text-[#BC1F27] mb-2">15+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Courses Offered</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Core Values */}
-          <div className="mt-16" data-aos="fade-up" data-aos-delay="800">
-            <h3 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-8">Our Core Values</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className={`text-center p-6 rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-lg'}`}>
-                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} mb-4`}>
-                  <svg className="w-8 h-8 text-[#BC1F27]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                  </svg>
-                </div>
-                <h4 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Excellence</h4>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Commitment to the highest standards of academic quality and professional practice.
-                </p>
-              </div>
-              
-              <div className={`text-center p-6 rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-lg'}`}>
-                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-yellow-50'} mb-4`}>
-                  <svg className="w-8 h-8 text-[#FFB302]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M23 12l-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68L23 12zm-10 5h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                  </svg>
-                </div>
-                <h4 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Innovation</h4>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Embracing technological advancements and creative solutions for education.
-                </p>
-              </div>
-              
-              <div className={`text-center p-6 rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow-lg'}`}>
-                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} mb-4`}>
-                  <svg className="w-8 h-8 text-[#781112]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                </div>
-                <h4 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Integrity</h4>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Upholding ethical standards and building character among students and faculty.
-                </p>
               </div>
             </div>
           </div>
         </div>
-      </section>
 
+        {/* Philtech Hymn Section */}
+        <div className="mt-20">
+          <div className="text-center mb-12" data-aos="fade-up">
+            <h3 className="text-4xl font-bold text-[#BC1F27] dark:text-[#FFB302]">Philtech Hymn</h3>
+            <div className="w-20 h-1 bg-[#BC1F27] dark:bg-[#FFB302] mx-auto mt-4" data-aos="fade-up" data-aos-delay="200"></div>
+            <p className="text-xl text-gray-600 dark:text-gray-400 mt-4 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="300">
+              Listen to our institutional hymn that represents our spirit and values
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto">
+            <div 
+              className="relative group cursor-pointer bg-gray-900 rounded-2xl overflow-hidden shadow-2xl transform hover:scale-105 transition-all duration-300"
+              onClick={() => setExpandedVideo(true)}
+              data-aos="zoom-in"
+              data-aos-delay="400"
+            >
+              {/* Video Thumbnail */}
+              <div className="aspect-w-16 aspect-h-9">
+                <img
+                  src="/images/philtech-hymn-thumbnail.jpg"
+                  alt="Philtech Hymn"
+                  className="w-full h-64 md:h-80 object-cover opacity-90 group-hover:opacity-70 transition-opacity duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-center justify-center">
+                  <div className="text-center text-white">
+                    <div className="w-20 h-20 bg-[#BC1F27] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </div>
+                    <h4 className="text-2xl font-bold mb-2">Philtech Hymn</h4>
+                    <p className="text-gray-300">Click to play the official hymn</p>
+                    <div className="mt-4 flex items-center justify-center space-x-2 text-sm">
+                      <span className="bg-[#BC1F27] px-3 py-1 rounded-full">Official Video</span>
+                      <span className="bg-gray-600 px-3 py-1 rounded-full">2:45</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Hymn Lyrics */}
+            <div className="mt-8 bg-white dark:bg-gray-700 rounded-2xl p-8 shadow-lg" data-aos="fade-up" data-aos-delay="500">
+              <h4 className="text-2xl font-bold text-center mb-6 text-[#BC1F27] dark:text-[#FFB302]">Lyrics</h4>
+              <div className="grid md:grid-cols-2 gap-6 text-gray-700 dark:text-gray-300">
+                <div className="space-y-4">
+                  <p className="font-semibold text-lg">Verse 1:</p>
+                  <p className="leading-relaxed">
+                    Hail to thee, our dear Philtech<br/>
+                    Guiding light in education's path<br/>
+                    Where knowledge blooms and wisdom grows<br/>
+                    Preparing us for what life bestows
+                  </p>
+                  
+                  <p className="font-semibold text-lg mt-6">Chorus:</p>
+                  <p className="leading-relaxed text-[#BC1F27] dark:text-[#FFB302] font-semibold">
+                    Oh Philtech, we sing to thee<br/>
+                    Forever in our hearts you'll be<br/>
+                    With honor, truth, and dignity<br/>
+                    Our alma mater strong and free
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <p className="font-semibold text-lg">Verse 2:</p>
+                  <p className="leading-relaxed">
+                    Through halls of learning we shall tread<br/>
+                    With visions bright and purpose spread<br/>
+                    Innovation our guiding star<br/>
+                    Preparing us to travel far
+                  </p>
+                  
+                  <p className="font-semibold text-lg mt-6">Bridge:</p>
+                  <p className="leading-relaxed">
+                    In every field, in every art<br/>
+                    Philtech's spirit plays its part<br/>
+                    Together we shall rise above<br/>
+                    Bound by knowledge, light, and love
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Vision and Mission Cards Section */}
+        <div className="mt-20">
+          <div className="flex flex-col lg:flex-row justify-center items-stretch gap-8 max-w-5xl mx-auto">
+            {/* Vision Card */}
+            <div className="flex-1 group cursor-pointer"
+                 data-aos="flip-left"
+                 data-aos-delay="300"
+                 onClick={() => {
+                   const el = document.getElementById('vision-card');
+                   if (el) {
+                     el.classList.toggle('expanded');
+                   }
+                 }}>
+              <div className="h-full bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform group-hover:scale-105 border border-gray-100 dark:border-gray-600"
+                   id="vision-card">
+                <div className="p-8 h-full flex flex-col">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-[#BC1F27] dark:bg-[#FFB302] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <span className="text-2xl">👁️</span>
+                    </div>
+                    <h3 className="text-3xl font-bold text-[#BC1F27] dark:text-[#FFB302]">Our Vision</h3>
+                  </div>
+                  <p className="text-lg leading-relaxed text-center flex-1 flex items-center">
+                    To be a leading educational institution that inspires and equips students to become innovative leaders and contributors to society, driving technological advancement and sustainable development in the global community.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Mission Card */}
+            <div className="flex-1 group cursor-pointer"
+                 data-aos="flip-right"
+                 data-aos-delay="400"
+                 onClick={() => {
+                   const el = document.getElementById('mission-card');
+                   if (el) {
+                     el.classList.toggle('expanded');
+                   }
+                 }}>
+              <div className="h-full bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform group-hover:scale-105 border border-gray-100 dark:border-gray-600"
+                   id="mission-card">
+                <div className="p-8 h-full flex flex-col">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-[#BC1F27] dark:bg-[#FFB302] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <span className="text-2xl">🎯</span>
+                    </div>
+                    <h3 className="text-3xl font-bold text-[#BC1F27] dark:text-[#FFB302]">Our Mission</h3>
+                  </div>
+                  <p className="text-lg leading-relaxed text-center flex-1 flex items-center">
+                    To deliver comprehensive, high-quality education through innovative teaching methods, cutting-edge technology, and a commitment to excellence. We aim to develop well-rounded individuals who are prepared to meet the challenges of the modern world.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <style>{`
+          #vision-card.expanded, #mission-card.expanded {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 90vw;
+            max-width: 600px;
+            height: auto;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translate(-50%, -50%) scale(1.05);
+            z-index: 1000;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: none !important;
+          }
+          .dark #vision-card.expanded, .dark #mission-card.expanded {
+            background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+          }
+          #vision-card.expanded p, #mission-card.expanded p {
+            font-size: 1.125rem;
+          }
+          #vision-card.expanded h3, #mission-card.expanded h3 {
+            font-size: 2rem;
+          }
+          /* Overlay for expanded card */
+          #vision-card.expanded::before, #mission-card.expanded::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: -1;
+          }
+        `}</style>
+
+        {/* Core Values Section */}
+        <div className="mt-20">
+          <div className="text-center mb-12" data-aos="fade-up">
+            <h3 className="text-4xl font-bold text-[#BC1F27] dark:text-[#FFB302]">Our Core Values</h3>
+            <div className="w-20 h-1 bg-[#BC1F27] dark:bg-[#FFB302] mx-auto mt-4" data-aos="fade-up" data-aos-delay="200"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {[
+              { icon: "🎓", title: "Excellence", description: "We strive for the highest standards in education and personal development." },
+              { icon: "🤝", title: "Integrity", description: "We uphold honesty, ethics, and accountability in all our endeavors." },
+              { icon: "🌍", title: "Innovation", description: "We embrace creativity and forward-thinking to drive progress and change." },
+              { icon: "🌟", title: "Quality", description: "Committed to delivering exceptional education and student experience." },
+              { icon: "💡", title: "Creativity", description: "Fostering innovative thinking and problem-solving skills." },
+              { icon: "🏆", title: "Leadership", description: "Developing future leaders with strong character and vision." }
+            ].map((value, index) => (
+              <div 
+                key={index} 
+                className="group text-center p-8 bg-white dark:bg-gray-700 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-gray-100 dark:border-gray-600"
+                data-aos="fade-up"
+                data-aos-delay={300 + (index * 100)}
+              >
+                <div className="text-5xl mb-4 transform group-hover:scale-110 transition-transform duration-300">{value.icon}</div>
+                <h4 className="text-2xl font-bold mb-3 text-gray-800 dark:text-white">{value.title}</h4>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{value.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Facilities Section */}
+        <div className="mt-20">
+          <div className="text-center mb-12" data-aos="fade-up">
+            <h3 className="text-4xl font-bold text-[#BC1F27] dark:text-[#FFB302]">Our Facilities</h3>
+            <div className="w-20 h-1 bg-[#BC1F27] dark:bg-[#FFB302] mx-auto mt-4" data-aos="fade-up" data-aos-delay="200"></div>
+            <p className="text-xl text-gray-600 dark:text-gray-400 mt-4 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="300">
+              State-of-the-art facilities designed to enhance learning and provide the best educational experience
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {facilities.map((facility, index) => (
+              <div 
+                key={index} 
+                className="group bg-white dark:bg-gray-700 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:scale-105"
+                data-aos="zoom-in"
+                data-aos-delay={300 + (index * 100)}
+              >
+                <div 
+                  className="relative overflow-hidden cursor-pointer"
+                  onClick={() => setExpandedImage(facility.image)}
+                >
+                  <img
+                    src={facility.image}
+                    alt={facility.name}
+                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
+                    <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black bg-opacity-50 px-3 py-1 rounded-lg">
+                      Click to expand
+                    </span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h4 className="text-xl font-bold mb-2 text-gray-800 dark:text-white">{facility.name}</h4>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{facility.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       <Footer />
     </div>
   );
 };
+
+export default About;
+
 
 const Footer: React.FC = () => {
   return (
@@ -941,8 +1183,6 @@ const Footer: React.FC = () => {
     </footer>
   );
 };
-
-export default About;
 
 export {
   Logo,

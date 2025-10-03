@@ -14,9 +14,15 @@ export function useDarkMode(): [boolean, () => void] {
       if (isDarkMode) {
         document.documentElement.classList.add("dark");
         window.localStorage.setItem("darkMode", JSON.stringify(true));
+        
+        // Apply dark mode overlay styles
+        document.documentElement.style.setProperty('--overlay-color', 'rgba(0, 0, 0, 0.7)');
       } else {
         document.documentElement.classList.remove("dark");
         window.localStorage.setItem("darkMode", JSON.stringify(false));
+        
+        // Apply light mode overlay styles (maroon)
+        document.documentElement.style.setProperty('--overlay-color', 'rgba(123, 17, 18, 0.7)');
       }
     }
   }, [isDarkMode]);

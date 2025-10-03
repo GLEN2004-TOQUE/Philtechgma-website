@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Sun, Moon, User, ChevronDown } from "lucide-react";
-import { useDarkMode } from "../hooks/useDarkMode";
+import { X, Sun, Moon, User, ChevronDown} from "lucide-react";
 
 const Logo: React.FC = () => {
   return (
@@ -77,22 +76,22 @@ const NavLinks: React.FC = () => {
             </button>
             {showCollege && (
               <div className="ml-0 md:ml-6 mt-1 bg-gray-50 dark:bg-gray-900 rounded shadow-inner">
-                <Link
-                  to="/programs/college/regular"
-                  className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  Regular
-                </Link>
-                <Link
-                  to="/programs/college/sunday"
-                  className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  Sunday
-                </Link>
+            <Link
+              to="/regular"
+              className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              Regular
+            </Link>
+            <Link
+              to="/sunday"
+              className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              Sunday
+            </Link>
               </div>
             )}
             <Link
-              to="/programs/senior"
+              to="/senior-high"
               className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white"
             >
               Senior High
@@ -179,7 +178,7 @@ const Navbar: React.FC = () => {
               : <Moon size={20} className="text-white group-hover:text-[goldenrod]" />}
           </button>
           <Link
-            to="/login"
+            to="/dblogin/login"
             className="transition-colors group"
             aria-label="Login"
           >
@@ -192,8 +191,8 @@ const Navbar: React.FC = () => {
               aria-label="Toggle menu"
             >
               {isMenuOpen
-                ? <X size={24} className="text-white group-hover:text-[goldenrod]" />
-                : <Menu size={24} className="text-white group-hover:text-[goldenrod]" />}
+                ? <X size={20} className="text-white group-hover:text-[goldenrod]" />
+                : <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-menu text-white group-hover:text-[goldenrod]" aria-hidden="true"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>}
             </button>
           </div>
         </div>
@@ -269,7 +268,38 @@ const Dropdown: React.FC<DropdownProps> = ({ title, items }) => {
     </div>
   );
 };
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
+// Dark Mode Hook
+export function useDarkMode(): [boolean, () => void] {
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const savedMode = window.localStorage.getItem("darkMode");
+      return savedMode ? JSON.parse(savedMode) : false;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (isDarkMode) {
+        document.documentElement.classList.add("dark");
+        window.localStorage.setItem("darkMode", JSON.stringify(true));
+      } else {
+        document.documentElement.classList.remove("dark");
+        window.localStorage.setItem("darkMode", JSON.stringify(false));
+      }
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode((prevMode: boolean) => !prevMode);
+  };
+
+  return [isDarkMode, toggleDarkMode];
+}
+
+// Main Carousel Component
 const Carousel: React.FC = () => {
   const slides = [
     { img: "/images/carousel-backgrounds/3.jpg" },
@@ -283,6 +313,7 @@ const Carousel: React.FC = () => {
   const [typeIndex, setTypeIndex] = useState<number>(0);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const [showDots, setShowDots] = useState<boolean>(true);
+  const [isDarkMode] = useDarkMode(); // Kunin ang dark mode state
 
   const carouselRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
@@ -290,6 +321,7 @@ const Carousel: React.FC = () => {
   const isDragging = useRef<boolean>(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Intersection Observer for dots visibility
   useEffect(() => {
     const observer = new window.IntersectionObserver(
       ([entry]) => {
@@ -305,6 +337,7 @@ const Carousel: React.FC = () => {
     };
   }, []);
 
+  // Auto-slide interval
   useEffect(() => {
     const startInterval = () => {
       intervalRef.current = setInterval(() => {
@@ -320,8 +353,9 @@ const Carousel: React.FC = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isTransitioning]);
+  }, [isTransitioning, slides.length]);
 
+  // Typewriter effect
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
     let timeout: NodeJS.Timeout;
@@ -347,6 +381,21 @@ const Carousel: React.FC = () => {
     return () => clearTimeout(timeout);
   }, [typeIndex, isDeleting]);
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        handleSlideChange('prev');
+      } else if (e.key === 'ArrowRight') {
+        handleSlideChange('next');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isTransitioning]);
+
+  // Slide change handler
   const handleSlideChange = useCallback((direction: 'next' | 'prev') => {
     if (isTransitioning) return;
 
@@ -361,8 +410,9 @@ const Carousel: React.FC = () => {
     setTimeout(() => {
       setIsTransitioning(false);
     }, 300);
-  }, [isTransitioning]);
+  }, [isTransitioning, slides.length]);
 
+  // Touch handlers
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
@@ -411,43 +461,75 @@ const Carousel: React.FC = () => {
         }
       }, 5000);
     }, 1000);
-  }, [handleSlideChange, isTransitioning]);
+  }, [handleSlideChange, isTransitioning, slides.length]);
+
+  // Go to specific slide
+  const goToSlide = (index: number) => {
+    if (!isTransitioning && index !== current) {
+      setIsTransitioning(true);
+      setCurrent(index);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
+    }
+  };
 
   return (
     <>
-      <div ref={carouselRef} className="w-full h-[70vh] min-h-[70vh] max-h-[70vh] rounded-none overflow-hidden shadow-2xl bg-white dark:bg-gray-900 relative">
-        <div className="relative w-full h-full flex items-center justify-center">
+      <div 
+        ref={carouselRef} 
+        className="w-full carousel-container relative overflow-hidden bg-gray-900 group"
+      >
+        <div className="relative w-full h-full">
           {slides.map((slide, index) => (
-            <img
+            <div
               key={index}
-              src={slide.img}
-              alt={`Slide ${index + 1}`}
-              className={`absolute inset-0 object-cover w-full h-full transition-opacity duration-500 ease-in-out select-none ${
+              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
                 index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
               }`}
-              draggable="false"
-              style={{
-                pointerEvents: 'none',
-                WebkitTouchCallout: 'none',
-                WebkitUserSelect: 'none',
-                userSelect: 'none'
-              }}
-            />
+            >
+              {/* Background Image Container */}
+              <div className="absolute inset-0">
+                <img
+                  src={slide.img}
+                  alt={`Slide ${index + 1}`}
+                  className="carousel-image w-full h-full object-cover object-center"
+                  draggable="false"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://picsum.photos/1920/1080?random=${index}`;
+                  }}
+                />
+              </div>
+
+              {/* Background Overlay - nagbabago base sa dark mode */}
+              <div 
+                className={`absolute inset-0 pointer-events-none z-20 ${
+                  isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
+                }`}
+              />
+
+              {/* Content */}
+              <div className="absolute inset-0 flex items-center justify-center z-30">
+                <div className="text-center px-4 max-w-4xl mx-auto">
+                  <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
+                    <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
+                      WELCOME TO
+                    </span>
+                    <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
+                      PHILTECH GMA
+                    </span>
+                    <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
+                          style={{paddingRight: '5px'}}>
+                      {typewriterText}
+                      <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
 
-          <div className="absolute inset-0 bg-black/70 pointer-events-none z-20" />
-
-          <div className="absolute bottom-0 left-0 right-0 px-1 xs:px-2 sm:px-4 pb-4 xs:pb-6 sm:pb-12 flex flex-col items-center justify-center text-center w-full h-full z-30">
-            <div className="flex flex-col items-center justify-center w-full animate-fade-in-up mt-2 xs:mt-4 sm:mt-8">
-              <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">WELCOME TO</span>
-              <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">PHILTECH GMA</span>
-              <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" style={{paddingRight: '5px'}}>
-                {typewriterText}
-                <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
-              </span>
-            </div>
-          </div>
-
+          {/* Touch Area for Mobile Swiping */}
           <div
             className="absolute inset-0 z-40 touch-pan-y"
             onTouchStart={handleTouchStart}
@@ -461,6 +543,7 @@ const Carousel: React.FC = () => {
             }}
           />
 
+          {/* Navigation Dots */}
           {showDots && (
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50">
               {slides.map((_, index) => (
@@ -471,16 +554,62 @@ const Carousel: React.FC = () => {
                       ? 'bg-[#FFB302] w-6'
                       : 'bg-white/50 hover:bg-white/75'
                   }`}
-                  onClick={(_e) => { if (!isTransitioning) setCurrent(index); }}
+                  onClick={() => goToSlide(index)}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
             </div>
           )}
+
+          {/* Navigation Arrows */}
+          <button
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
+            onClick={() => handleSlideChange('prev')}
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={24} />
+          </button>
+
+          <button
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
+            onClick={() => handleSlideChange('next')}
+            aria-label="Next slide"
+          >
+            <ChevronRight size={24} />
+          </button>
         </div>
       </div>
 
       <style>{`
+        .carousel-container {
+          /* Para sa desktop - full viewport height */
+          height: 100vh;
+          min-height: 500px;
+        }
+
+        @media (max-width: 768px) {
+          .carousel-container {
+            height: 70vh;
+            min-height: 400px;
+            max-height: 600px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .carousel-container {
+            height: 60vh;
+            min-height: 350px;
+            max-height: 500px;
+          }
+        }
+
+        .carousel-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
+        }
+
         @keyframes blink {
           0%, 50% { opacity: 1; }
           51%, 100% { opacity: 0; }
@@ -506,9 +635,24 @@ const Carousel: React.FC = () => {
   );
 };
 
+const Developer: React.FC = () => {
+  return (
+    <div className="bg-white dark:bg-gray-800 min-h-screen">
+      <Navbar />
+      <Carousel />
+      <Footer />
+    </div>
+  );
+};
+
+export default Developer;
+
 const Footer: React.FC = () => {
   return (
-    <footer className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-16 overflow-hidden">
+    <footer 
+      className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-16 overflow-hidden"
+      data-aos="fade-up"
+    >
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-yellow-500 to-red-500"></div>
 
       <div className="absolute inset-0 opacity-10">
@@ -517,11 +661,13 @@ const Footer: React.FC = () => {
       </div>
 
       <div className="max-w-6xl mx-auto py-12 px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1" data-aos="fade-right" data-aos-delay="200">
           <div className="flex items-center space-x-2 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-yellow-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">P</span>
-            </div>
+             <img 
+                src="/images/logo/logo.png" 
+                alt="Philtech GMA Logo" 
+                className="w-10 h-10 object-contain"
+              />
             <h2 className="text-2xl font-bold text-white">Philtech GMA</h2>
           </div>
           <p className="text-gray-300 mb-6 max-w-xs">
@@ -583,7 +729,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div>
+        <div data-aos="fade-up" data-aos-delay="300">
           <h3 className="text-xl font-bold text-white mb-4">Quick Links</h3>
           <ul className="space-y-3">
             {[
@@ -605,40 +751,17 @@ const Footer: React.FC = () => {
             ))}
           </ul>
         </div>
-
-        <div>
-          <h3 className="text-xl font-bold text-white mb-4">Our Services</h3>
-          <ul className="space-y-3">
-            {[
-              { href: "/web-development", label: "Web Development" },
-              { href: "/mobile-apps", label: "Mobile Applications" },
-              { href: "/cloud-solutions", label: "Cloud Solutions" },
-              { href: "/it-consulting", label: "IT Consulting" },
-              { href: "/digital-transformation", label: "Digital Transformation" },
-            ].map((link, i) => (
-              <li key={i}>
-                <a
-                  href={link.href}
-                  className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
-                >
-                  <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3 group-hover:bg-red-500 transition-colors"></span>
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
+        
+        <div data-aos="fade-up" data-aos-delay="400">
           <h3 className="text-xl font-bold text-white mb-4">Contact Us</h3>
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4">
             <div className="flex items-start">
               <svg className="w-5 h-5 text-yellow-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
               </svg>
               <div>
                 <p className="text-gray-300">Email us at</p>
-              <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
+                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -647,7 +770,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Call us</p>
-              <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
+                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -660,51 +783,29 @@ const Footer: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+        {/* Stay Updated Section - After Contact Us */}
+        <div data-aos="fade-left" data-aos-delay="500">
+          <div className="bg-white/5 p-4 rounded-lg border border-white/10 h-full">
             <h4 className="text-lg font-semibold text-white mb-2">Stay Updated</h4>
             <p className="text-gray-300 text-sm mb-3">Subscribe to our newsletter for the latest updates.</p>
-            <div className="flex">
+            <div className="relative">
               <input
                 type="email"
-                placeholder="Your email address"
-                className="flex-grow px-3 py-2 bg-white/10 border border-white/20 rounded-l text-white placeholder-gray-400 focus:outline-none focus:border-yellow-500"
+                placeholder="Your email"
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-500 pr-24"
               />
-              <button className="bg-gradient-to-r from-red-500 to-yellow-500 text-white px-4 py-2 rounded-r font-medium hover:opacity-90 transition-opacity">
+              <button className="absolute right-1 top-1 bottom-1 bg-gradient-to-r from-red-500 to-yellow-500 text-white px-4 rounded-md font-medium hover:opacity-90 transition-opacity text-sm">
                 Send
               </button>
             </div>
           </div>
         </div>
       </div>
-
-      <div className="border-t border-white/10 mt-8 pt-6 pb-4">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm mb-2 md:mb-0">
-            &copy; {new Date().getFullYear()} <span className="font-semibold text-gray-200">Philtech GMA</span>. All rights reserved.
-          </p>
-          <div className="flex gap-6 text-sm text-gray-400">
-            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-            <Link to="/sitemap" className="hover:text-white transition-colors">Sitemap</Link>
-          </div>
-        </div>
-      </div>
     </footer>
   );
 };
-
-const About: React.FC = () => {
-  return (
-    <div className="bg-white dark:bg-gray-800 min-h-screen">
-      <Navbar />
-      <Carousel />
-      <Footer />
-    </div>
-  );
-};
-
-export default About;
 
 export {
   Logo,

@@ -92,7 +92,7 @@ const NavLinks: React.FC = () => {
               </div>
             )}
             <Link
-              to="/senior-high"
+              to="/seniorhigh"
               className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white"
             >
               Senior High

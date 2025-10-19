@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { X, Sun, Moon, User, ChevronDown} from "lucide-react";
+import { X, Sun, Moon, User, ChevronDown, ClipboardList, FileText, CreditCard, Users, GraduationCap, MessageSquare} from "lucide-react";
+import { useAOS } from "../hooks/useAOS";
 
 const Logo: React.FC = () => {
   return (
@@ -91,7 +92,7 @@ const NavLinks: React.FC = () => {
               </div>
             )}
             <Link
-              to="/senior-high"
+              to="/seniorhigh"
               className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white"
             >
               Senior High
@@ -635,89 +636,192 @@ const Carousel: React.FC = () => {
   );
 };
 
+// Enhanced Enrollment Process Component
 const EnrollmentProcess: React.FC = () => {
+  useAOS();
+
+  const processSteps = {
+    freshmen: [
+      { icon: <User size={24} />, text: "INQUIRE TO ADMISSION OFFICE" },
+      { icon: <ClipboardList size={24} />, text: "PROCEED TO REGISTRATION OFFICE" },
+      { icon: <FileText size={24} />, text: "SUBMIT ALL AVAILABLE REQUIREMENTS TO RECORD OFFICE" },
+      { icon: <CreditCard size={24} />, text: "GET YOUR STATEMENT OF ACCOUNT TO ACCOUNTING OR RECEPTIONIST" }
+    ],
+    seniorHigh: [
+      { icon: <User size={24} />, text: "INQUIRE TO ADMISSION OFFICE" },
+      { icon: <ClipboardList size={24} />, text: "PROCEED TO REGISTRATION OFFICE" },
+      { icon: <FileText size={24} />, text: "SUBMIT ALL AVAILABLE REQUIREMENTS TO RECORD OFFICE" },
+      { icon: <Users size={24} />, text: "PROCEED TO ORIENTATION ROOM" },
+      { icon: <CreditCard size={24} />, text: "GET YOUR STATEMENT OF ACCOUNT TO ACCOUNTING OR RECEPTIONIST" }
+    ],
+    regular: [
+      { icon: <FileText size={24} />, text: "ALWAYS BRING YOUR FORMS UPON ENTERING THE ADMIN OFFICE" },
+      { icon: <CreditCard size={24} />, text: "PROCEED TO ADMIN OFFICER FOR PAYMENT / RECEPTIONIST OR ACCOUNTING" },
+      { icon: <GraduationCap size={24} />, text: "FOR RECORDS CONCERN PROCEED TO REGISTRAR OFFICE" },
+      { icon: <MessageSquare size={24} />, text: "FOR COMPLAINT PROCEED TO GUIDANCE OFFICE" }
+    ]
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800 min-h-screen">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 min-h-screen">
       <Navbar />
       <Carousel />
-      <section className="py-16 px-4 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white">ENROLLMENT PROCESS</h1>
+      
+      <section className="py-20 px-4 bg-transparent relative overflow-hidden">
+        {/* Background Decorations */}
+        <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-br from-[#FFD700]/10 to-[#BC1F27]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-br from-[#BC1F27]/10 to-[#FFD700]/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div 
+            className="text-center mb-16"
+            data-aos="fade-up"
+          >
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-[#7b1112] to-[#BC1F27] dark:from-[#FFD700] dark:to-[#FFB302] bg-clip-text text-transparent mb-4">
+              ENROLLMENT PROCESS
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Follow these simple steps to begin your educational journey with us. We're here to guide you every step of the way.
+            </p>
+          </div>
 
-          {/* Incoming Freshmen College */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-semibold text-center mb-8 text-gray-800 dark:text-gray-200">INCOMING FRESHMEN COLLEGE</h2>
-            <div className="flex flex-col items-center space-y-4">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center max-w-md border border-gray-200 dark:border-gray-700">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">INQUIRE TO<br/>ADMISSION OFFICE</p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            {/* Incoming Freshmen College */}
+            <div 
+              className="relative group"
+              data-aos="fade-up"
+              data-aos-delay="100"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#7b1112] to-[#BC1F27] rounded-3xl blur-lg opacity-30 group-hover:opacity-50 transition-all duration-500"></div>
+              <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-500 group-hover:scale-105">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#7b1112] to-[#BC1F27] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <GraduationCap className="text-white" size={28} />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">INCOMING FRESHMEN COLLEGE</h2>
+                </div>
+                <div className="space-y-6">
+                  {processSteps.freshmen.map((step, index) => (
+                    <div 
+                      key={index}
+                      className="flex items-start space-x-4 group/item"
+                      data-aos="fade-right"
+                      data-aos-delay={200 + index * 100}
+                    >
+                      <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#FFD700] to-[#FFB302] rounded-xl flex items-center justify-center shadow-lg group-hover/item:scale-110 transition-transform duration-300">
+                        <div className="text-white">
+                          {step.icon}
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-2">
+                        <p className="text-gray-700 dark:text-gray-300 font-medium leading-relaxed">
+                          {step.text}
+                        </p>
+                      </div>
+                      
+                    </div>
+                  ))}
+                </div>
               </div>
-              <ChevronDown className="text-gray-500" size={32} />
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center max-w-md border border-gray-200 dark:border-gray-700">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">PROCEED TO<br/>REGISTRATION OFFICE</p>
+            </div>
+
+            {/* Senior High Incoming Students */}
+            <div 
+              className="relative group"
+              data-aos="fade-up"
+              data-aos-delay="200"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FFB302] to-[#FFD700] rounded-3xl blur-lg opacity-30 group-hover:opacity-50 transition-all duration-500"></div>
+              <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-500 group-hover:scale-105">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#FFB302] to-[#FFD700] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <Users className="text-white" size={28} />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">SENIOR HIGH INCOMING STUDENTS</h2>
+                </div>
+                <div className="space-y-6">
+                  {processSteps.seniorHigh.map((step, index) => (
+                    <div 
+                      key={index}
+                      className="flex items-start space-x-4 group/item"
+                      data-aos="fade-right"
+                      data-aos-delay={300 + index * 100}
+                    >
+                      <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#7b1112] to-[#BC1F27] rounded-xl flex items-center justify-center shadow-lg group-hover/item:scale-110 transition-transform duration-300">
+                        <div className="text-white">
+                          {step.icon}
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-2">
+                        <p className="text-gray-700 dark:text-gray-300 font-medium leading-relaxed">
+                          {step.text}
+                        </p>
+                      </div>
+                      
+                    </div>
+                  ))}
+                </div>
               </div>
-              <ChevronDown className="text-gray-500" size={32} />
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center max-w-md border border-gray-200 dark:border-gray-700">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">SUBMIT ALL<br/>AVAILABLE REQUIREMENTS<br/>TO RECORD OFFICE</p>
-              </div>
-              <ChevronDown className="text-gray-500" size={32} />
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center max-w-md border border-gray-200 dark:border-gray-700">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">GET YOUR<br/>STATEMENT OF ACCOUNT<br/>TO ACCOUNTING OR<br/>RECEPTIONIST</p>
+            </div>
+
+            {/* For Regular Students / All Levels */}
+            <div 
+              className="relative group"
+              data-aos="fade-up"
+              data-aos-delay="300"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#BC1F27] to-[#7b1112] rounded-3xl blur-lg opacity-30 group-hover:opacity-50 transition-all duration-500"></div>
+              <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-500 group-hover:scale-105">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#BC1F27] to-[#7b1112] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <ClipboardList className="text-white" size={28} />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">REGULAR STUDENTS / ALL LEVELS</h2>
+                </div>
+                <div className="space-y-6">
+                  {processSteps.regular.map((step, index) => (
+                    <div 
+                      key={index}
+                      className="flex items-start space-x-4 group/item"
+                      data-aos="fade-right"
+                      data-aos-delay={400 + index * 100}
+                    >
+                      <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#FFD700] to-[#FFB302] rounded-xl flex items-center justify-center shadow-lg group-hover/item:scale-110 transition-transform duration-300">
+                        <div className="text-white">
+                          {step.icon}
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-2">
+                        <p className="text-gray-700 dark:text-gray-300 font-medium leading-relaxed">
+                          {step.text}
+                        </p>
+                      </div>
+                      
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Senior High Incoming Students */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-semibold text-center mb-8 text-gray-800 dark:text-gray-200">SENIOR HIGH INCOMING STUDENTS</h2>
-            <div className="flex flex-col items-center space-y-4">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center max-w-md border border-gray-200 dark:border-gray-700">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">INQUIRE TO<br/>ADMISSION OFFICE</p>
-              </div>
-              <ChevronDown className="text-gray-500" size={32} />
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center max-w-md border border-gray-200 dark:border-gray-700">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">PROCEED TO<br/>REGISTRATION OFFICE</p>
-              </div>
-              <ChevronDown className="text-gray-500" size={32} />
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center max-w-md border border-gray-200 dark:border-gray-700">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">SUBMIT ALL<br/>AVAILABLE REQUIREMENTS<br/>TO RECORD OFFICE</p>
-              </div>
-              <ChevronDown className="text-gray-500" size={32} />
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center max-w-md border border-gray-200 dark:border-gray-700">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">PROCEED TO<br/>ORIENTATION ROOM</p>
-              </div>
-              <ChevronDown className="text-gray-500" size={32} />
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center max-w-md border border-gray-200 dark:border-gray-700">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">GET YOUR STATEMENT OF<br/>ACCOUNT TO ACCOUNTING<br/>OR RECEPTIONIST</p>
-              </div>
+          {/* Call to Action */}
+          <div 
+            className="text-center mt-16"
+            data-aos="fade-up"
+            data-aos-delay="500"
+          >
+            <div className="bg-gradient-to-r from-[#7b1112] to-[#BC1F27] rounded-2xl p-8 shadow-2xl">
+              <h3 className="text-2xl font-bold text-white mb-4">
+                Ready to Start Your Journey?
+              </h3>
+              <p className="text-white/80 mb-6 max-w-2xl mx-auto">
+                Join thousands of successful students who began their educational journey with Philtech GMA. 
+                Our dedicated team is here to support you every step of the way.
+              </p>
+              <button className="bg-gradient-to-r from-[#FFB302] to-[#FFD700] text-gray-900 px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                Apply Now
+              </button>
             </div>
-          </div>
-
-          {/* For Regular Students / All Levels */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-semibold text-center mb-8 text-gray-800 dark:text-gray-200">FOR REGULAR STUDENTS / ALL LEVELS</h2>
-            <div className="flex flex-col items-center space-y-4">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center max-w-md border border-gray-200 dark:border-gray-700">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">ALWAYS BRING YOUR<br/>FORMS UPON<br/>ENTERING THE ADMIN<br/>OFFICE</p>
-              </div>
-              <ChevronDown className="text-gray-500" size={32} />
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center max-w-md border border-gray-200 dark:border-gray-700">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">PROCEED TO ADMIN<br/>OFFICER<br/>FOR PAYMENT /<br/>RECEPTIONIST OR<br/>ACCOUNTING</p>
-              </div>
-              <ChevronDown className="text-gray-500" size={32} />
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center max-w-md border border-gray-200 dark:border-gray-700">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">FOR RECORDS CONCERN<br/>PROCEED TO REGISTRAR<br/>OFFICE</p>
-              </div>
-              <ChevronDown className="text-gray-500" size={32} />
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center max-w-md border border-gray-200 dark:border-gray-700">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">FOR COMPLAINT PROCEED TO<br/>GUIDANCE OFFICE</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom note */}
-          <div className="text-center mt-12">
-            <p className="text-xl font-bold text-red-600 dark:text-red-400 mb-4">NO SCHOOL FORMS, NO ENTRY</p>
-            <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-2xl">&times; Close</button>
           </div>
         </div>
       </section>

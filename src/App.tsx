@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { Navbar, Carousel, CampusSection, HistorySection, OngoingEventsSection, TestimonialsSection, EnrollmentCTASection, Footer } from "./components/home";
 import { useAOS } from "./hooks/useAOS";
 import About from "./components/about";
@@ -12,6 +12,7 @@ import Regular from "./components/regular";
 import Sunday from "./components/sunday";
 import SeniorHigh from "./components/seniorhigh";
 import Login from "./dblogin/login";
+import { useEffect } from "react";
 
 const Home: React.FC = () => {
   useAOS(); // Enable AOS animations
@@ -30,21 +31,34 @@ const Home: React.FC = () => {
   );
 };
 
+const ScrollToTop: React.FC = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+
 const App: React.FC = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/faculties" element={<Faculties />} />
-      <Route path="/events" element={<Events />} />
-      <Route path="/enrollment-process" element={<EnrollmentProcess />} />
-      <Route path="/contacts" element={<Contact />} />
-      <Route path="/developer" element={<Developer />} />
-      <Route path="/dblogin/login" element={<Login />} />
-      <Route path="/programs/college/regular" element={<Regular />} />
-      <Route path="/programs/college/sunday" element={<Sunday />} />
-      <Route path="/programs/senior" element={<SeniorHigh />} />
-    </Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/faculties" element={<Faculties />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/enrollment-process" element={<EnrollmentProcess />} />
+        <Route path="/contacts" element={<Contact />} />
+        <Route path="/developer" element={<Developer />} />
+        <Route path="/dblogin/login" element={<Login />} />
+        <Route path="/regular" element={<Regular />} />
+        <Route path="/sunday" element={<Sunday />} />
+        <Route path="/seniorhigh" element={<SeniorHigh />} />
+      </Routes>
+    </>
   );
 };
 

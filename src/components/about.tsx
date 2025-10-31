@@ -301,65 +301,19 @@ export function useDarkMode(): [boolean, () => void] {
 }
 
 // Main Carousel Component
-const Carousel: React.FC = () => {
-  const slides = [
-    { img: "/images/carousel-backgrounds/3.jpg" },
-    { img: "/images/carousel-backgrounds/1.jpg" },
-    { img: "/images/carousel-backgrounds/2.jpg" },
-  ];
-
-  const [current, setCurrent] = useState<number>(0);
+const HeroBackground: React.FC = () => {
   const [typewriterText, setTypewriterText] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [typeIndex, setTypeIndex] = useState<number>(0);
-  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
-  const [showDots, setShowDots] = useState<boolean>(true);
-  const [isDarkMode] = useDarkMode(); // Kunin ang dark mode state
+  const [isDarkMode] = useDarkMode();
 
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef<number>(0);
-  const touchStartY = useRef<number>(0);
-  const isDragging = useRef<boolean>(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Intersection Observer for dots visibility
-  useEffect(() => {
-    const observer = new window.IntersectionObserver(
-      ([entry]) => {
-        setShowDots(entry.isIntersecting);
-      },
-      { threshold: 0.2 }
-    );
-    if (carouselRef.current) {
-      observer.observe(carouselRef.current);
-    }
-    return () => {
-      if (carouselRef.current) observer.unobserve(carouselRef.current);
-    };
-  }, []);
-
-  // Auto-slide interval
-  useEffect(() => {
-    const startInterval = () => {
-      intervalRef.current = setInterval(() => {
-        if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev: number) => (prev + 1) % slides.length);
-        }
-      }, 5000);
-    };
-
-    startInterval();
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isTransitioning, slides.length]);
+  const backgroundImage = "/images/carousel-backgrounds/3.jpg";
 
   // Typewriter effect
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
     let timeout: NodeJS.Timeout;
+    
     if (!isDeleting && typeIndex < text.length) {
       timeout = setTimeout(() => {
         setTypewriterText((prev: string) => prev + text.charAt(typeIndex));
@@ -379,217 +333,64 @@ const Carousel: React.FC = () => {
         setIsDeleting(false);
       }, 500);
     }
+    
     return () => clearTimeout(timeout);
   }, [typeIndex, isDeleting]);
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        handleSlideChange('prev');
-      } else if (e.key === 'ArrowRight') {
-        handleSlideChange('next');
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isTransitioning]);
-
-  // Slide change handler
-  const handleSlideChange = useCallback((direction: 'next' | 'prev') => {
-    if (isTransitioning) return;
-
-    setIsTransitioning(true);
-
-    if (direction === 'next') {
-      setCurrent((prev: number) => (prev + 1) % slides.length);
-    } else {
-      setCurrent((prev: number) => (prev - 1 + slides.length) % slides.length);
-    }
-
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 300);
-  }, [isTransitioning, slides.length]);
-
-  // Touch handlers
-  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    isDragging.current = true;
-
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-
-    const touchCurrentX = e.touches[0].clientX;
-    const touchCurrentY = e.touches[0].clientY;
-    const deltaX = Math.abs(touchCurrentX - touchStartX.current);
-    const deltaY = Math.abs(touchCurrentY - touchStartY.current);
-
-    if (deltaX > deltaY && deltaX > 10) {
-      e.preventDefault();
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const deltaX = touchStartX.current - touchEndX;
-    const deltaY = Math.abs(touchStartY.current - touchEndY);
-
-    isDragging.current = false;
-
-    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > deltaY) {
-      if (deltaX > 0) {
-        handleSlideChange('next');
-      } else {
-        handleSlideChange('prev');
-      }
-    }
-
-    setTimeout(() => {
-      intervalRef.current = setInterval(() => {
-        if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev: number) => (prev + 1) % slides.length);
-        }
-      }, 5000);
-    }, 1000);
-  }, [handleSlideChange, isTransitioning, slides.length]);
-
-  // Go to specific slide
-  const goToSlide = (index: number) => {
-    if (!isTransitioning && index !== current) {
-      setIsTransitioning(true);
-      setCurrent(index);
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 300);
-    }
-  };
-
   return (
     <>
-      <div 
-        ref={carouselRef} 
-        className="w-full carousel-container relative overflow-hidden bg-gray-900 group"
-      >
+      <div className="w-full hero-container relative overflow-hidden bg-gray-900">
         <div className="relative w-full h-full">
-          {slides.map((slide, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-                index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
-            >
-              {/* Background Image Container */}
-              <div className="absolute inset-0">
-                <img
-                  src={slide.img}
-                  alt={`Slide ${index + 1}`}
-                  className="carousel-image w-full h-full object-cover object-center"
-                  draggable="false"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://picsum.photos/1920/1080?random=${index}`;
-                  }}
-                />
-              </div>
+          {/* Background Image Container */}
+          <div className="absolute inset-0">
+            <img
+              src={backgroundImage}
+              alt="Philtech GMA Background"
+              className="hero-image w-full h-full object-cover object-center"
+              draggable="false"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "https://picsum.photos/1920/1080?random=1";
+              }}
+            />
+          </div>
 
-              {/* Background Overlay - nagbabago base sa dark mode */}
-              <div 
-                className={`absolute inset-0 pointer-events-none z-20 ${
-                  isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
-                }`}
-              />
-
-              {/* Content */}
-              <div className="absolute inset-0 flex items-center justify-center z-30">
-                <div className="text-center px-4 max-w-4xl mx-auto">
-                  <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
-                    <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
-                      WELCOME TO
-                    </span>
-                    <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
-                      PHILTECH GMA
-                    </span>
-                    <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
-                          style={{paddingRight: '5px'}}>
-                      {typewriterText}
-                      <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Touch Area for Mobile Swiping */}
-          <div
-            className="absolute inset-0 z-40 touch-pan-y"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            style={{
-              touchAction: 'pan-y',
-              WebkitTouchCallout: 'none',
-              WebkitUserSelect: 'none',
-              userSelect: 'none'
-            }}
+          {/* Background Overlay */}
+          <div 
+            className={`absolute inset-0 pointer-events-none z-20 ${
+              isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
+            }`}
           />
 
-          {/* Navigation Dots */}
-          {showDots && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50">
-              {slides.map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === current
-                      ? 'bg-[#FFB302] w-6'
-                      : 'bg-white/50 hover:bg-white/75'
-                  }`}
-                  onClick={() => goToSlide(index)}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
+          {/* Content */}
+          <div className="absolute inset-0 flex items-center justify-center z-30">
+            <div className="text-center px-4 max-w-4xl mx-auto">
+              <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
+                <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
+                  WELCOME TO
+                </span>
+                <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
+                  PHILTECH GMA
+                </span>
+                <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
+                      style={{paddingRight: '5px'}}>
+                  {typewriterText}
+                  <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
+                </span>
+              </div>
             </div>
-          )}
-
-          {/* Navigation Arrows */}
-          <button
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
-            onClick={() => handleSlideChange('prev')}
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={24} />
-          </button>
-
-          <button
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
-            onClick={() => handleSlideChange('next')}
-            aria-label="Next slide"
-          >
-            <ChevronRight size={24} />
-          </button>
+          </div>
         </div>
       </div>
 
       <style>{`
-        .carousel-container {
+        .hero-container {
           /* Para sa desktop - full viewport height */
           height: 100vh;
           min-height: 500px;
         }
 
         @media (max-width: 768px) {
-          .carousel-container {
+          .hero-container {
             height: 70vh;
             min-height: 400px;
             max-height: 600px;
@@ -597,14 +398,14 @@ const Carousel: React.FC = () => {
         }
 
         @media (max-width: 480px) {
-          .carousel-container {
+          .hero-container {
             height: 60vh;
             min-height: 350px;
             max-height: 500px;
           }
         }
 
-        .carousel-image {
+        .hero-image {
           width: 100%;
           height: 100%;
           object-fit: cover;
@@ -644,41 +445,31 @@ const About: React.FC = () => {
 
   const facilities = [
     { 
-      name: "Modern Library", 
-      description: "Fully-equipped library with vast collection of books, digital resources, and quiet study areas.",
+      name: "Comlab 1", 
+      description: "Fully-equipped computer laboratory with high-speed workstations, modern software, and comfortable working environment for programming and digital projects.",
+      image: "/images/facilities/comlab1.jpg"
+    },
+    { 
+      name: "Comlab 2", 
+      description: "Fully-equipped computer laboratory with high-speed workstations, modern software, and comfortable working environment for programming and digital projects.",
+      image: "/images/facilities/comlab2.jpg"
+    },
+    { 
+      name: "Library", 
+      description: "Comprehensive library with vast collection of books, digital resources, quiet study areas, and research assistance services.",
       image: "/images/facilities/library.jpg"
     },
     { 
-      name: "Computer Laboratories", 
-      description: "Advanced computer labs with latest technology and software for hands-on learning.",
-      image: "/images/facilities/computer-lab.jpg"
-    },
-    { 
-      name: "Science Laboratories", 
-      description: "Well-equipped labs for physics, chemistry, and biology experiments and research.",
-      image: "/images/facilities/science-lab.jpg"
-    },
-    { 
-      name: "Auditorium", 
-      description: "Spacious auditorium for events, seminars, and academic gatherings.",
-      image: "/images/facilities/auditorium.jpg"
-    },
-    { 
-      name: "Sports Complex", 
-      description: "Comprehensive sports facilities for physical education and extracurricular activities.",
-      image: "/images/facilities/sports-complex.jpg"
-    },
-    { 
-      name: "Student Lounge", 
-      description: "Comfortable spaces for students to relax, collaborate, and socialize.",
-      image: "/images/facilities/student-lounge.jpg"
+      name: "Presentation Room", 
+      description: "Professional presentation room with modern audio-visual equipment, perfect for seminars, workshops, and academic presentations.",
+      image: "/images/facilities/presentation-room.jpg"
     }
   ];
 
   return (
     <div className="bg-white dark:bg-gray-800 min-h-screen">
       <Navbar />
-      <Carousel />
+      <HeroBackground />
       
       {/* Image Expansion Modal */}
       {expandedImage && (
@@ -711,7 +502,7 @@ const About: React.FC = () => {
           <div className="relative max-w-4xl w-full">
             <div className="aspect-w-16 aspect-h-9">
               <iframe
-                src="https://www.youtube.com/embed/VIDEO_ID_HERE"
+                src="https://www.youtube.com/embed/QWq-dc0x7ZI"
                 title="Philtech Hymn"
                 className="w-full h-96 md:h-[500px] rounded-lg"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -742,7 +533,7 @@ const About: React.FC = () => {
             <div className="space-y-6">
               <p className="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300" 
                  data-aos="fade-right" data-aos-delay="400">
-                Our mission is to provide quality education that nurtures critical thinking, creativity, and ethical leadership. We strive to create a supportive and inclusive environment where students can thrive academically and personally.
+                Our provide quality education that nurtures critical thinking, creativity, and ethical leadership. We strive to create a supportive and inclusive environment where students can thrive academically and personally.
               </p>
               <p className="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300" 
                  data-aos="fade-right" data-aos-delay="500">
@@ -752,7 +543,7 @@ const About: React.FC = () => {
             <div className="flex items-center justify-center" data-aos="fade-left" data-aos-delay="400">
               <div 
                 className="relative group cursor-pointer"
-                onClick={() => setExpandedImage("/images/campuses/santa-rosa-campus.jpg")}
+                onClick={() => setExpandedImage("/images/campuses/gma-campus.jpg")}
               >
                 <img
                   src="/images/campuses/santa-rosa-campus.jpg"
@@ -786,22 +577,21 @@ const About: React.FC = () => {
               data-aos="zoom-in"
               data-aos-delay="400"
             >
-              {/* Video Thumbnail */}
+              {/* Video Player */}
               <div className="aspect-w-16 aspect-h-9">
-                <img
-                  src="/images/philtech-hymn-thumbnail.jpg"
-                  alt="Philtech Hymn"
-                  className="w-full h-64 md:h-80 object-cover opacity-90 group-hover:opacity-70 transition-opacity duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-center justify-center">
+                <video
+                  src="/images/hymn/PHILTECHHymn.mp4"
+                  className="w-full h-64 md:h-80 object-cover rounded-lg"
+                  controls
+                  preload="metadata"
+                  poster="/images/logo/logo.png"
+                >
+                  Your browser does not support the video tag.
+                </video>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-center justify-center pointer-events-none">
                   <div className="text-center text-white">
-                    <div className="w-20 h-20 bg-[#BC1F27] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                      </svg>
-                    </div>
                     <h4 className="text-2xl font-bold mb-2">Philtech Hymn</h4>
-                    <p className="text-gray-300">Click to play the official hymn</p>
+                    <p className="text-gray-300">Official Hymn Video</p>
                     <div className="mt-4 flex items-center justify-center space-x-2 text-sm">
                       <span className="bg-[#BC1F27] px-3 py-1 rounded-full">Official Video</span>
                       <span className="bg-gray-600 px-3 py-1 rounded-full">2:45</span>
@@ -812,45 +602,62 @@ const About: React.FC = () => {
             </div>
 
             {/* Hymn Lyrics */}
-            <div className="mt-8 bg-white dark:bg-gray-700 rounded-2xl p-8 shadow-lg" data-aos="fade-up" data-aos-delay="500">
-              <h4 className="text-2xl font-bold text-center mb-6 text-[#BC1F27] dark:text-[#FFB302]">Lyrics</h4>
-              <div className="grid md:grid-cols-2 gap-6 text-gray-700 dark:text-gray-300">
-                <div className="space-y-4">
-                  <p className="font-semibold text-lg">Verse 1:</p>
-                  <p className="leading-relaxed">
-                    Hail to thee, our dear Philtech<br/>
-                    Guiding light in education's path<br/>
-                    Where knowledge blooms and wisdom grows<br/>
-                    Preparing us for what life bestows
-                  </p>
-                  
-                  <p className="font-semibold text-lg mt-6">Chorus:</p>
-                  <p className="leading-relaxed text-[#BC1F27] dark:text-[#FFB302] font-semibold">
-                    Oh Philtech, we sing to thee<br/>
-                    Forever in our hearts you'll be<br/>
-                    With honor, truth, and dignity<br/>
-                    Our alma mater strong and free
-                  </p>
-                </div>
-                <div className="space-y-4">
-                  <p className="font-semibold text-lg">Verse 2:</p>
-                  <p className="leading-relaxed">
-                    Through halls of learning we shall tread<br/>
-                    With visions bright and purpose spread<br/>
-                    Innovation our guiding star<br/>
-                    Preparing us to travel far
-                  </p>
-                  
-                  <p className="font-semibold text-lg mt-6">Bridge:</p>
-                  <p className="leading-relaxed">
-                    In every field, in every art<br/>
-                    Philtech's spirit plays its part<br/>
-                    Together we shall rise above<br/>
-                    Bound by knowledge, light, and love
-                  </p>
-                </div>
+            <div
+              className="mt-8 bg-white dark:bg-gray-700 rounded-2xl p-8 shadow-lg"
+              data-aos="fade-up"
+              data-aos-delay="500"
+            >
+              <h4 className="text-2xl font-bold text-center mb-6 text-[#BC1F27] dark:text-[#FFB302]">
+                PhilTech Hymn Lyrics
+              </h4>
+              <div className="text-gray-700 dark:text-gray-300 leading-relaxed space-y-4 text-center">
+                <p>
+                  PHILTECH our dear Alma Mater, second home and nurturer<br />
+                  Lead us to learn away from aberration<br />
+                  Help us achieve our ambitions
+                </p>
+
+                <p>
+                  PHILTECH our dear Alma Mater<br />
+                  Our second home and nurturer<br />
+                  Lead us to learn away from aberration<br />
+                  Help us achieve our ambitions
+                </p>
+
+                <p>
+                  Let your walls be filled with our happy hearts<br />
+                  Dreamers and young minds view the light of tomorrow's vision<br />
+                  Sight of green and bright future<br />
+                  With the guidance of our God, Our Creator
+                </p>
+
+                <p>
+                  PHILTECH our dear Alma Mater<br />
+                  Our second home and nurturer<br />
+                  Lead us to learn away from aberration<br />
+                  Help us achieve our ambitions
+                </p>
+
+                <p>
+                  PHILTECH our dear Alma Mater<br />
+                  Our second home and nurturer<br />
+                  Let your walls be filled with our happy hearts<br />
+                  Dreamers and young minds view the light of tomorrow's vision<br />
+                  Sight of green and bright future<br />
+                  With the guidance of our God, Our Creator
+                </p>
+
+                <p className="font-semibold text-[#BC1F27] dark:text-[#FFB302]">
+                  PHILTECH! (PHILTECH), PHILTECH! (PHILTECH)<br />
+                  We'll thank you, thank you forever.<br />
+                  Dear PHILTECH<br />
+                  We'll thank you, thank you forever.<br />
+                  Deeeear PHILTECH<br />
+                  DEAR PHILTECH!
+                </p>
               </div>
             </div>
+
           </div>
         </div>
 
@@ -877,7 +684,7 @@ const About: React.FC = () => {
                     <h3 className="text-3xl font-bold text-[#BC1F27] dark:text-[#FFB302]">Our Vision</h3>
                   </div>
                   <p className="text-lg leading-relaxed text-center flex-1 flex items-center">
-                    To be a leading educational institution that inspires and equips students to become innovative leaders and contributors to society, driving technological advancement and sustainable development in the global community.
+                    "PHILTECH shall emerge as the only technical school in the Philippines that can provide academic excellence, appropriate technology, and produce graduates who are globally competitive and shall serve as a pillar in this changing world."
                   </p>
                 </div>
               </div>
@@ -903,7 +710,7 @@ const About: React.FC = () => {
                     <h3 className="text-3xl font-bold text-[#BC1F27] dark:text-[#FFB302]">Our Mission</h3>
                   </div>
                   <p className="text-lg leading-relaxed text-center flex-1 flex items-center">
-                    To deliver comprehensive, high-quality education through innovative teaching methods, cutting-edge technology, and a commitment to excellence. We aim to develop well-rounded individuals who are prepared to meet the challenges of the modern world.
+                    "Philippine Technological Institute of Science Art and Trade, Inc. (PHILTECH) is dedicated to give quality education to the development of every Filipino. It aims to hone students who are values-oriented and physically, academically, socially, and spiritually committed to the achievement of life-long learning and service to the nation."
                   </p>
                 </div>
               </div>
@@ -912,39 +719,54 @@ const About: React.FC = () => {
         </div>
 
         <style>{`
-          #vision-card.expanded, #mission-card.expanded {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 90vw;
-            max-width: 600px;
-            height: auto;
-            max-height: 90vh;
-            overflow-y: auto;
-            transform: translate(-50%, -50%) scale(1.05);
-            z-index: 1000;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            border: none !important;
-          }
-          .dark #vision-card.expanded, .dark #mission-card.expanded {
-            background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
-          }
-          #vision-card.expanded p, #mission-card.expanded p {
-            font-size: 1.125rem;
-          }
-          #vision-card.expanded h3, #mission-card.expanded h3 {
-            font-size: 2rem;
-          }
-          /* Overlay for expanded card */
-          #vision-card.expanded::before, #mission-card.expanded::before {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: -1;
-          }
-        `}</style>
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        
+        .shadow-3xl {
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 25px -5px rgba(188, 31, 39, 0.1);
+        }
+        
+        .dark .shadow-3xl {
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 25px -5px rgba(255, 179, 2, 0.2);
+        }
+
+        #vision-card.expanded, #mission-card.expanded {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          width: 90vw;
+          max-width: 600px;
+          height: auto;
+          max-height: 90vh;
+          overflow-y: auto;
+          transform: translate(-50%, -50%) scale(1.05);
+          z-index: 1000;
+          box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+          border: none !important;
+        }
+        .dark #vision-card.expanded, .dark #mission-card.expanded {
+          background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+        }
+        #vision-card.expanded p, #mission-card.expanded p {
+          font-size: 1.125rem;
+        }
+        #vision-card.expanded h3, #mission-card.expanded h3 {
+          font-size: 2rem;
+        }
+        /* Overlay for expanded card */
+        #vision-card.expanded::before, #mission-card.expanded::before {
+          content: "";
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,0.7);
+          z-index: -1;
+        }
+      `}</style>
 
         {/* Core Values Section */}
         <div className="mt-20">
@@ -975,46 +797,203 @@ const About: React.FC = () => {
           </div>
         </div>
 
-        {/* Facilities Section */}
-        <div className="mt-20">
-          <div className="text-center mb-12" data-aos="fade-up">
-            <h3 className="text-4xl font-bold text-[#BC1F27] dark:text-[#FFB302]">Our Facilities</h3>
-            <div className="w-20 h-1 bg-[#BC1F27] dark:bg-[#FFB302] mx-auto mt-4" data-aos="fade-up" data-aos-delay="200"></div>
-            <p className="text-xl text-gray-600 dark:text-gray-400 mt-4 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="300">
-              State-of-the-art facilities designed to enhance learning and provide the best educational experience
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {facilities.map((facility, index) => (
-              <div 
-                key={index} 
-                className="group bg-white dark:bg-gray-700 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:scale-105"
-                data-aos="zoom-in"
-                data-aos-delay={300 + (index * 100)}
-              >
-                <div 
-                  className="relative overflow-hidden cursor-pointer"
-                  onClick={() => setExpandedImage(facility.image)}
-                >
-                  <img
-                    src={facility.image}
-                    alt={facility.name}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-                    <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black bg-opacity-50 px-3 py-1 rounded-lg">
-                      Click to expand
-                    </span>
+        {/* Enhanced Facilities Section */}
+          <div className="mt-20">
+            <div className="text-center mb-16" data-aos="fade-up">
+              <h3 className="text-4xl font-bold text-[#BC1F27] dark:text-[#FFB302]">Our Facilities</h3>
+              <div className="w-20 h-1 bg-[#BC1F27] dark:bg-[#FFB302] mx-auto mt-4" data-aos="fade-up" data-aos-delay="200"></div>
+              <p className="text-xl text-gray-600 dark:text-gray-400 mt-6 max-w-3xl mx-auto leading-relaxed" data-aos="fade-up" data-aos-delay="300">
+                State-of-the-art facilities designed to enhance learning and provide the best educational experience for our students
+              </p>
+            </div>
+
+            {/* 2x2 Grid Layout */}
+            <div className="flex flex-col gap-8 max-w-4xl mx-auto px-6">
+              {/* Top Row - 2 Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {facilities.slice(0, 2).map((facility, index) => (
+                  <div 
+                    key={index} 
+                    className="group relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden border border-gray-100 dark:border-gray-700"
+                    data-aos="zoom-in"
+                    data-aos-delay={300 + (index * 100)}
+                  >
+                    {/* Image Container with Enhanced Hover Effects */}
+                    <div 
+                      className="relative overflow-hidden cursor-pointer h-64"
+                      onClick={() => setExpandedImage(facility.image)}
+                    >
+                      {/* Main Image */}
+                      <img
+                        src={facility.image}
+                        alt={facility.name}
+                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                      />
+                      
+                      {/* Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-all duration-500"></div>
+                      
+                      {/* Hover Overlay Content */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
+                        <div className="text-center text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                          <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 inline-block mb-3">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3-3H7" />
+                            </svg>
+                          </div>
+                          <p className="text-lg font-semibold bg-black/50 px-4 py-2 rounded-full">Click to Expand</p>
+                        </div>
+                      </div>
+
+                      {/* Facility Badge */}
+                      <div className="absolute top-4 left-4">
+                        <span className="bg-[#BC1F27] dark:bg-[#FFB302] text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+                          {facility.name}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Content Section */}
+                    <div className="p-6 relative">
+                      {/* Decorative Element */}
+                      <div className="absolute -top-3 left-6 w-12 h-1 bg-[#BC1F27] dark:bg-[#FFB302] rounded-full"></div>
+                      
+                      <h4 className="text-xl font-bold mb-3 text-gray-800 dark:text-white group-hover:text-[#BC1F27] dark:group-hover:text-[#FFB302] transition-colors duration-300">
+                        {facility.name}
+                      </h4>
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+                        {facility.description}
+                      </p>
+                      
+                      {/* Features List */}
+                      <div className="space-y-2 mb-4">
+                        {[
+                          "Modern Equipment",
+                          "Comfortable Environment", 
+                          "High-speed Internet",
+                          "Professional Setup"
+                        ].map((feature, featureIndex) => (
+                          <div key={featureIndex} className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <svg className="w-4 h-4 text-[#BC1F27] dark:text-[#FFB302] mr-2" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            {feature}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Action Button */}
+                      <button
+                        onClick={() => setExpandedImage(facility.image)}
+                        className="w-full bg-gradient-to-r from-[#BC1F27] to-[#d9454c] dark:from-[#FFB302] dark:to-[#ffc952] text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center group/btn"
+                      >
+                        <span>View Facility</span>
+                        <svg className="w-4 h-4 ml-2 transform group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Corner Accents */}
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-[#BC1F27] dark:border-[#FFB302] rounded-tr-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-[#BC1F27] dark:border-[#FFB302] rounded-bl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   </div>
-                </div>
-                <div className="p-6">
-                  <h4 className="text-xl font-bold mb-2 text-gray-800 dark:text-white">{facility.name}</h4>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{facility.description}</p>
-                </div>
+                ))}
               </div>
-            ))}
+
+              {/* Bottom Row - 2 Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {facilities.slice(2, 4).map((facility, index) => (
+                  <div 
+                    key={index + 2} 
+                    className="group relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden border border-gray-100 dark:border-gray-700"
+                    data-aos="zoom-in"
+                    data-aos-delay={500 + (index * 100)}
+                  >
+                    {/* Image Container with Enhanced Hover Effects */}
+                    <div 
+                      className="relative overflow-hidden cursor-pointer h-64"
+                      onClick={() => setExpandedImage(facility.image)}
+                    >
+                      {/* Main Image */}
+                      <img
+                        src={facility.image}
+                        alt={facility.name}
+                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                      />
+                      
+                      {/* Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-all duration-500"></div>
+                      
+                      {/* Hover Overlay Content */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
+                        <div className="text-center text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                          <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 inline-block mb-3">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3-3H7" />
+                            </svg>
+                          </div>
+                          <p className="text-lg font-semibold bg-black/50 px-4 py-2 rounded-full">Click to Expand</p>
+                        </div>
+                      </div>
+
+                      {/* Facility Badge */}
+                      <div className="absolute top-4 left-4">
+                        <span className="bg-[#BC1F27] dark:bg-[#FFB302] text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+                          {facility.name}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Content Section */}
+                    <div className="p-6 relative">
+                      {/* Decorative Element */}
+                      <div className="absolute -top-3 left-6 w-12 h-1 bg-[#BC1F27] dark:bg-[#FFB302] rounded-full"></div>
+                      
+                      <h4 className="text-xl font-bold mb-3 text-gray-800 dark:text-white group-hover:text-[#BC1F27] dark:group-hover:text-[#FFB302] transition-colors duration-300">
+                        {facility.name}
+                      </h4>
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+                        {facility.description}
+                      </p>
+                      
+                      {/* Features List */}
+                      <div className="space-y-2 mb-4">
+                        {[
+                          "Modern Equipment",
+                          "Comfortable Environment", 
+                          "High-speed Internet",
+                          "Professional Setup"
+                        ].map((feature, featureIndex) => (
+                          <div key={featureIndex} className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <svg className="w-4 h-4 text-[#BC1F27] dark:text-[#FFB302] mr-2" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            {feature}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Action Button */}
+                      <button
+                        onClick={() => setExpandedImage(facility.image)}
+                        className="w-full bg-gradient-to-r from-[#BC1F27] to-[#d9454c] dark:from-[#FFB302] dark:to-[#ffc952] text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center group/btn"
+                      >
+                        <span>View Facility</span>
+                        <svg className="w-4 h-4 ml-2 transform group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Corner Accents */}
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-[#BC1F27] dark:border-[#FFB302] rounded-tr-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-[#BC1F27] dark:border-[#FFB302] rounded-bl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
       </section>
       <Footer />
     </div>
@@ -1048,13 +1027,13 @@ const Footer: React.FC = () => {
             <h2 className="text-2xl font-bold text-white">Philtech GMA</h2>
           </div>
           <p className="text-gray-300 mb-6 max-w-xs">
-            Innovating technology solutions for a better tomorrow. We provide cutting-edge services to help your business grow.
+            Global Success Through Academic Excellence.
           </p>
 
           <div className="flex gap-4">
             {[
               {
-                href: "https://facebook.com",
+                href: "https://www.facebook.com/philtechgma2013",
                 label: "Facebook",
                 svg: (
                   <path d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.408.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.408 24 22.674V1.326C24 .592 23.406 0 22.675 0" />
@@ -1111,10 +1090,10 @@ const Footer: React.FC = () => {
           <ul className="space-y-3">
             {[
               { href: "/about", label: "About Us" },
-              { href: "/services", label: "Our Services" },
-              { href: "/projects", label: "Projects" },
-              { href: "/team", label: "Our Team" },
-              { href: "/careers", label: "Careers" },
+              { href: "/regular", label: "College" },
+              { href: "/seniorhigh", label: "Senior High" },
+              { href: "/developer", label: "Our Team" },
+              { href: "/enrollment-process", label: "Enrollment Process" },
             ].map((link, i) => (
               <li key={i}>
                 <a
@@ -1138,7 +1117,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Email us at</p>
-                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
+                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">philtech.2013gma@gmail.com</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -1147,7 +1126,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Call us</p>
-                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
+                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+63 997 224 0222</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -1156,7 +1135,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Visit us</p>
-                <p className="text-white">123 Tech Street, Manila, Philippines</p>
+                <p className="text-white">2nd Floor CRDM Building Governor's Drive Baranggay Maderan, GMA, Cavite, General Mariano Alvarez, Philippines</p>
               </div>
             </div>
           </div>
@@ -1189,6 +1168,6 @@ export {
   NavLinks,
   Navbar,
   Dropdown,
-  Carousel,
+  HeroBackground,
   Footer
 };

@@ -1,6 +1,6 @@
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
-import { Navbar, Carousel, CampusSection, HistorySection, OngoingEventsSection, TestimonialsSection, EnrollmentCTASection, Footer } from "./components/home";
+import { Navbar, HeroBackground, CampusSection, HistorySection, NewsAndAnnouncementsSection, TestimonialsSection, EnrollmentCTASection, Footer } from "./components/home";
 import { useAOS } from "./hooks/useAOS";
 import About from "./components/about";
 import Faculties from "./components/faculties";
@@ -20,10 +20,10 @@ const Home: React.FC = () => {
   return (
     <div className="bg-white dark:bg-gray-800 min-h-screen">
       <Navbar />
-      <Carousel />
+      <HeroBackground />
       <HistorySection />
       <CampusSection />
-      <OngoingEventsSection/>
+      <NewsAndAnnouncementsSection/>
       <TestimonialsSection/>
       <EnrollmentCTASection/>
       <Footer />

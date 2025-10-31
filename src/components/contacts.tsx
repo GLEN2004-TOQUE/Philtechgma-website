@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { X, Sun, Moon, User, ChevronDown} from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Share2 } from 'lucide-react';
+import { X, Sun, Moon, User, ChevronDown } from "lucide-react";
+import { useAOS } from "../hooks/useAOS";
 
 const Logo: React.FC = () => {
   return (
@@ -636,10 +638,372 @@ const Carousel: React.FC = () => {
 };
 
 const Contact: React.FC = () => {
+  const [] = useAOS();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Simulate form submission
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Reset form
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      subject: '',
+      message: ''
+    });
+    setIsSubmitting(false);
+    
+    // Show success message (you can replace this with a toast notification)
+    alert('Thank you for your message! We will get back to you soon.');
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800 min-h-screen">
+    <div className="bg-white dark:bg-gray-900 min-h-screen">
       <Navbar />
       <Carousel />
+
+      {/* Contact Section */}
+      <section className="pt-20 pb-16 px-4 relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute top-0 left-0 w-72 h-72 bg-[#BC1F27]/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#BC1F27]/5 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Header */}
+          <div className="text-center mb-20" data-aos="fade-up">
+            <div className="inline-flex items-center gap-2 text-[#BC1F27] mb-4">
+              <div className="w-4 h-0.5 bg-[#BC1F27]"></div>
+              <span className="text-sm font-semibold tracking-wider">CONTACT US</span>
+              <div className="w-4 h-0.5 bg-[#BC1F27]"></div>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+              Get In <span className="text-[#BC1F27] relative">
+                Touch
+                <div className="absolute bottom-2 left-0 w-full h-2 bg-[#BC1F27]/20 -z-10"></div>
+              </span>
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              Ready to start your educational journey? Contact us today and discover how Philtech GMA can help you achieve your academic goals.
+            </p>
+          </div>
+
+          {/* Contact Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-20">
+            {/* Address Card */}
+            <div
+              className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 p-8 text-center border border-gray-100 dark:border-gray-600 hover:-translate-y-2"
+              data-aos="fade-up"
+              data-aos-delay="100"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#BC1F27] to-[#781112] opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-500"></div>
+              <div className="relative">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#BC1F27] to-[#781112] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500 shadow-lg">
+                  <MapPin className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Visit Us</h3>
+                <div className="text-gray-600 dark:text-gray-300 space-y-3 text-lg">
+                  <p className="font-medium">Philtech GMA Campus</p>
+                  <p>GMA, Cavite, Philippines</p>
+                  <p>2009, Philippines</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Phone Card */}
+            <div
+              className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 p-8 text-center border border-gray-100 dark:border-gray-600 hover:-translate-y-2"
+              data-aos="fade-up"
+              data-aos-delay="200"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#BC1F27] to-[#781112] opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-500"></div>
+              <div className="relative">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#BC1F27] to-[#781112] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500 shadow-lg">
+                  <Phone className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Call Us</h3>
+                <div className="text-gray-600 dark:text-gray-300 space-y-3">
+                  <div>
+                    <p className="font-medium mb-1">Main Office</p>
+                    <a href="tel:+63464712345" className="text-[#BC1F27] hover:text-[#781112] font-semibold text-lg transition-all duration-300 hover:underline">
+                      +63 (46) 471-2345
+                    </a>
+                  </div>
+                  <div>
+                    <p className="font-medium mb-1">Admissions</p>
+                    <a href="tel:+63464767890" className="text-[#BC1F27] hover:text-[#781112] font-semibold text-lg transition-all duration-300 hover:underline">
+                      +63 (46) 476-7890
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Email Card */}
+            <div
+              className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 p-8 text-center border border-gray-100 dark:border-gray-600 hover:-translate-y-2"
+              data-aos="fade-up"
+              data-aos-delay="300"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#BC1F27] to-[#781112] opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-500"></div>
+              <div className="relative">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#BC1F27] to-[#781112] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500 shadow-lg">
+                  <Mail className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Email Us</h3>
+                <div className="text-gray-600 dark:text-gray-300 space-y-3">
+                  <div>
+                    <p className="font-medium mb-1">General Inquiries</p>
+                    <a href="mailto:info@philtechgma.com" className="text-[#BC1F27] hover:text-[#781112] font-semibold text-lg transition-all duration-300 hover:underline break-all">
+                      info@philtechgma.com
+                    </a>
+                  </div>
+                  <div>
+                    <p className="font-medium mb-1">Admissions</p>
+                    <a href="mailto:admissions@philtechgma.com" className="text-[#BC1F27] hover:text-[#781112] font-semibold text-lg transition-all duration-300 hover:underline break-all">
+                      admissions@philtechgma.com
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Form and Map */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
+            {/* Contact Form */}
+            <div
+              className="relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-3xl shadow-2xl p-8 md:p-10 border border-gray-100 dark:border-gray-600"
+              data-aos="fade-right"
+              data-aos-delay="400"
+            >
+              <div className="absolute top-0 left-8 -translate-y-1/2 bg-[#BC1F27] text-white px-6 py-3 rounded-2xl font-semibold text-lg shadow-lg">
+                Send us a Message
+              </div>
+              
+              <form className="space-y-6 mt-4" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      First Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400"
+                      placeholder="Enter your first name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Last Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400"
+                      placeholder="Enter your last name"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400"
+                    placeholder="Enter your email"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400"
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Subject *
+                  </label>
+                  <select
+                    id="subject"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300"
+                  >
+                    <option value="">Select a subject</option>
+                    <option value="admissions">Admissions Inquiry</option>
+                    <option value="programs">Program Information</option>
+                    <option value="enrollment">Enrollment Process</option>
+                    <option value="general">General Inquiry</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="message" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Message *
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={5}
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400 resize-vertical"
+                    placeholder="Tell us about your inquiry..."
+                  ></textarea>
+                </div>
+                
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-[#BC1F27] to-[#781112] hover:from-[#781112] hover:to-[#5a0d0e] text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[#BC1F27]/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl"
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Sending...
+                    </div>
+                  ) : (
+                    'Send Message'
+                  )}
+                </button>
+              </form>
+            </div>
+
+            {/* Map and Additional Info */}
+            <div
+              className="space-y-8"
+              data-aos="fade-left"
+              data-aos-delay="500"
+            >
+              {/* Enhanced Map */}
+              <div className="group bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-600 hover:shadow-2xl transition-all duration-300">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+                  <MapPin className="w-6 h-6 text-[#BC1F27]" />
+                  Our Location
+                </h3>
+                <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-600 dark:to-gray-700 rounded-2xl overflow-hidden relative group-hover:shadow-lg transition-shadow duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#BC1F27]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center p-8">
+                      <div className="w-16 h-16 bg-[#BC1F27] rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                        <MapPin className="w-8 h-8 text-white" />
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-300 text-lg font-semibold mb-2">Interactive Map</p>
+                      <p className="text-gray-500 dark:text-gray-400">
+                        GMA, Cavite, Philippines
+                      </p>
+                      <button className="mt-4 bg-[#BC1F27] hover:bg-[#781112] text-white px-6 py-2 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        View on Google Maps
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Enhanced Office Hours */}
+              <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-600">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+                  <Clock className="w-6 h-6 text-[#BC1F27]" />
+                  Office Hours
+                </h3>
+                <div className="space-y-4 text-gray-600 dark:text-gray-300">
+                  {[
+                    { day: 'Monday - Friday', time: '8:00 AM - 5:00 PM' },
+                    { day: 'Saturday', time: '9:00 AM - 12:00 PM' },
+                    { day: 'Sunday', time: 'Closed' }
+                  ].map((schedule, index) => (
+                    <div key={index} className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                      <span className="font-semibold">{schedule.day}</span>
+                      <span className="bg-gray-100 dark:bg-gray-600 px-3 py-1 rounded-lg font-medium">
+                        {schedule.time}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-6 p-4 bg-gradient-to-r from-[#BC1F27]/10 to-[#BC1F27]/5 rounded-2xl border border-[#BC1F27]/20">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <strong className="text-[#BC1F27]">Note:</strong> Admissions office is open during regular business hours. For urgent inquiries, please call our hotline.
+                  </p>
+                </div>
+              </div>
+
+              {/* Social Media Links */}
+              <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-600">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+                  <Share2 className="w-6 h-6 text-[#BC1F27]" />
+                  Connect With Us
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {['Facebook', 'Twitter', 'Instagram', 'LinkedIn'].map((social, index) => (
+                    <button
+                      key={social}
+                      className="flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-600 hover:bg-[#BC1F27] hover:text-white text-gray-700 dark:text-gray-300 py-3 px-4 rounded-xl transition-all duration-300 transform hover:scale-105 group"
+                    >
+                      <div className="w-8 h-8 bg-[#BC1F27] rounded-lg flex items-center justify-center group-hover:bg-white group-hover:text-[#BC1F27] transition-all duration-300">
+                        <Share2 className="w-4 h-4" />
+                      </div>
+                      <span className="font-semibold">{social}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

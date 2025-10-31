@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Users, Calendar, X, Sun, Moon, User, ChevronDown, Clock, Mail } from "lucide-react";
+import { MapPin, Users, Calendar, X, Sun, Moon, User, ChevronDown, Clock, Mail, Star, ArrowRight, BookOpen, GraduationCap, University, School, Building, Newspaper } from "lucide-react";
 import { useParallax } from "../hooks/Parallax";
 import { useAOS } from "../hooks/useAOS";
 
@@ -302,65 +302,19 @@ export function useDarkMode(): [boolean, () => void] {
 }
 
 // Main Carousel Component
-const Carousel: React.FC = () => {
-  const slides = [
-    { img: "/images/carousel-backgrounds/3.jpg" },
-    { img: "/images/carousel-backgrounds/1.jpg" },
-    { img: "/images/carousel-backgrounds/2.jpg" },
-  ];
-
-  const [current, setCurrent] = useState<number>(0);
+const HeroBackground: React.FC = () => {
   const [typewriterText, setTypewriterText] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [typeIndex, setTypeIndex] = useState<number>(0);
-  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
-  const [showDots, setShowDots] = useState<boolean>(true);
-  const [isDarkMode] = useDarkMode(); // Kunin ang dark mode state
+  const [isDarkMode] = useDarkMode();
 
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef<number>(0);
-  const touchStartY = useRef<number>(0);
-  const isDragging = useRef<boolean>(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Intersection Observer for dots visibility
-  useEffect(() => {
-    const observer = new window.IntersectionObserver(
-      ([entry]) => {
-        setShowDots(entry.isIntersecting);
-      },
-      { threshold: 0.2 }
-    );
-    if (carouselRef.current) {
-      observer.observe(carouselRef.current);
-    }
-    return () => {
-      if (carouselRef.current) observer.unobserve(carouselRef.current);
-    };
-  }, []);
-
-  // Auto-slide interval
-  useEffect(() => {
-    const startInterval = () => {
-      intervalRef.current = setInterval(() => {
-        if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev: number) => (prev + 1) % slides.length);
-        }
-      }, 5000);
-    };
-
-    startInterval();
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isTransitioning, slides.length]);
+  const backgroundImage = "/images/carousel-backgrounds/3.jpg";
 
   // Typewriter effect
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
     let timeout: NodeJS.Timeout;
+    
     if (!isDeleting && typeIndex < text.length) {
       timeout = setTimeout(() => {
         setTypewriterText((prev: string) => prev + text.charAt(typeIndex));
@@ -380,217 +334,64 @@ const Carousel: React.FC = () => {
         setIsDeleting(false);
       }, 500);
     }
+    
     return () => clearTimeout(timeout);
   }, [typeIndex, isDeleting]);
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        handleSlideChange('prev');
-      } else if (e.key === 'ArrowRight') {
-        handleSlideChange('next');
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isTransitioning]);
-
-  // Slide change handler
-  const handleSlideChange = useCallback((direction: 'next' | 'prev') => {
-    if (isTransitioning) return;
-
-    setIsTransitioning(true);
-
-    if (direction === 'next') {
-      setCurrent((prev: number) => (prev + 1) % slides.length);
-    } else {
-      setCurrent((prev: number) => (prev - 1 + slides.length) % slides.length);
-    }
-
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 300);
-  }, [isTransitioning, slides.length]);
-
-  // Touch handlers
-  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    isDragging.current = true;
-
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-
-    const touchCurrentX = e.touches[0].clientX;
-    const touchCurrentY = e.touches[0].clientY;
-    const deltaX = Math.abs(touchCurrentX - touchStartX.current);
-    const deltaY = Math.abs(touchCurrentY - touchStartY.current);
-
-    if (deltaX > deltaY && deltaX > 10) {
-      e.preventDefault();
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const deltaX = touchStartX.current - touchEndX;
-    const deltaY = Math.abs(touchStartY.current - touchEndY);
-
-    isDragging.current = false;
-
-    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > deltaY) {
-      if (deltaX > 0) {
-        handleSlideChange('next');
-      } else {
-        handleSlideChange('prev');
-      }
-    }
-
-    setTimeout(() => {
-      intervalRef.current = setInterval(() => {
-        if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev: number) => (prev + 1) % slides.length);
-        }
-      }, 5000);
-    }, 1000);
-  }, [handleSlideChange, isTransitioning, slides.length]);
-
-  // Go to specific slide
-  const goToSlide = (index: number) => {
-    if (!isTransitioning && index !== current) {
-      setIsTransitioning(true);
-      setCurrent(index);
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 300);
-    }
-  };
-
   return (
     <>
-      <div 
-        ref={carouselRef} 
-        className="w-full carousel-container relative overflow-hidden bg-gray-900 group"
-      >
+      <div className="w-full hero-container relative overflow-hidden bg-gray-900">
         <div className="relative w-full h-full">
-          {slides.map((slide, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-                index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
-            >
-              {/* Background Image Container */}
-              <div className="absolute inset-0">
-                <img
-                  src={slide.img}
-                  alt={`Slide ${index + 1}`}
-                  className="carousel-image w-full h-full object-cover object-center"
-                  draggable="false"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://picsum.photos/1920/1080?random=${index}`;
-                  }}
-                />
-              </div>
+          {/* Background Image Container */}
+          <div className="absolute inset-0">
+            <img
+              src={backgroundImage}
+              alt="Philtech GMA Background"
+              className="hero-image w-full h-full object-cover object-center"
+              draggable="false"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "https://picsum.photos/1920/1080?random=1";
+              }}
+            />
+          </div>
 
-              {/* Background Overlay - nagbabago base sa dark mode */}
-              <div 
-                className={`absolute inset-0 pointer-events-none z-20 ${
-                  isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
-                }`}
-              />
-
-              {/* Content */}
-              <div className="absolute inset-0 flex items-center justify-center z-30">
-                <div className="text-center px-4 max-w-4xl mx-auto">
-                  <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
-                    <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
-                      WELCOME TO
-                    </span>
-                    <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
-                      PHILTECH GMA
-                    </span>
-                    <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
-                          style={{paddingRight: '5px'}}>
-                      {typewriterText}
-                      <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Touch Area for Mobile Swiping */}
-          <div
-            className="absolute inset-0 z-40 touch-pan-y"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            style={{
-              touchAction: 'pan-y',
-              WebkitTouchCallout: 'none',
-              WebkitUserSelect: 'none',
-              userSelect: 'none'
-            }}
+          {/* Background Overlay */}
+          <div 
+            className={`absolute inset-0 pointer-events-none z-20 ${
+              isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
+            }`}
           />
 
-          {/* Navigation Dots */}
-          {showDots && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50">
-              {slides.map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === current
-                      ? 'bg-[#FFB302] w-6'
-                      : 'bg-white/50 hover:bg-white/75'
-                  }`}
-                  onClick={() => goToSlide(index)}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
+          {/* Content */}
+          <div className="absolute inset-0 flex items-center justify-center z-30">
+            <div className="text-center px-4 max-w-4xl mx-auto">
+              <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
+                <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
+                  WELCOME TO
+                </span>
+                <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
+                  PHILTECH GMA
+                </span>
+                <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
+                      style={{paddingRight: '5px'}}>
+                  {typewriterText}
+                  <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
+                </span>
+              </div>
             </div>
-          )}
-
-          {/* Navigation Arrows */}
-          <button
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
-            onClick={() => handleSlideChange('prev')}
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={24} />
-          </button>
-
-          <button
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
-            onClick={() => handleSlideChange('next')}
-            aria-label="Next slide"
-          >
-            <ChevronRight size={24} />
-          </button>
+          </div>
         </div>
       </div>
 
       <style>{`
-        .carousel-container {
+        .hero-container {
           /* Para sa desktop - full viewport height */
           height: 100vh;
           min-height: 500px;
         }
 
         @media (max-width: 768px) {
-          .carousel-container {
+          .hero-container {
             height: 70vh;
             min-height: 400px;
             max-height: 600px;
@@ -598,14 +399,14 @@ const Carousel: React.FC = () => {
         }
 
         @media (max-width: 480px) {
-          .carousel-container {
+          .hero-container {
             height: 60vh;
             min-height: 350px;
             max-height: 500px;
           }
         }
 
-        .carousel-image {
+        .hero-image {
           width: 100%;
           height: 100%;
           object-fit: cover;
@@ -664,7 +465,6 @@ const HistorySection: React.FC = () => {
           <div 
             data-aos="fade-up"
             data-aos-delay="200"
-            className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg"
           ></div>
           <p 
             data-aos="fade-up"
@@ -872,23 +672,12 @@ const CampusSection: React.FC = () => {
       location: "General Mariano Alvarez, Cavite",
       image: "/images/campuses/gma-campus.jpg",
       established: "2013",
-      students: "250+",
-      programs: ["BTVTED-FBM", "BSCS", "BSOA", "Senior High"],
+      students: "500+",
+      collegePrograms: ["BTVTED-FBM", "BSCS", "BSOA"],
+      seniorHighStrands: ["ABM", "HUMSS", "TVL-ICT", "TVL-HE"],
       description: "Our flagship GMA campus offers comprehensive bachelor's programs and technical education in a modern facility.",
       highlights: ["First to offer bachelor's programs", "Modern computer laboratories", "Industry partnerships"],
       coordinates: { lat: 14.2978, lng: 120.9958 }
-    },
-    {
-      id: 2,
-      name: "PHILTECH SANTA ROSA",
-      location: "Santa Rosa, Laguna",
-      image: "/images/campuses/santa-rosa-campus.jpg",
-      established: "2013",
-      students: "350+",
-      programs: ["Information Technology", "Hotel & Restaurant Services", "Business Management"],
-      description: "Located in the heart of Laguna's business district, providing quality technical education and skills training.",
-      highlights: ["Strategic business location", "Industry connections", "Modern facilities"],
-      coordinates: { lat: 14.3124, lng: 121.1114 }
     },
     {
       id: 3,
@@ -896,62 +685,14 @@ const CampusSection: React.FC = () => {
       location: "Tanay, Rizal",
       image: "/images/campuses/tanay-campus.jpg",
       established: "2010",
-      students: "560+",
-      programs: ["Technical Vocational Training", "Information Technology", "Business Programs"],
+      students: "1000+",
+      collegePrograms: [],
+      seniorHighStrands: ["ABM", "HUMSS", "TVL-ICT", "TVL-HE"],
       description: "Our founding campus in Tanay, Rizal, where the Philtech legacy began. The largest campus serving the local community.",
       highlights: ["Original founding campus", "Largest student population", "Community-focused programs"],
       coordinates: { lat: 14.5979, lng: 121.3547 }
     }
   ];
-
-  const [current, setCurrent] = useState<number>(0);
-  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
-  const [isPaused, setIsPaused] = useState<boolean>(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (!isPaused) {
-      intervalRef.current = setInterval(() => {
-        if (!isTransitioning) {
-          setCurrent((prev) => (prev + 1) % campuses.length);
-        }
-      }, 5000);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isPaused, isTransitioning, campuses.length]);
-
-  const handleSlideChange = useCallback((direction: string) => {
-    if (isTransitioning) return;
-
-    setIsTransitioning(true);
-
-    if (direction === 'next') {
-      setCurrent((prev) => (prev + 1) % campuses.length);
-    } else {
-      setCurrent((prev) => (prev - 1 + campuses.length) % campuses.length);
-    }
-
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 300);
-  }, [isTransitioning, campuses.length]);
-
-  const goToSlide = (index: number) => {
-    if (index !== current && !isTransitioning) {
-      setIsTransitioning(true);
-      setCurrent(index);
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 300);
-    }
-  };
-
-  const currentCampus = campuses[current];
 
   return (
     <section className="w-full py-20 px-4 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 dark:from-gray-900 dark:via-red-950/20 dark:to-gray-900 relative overflow-hidden">
@@ -970,7 +711,6 @@ const CampusSection: React.FC = () => {
             Our Campuses
           </h2>
           <div 
-            className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg"
             data-aos="fade-up"
             data-aos-delay="200"
           ></div>
@@ -979,267 +719,242 @@ const CampusSection: React.FC = () => {
             data-aos="fade-up"
             data-aos-delay="300"
           >
-            Discover our three strategic locations across Luzon, each serving their communities with excellence
+            Discover our strategic locations across Luzon, each serving their communities with excellence
           </p>
         </div>
 
-        <div
-          className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-3xl overflow-hidden border border-gray-200 dark:border-gray-700"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          data-aos="zoom-in"
-          data-aos-delay="400"
-        >
-          <div className="relative h-[600px] lg:h-[500px]">
-            <div className="absolute inset-0">
-              {campuses.map((campus, index) => (
-                <div
-                  key={campus.id}
-                  className={`absolute inset-0 transition-opacity duration-500 ${
-                    index === current ? 'opacity-100' : 'opacity-0'
-                  }`}
-                >
-                  <img
-                    src={campus.image}
-                    alt={campus.name}
-                    className="w-full h-full object-cover"
-                    onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                      (e.target as HTMLImageElement).src = `https://picsum.photos/800/600?random=${campus.id}`;
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black/50"></div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8" data-aos="fade-up" data-aos-delay="400">
+          {campuses.map((campus, index) => (
+            <div 
+              key={campus.id}
+              className="bg-white dark:bg-gray-800 rounded-3xl shadow-3xl overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-4xl hover:transform hover:scale-[1.02] group flex flex-col"
+              data-aos="fade-up"
+              data-aos-delay={500 + (index * 100)}
+            >
+              <div className="relative h-64 overflow-hidden">
+                <img
+                  src={campus.image}
+                  alt={campus.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                    (e.target as HTMLImageElement).src = `https://picsum.photos/800/600?random=${campus.id}`;
+                  }}
+                />
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-all duration-300"></div>
+                
+                {/* Campus Badge */}
+                <div className="absolute top-4 left-4">
+                  <div className="bg-gradient-to-r from-[#7b1112] to-[#FFB302] text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+                    {campus.name}
+                  </div>
                 </div>
-              ))}
-            </div>
 
-            <div className="absolute inset-0 flex flex-col lg:flex-row">
-              <div className="flex-1 p-8 lg:p-12 flex flex-col justify-center text-white">
-                <div className="max-w-2xl">
-                  <h3 
-                    className="text-3xl lg:text-5xl font-bold mb-4"
-                    data-aos="fade-right"
-                    data-aos-delay="500"
-                  >
-                    {currentCampus.name}
-                  </h3>
+                {/* Established Badge */}
+                <div className="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-800 dark:text-white px-3 py-1 rounded-full text-sm font-semibold">
+                  Est. {campus.established}
+                </div>
+              </div>
 
-                  <div 
-                    className="flex items-center mb-6 text-yellow-200"
-                    data-aos="fade-right"
-                    data-aos-delay="600"
-                  >
-                    <MapPin size={20} className="mr-2" />
-                    <span className="text-lg">{currentCampus.location}</span>
+              <div className="p-6 lg:p-8 flex flex-col flex-1">
+                {/* Location */}
+                <div className="flex items-center mb-4 text-gray-600 dark:text-gray-300">
+                  <MapPin size={18} className="mr-2 text-[#7b1112]" />
+                  <span className="text-sm font-medium">{campus.location}</span>
+                </div>
+
+                {/* Description */}
+                <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+                  {campus.description}
+                </p>
+
+                {/* Stats - Dynamic grid based on whether campus has college programs */}
+                <div className={`grid ${campus.collegePrograms.length > 0 ? 'grid-cols-3' : 'grid-cols-2'} gap-4 mb-6`}>
+                  <div className="text-center p-3 bg-amber-50 dark:bg-gray-700 rounded-lg">
+                    <Users size={20} className="mx-auto mb-2 text-[#7b1112]" />
+                    <div className="text-xl font-bold text-gray-800 dark:text-white">{campus.students}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-300">Students</div>
                   </div>
-
-                  <p 
-                    className="text-lg leading-relaxed mb-8 text-amber-100"
-                    data-aos="fade-right"
-                    data-aos-delay="700"
-                  >
-                    {currentCampus.description}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-6 mb-8">
-                    <div data-aos="fade-up" data-aos-delay="800">
-                      <div className="flex items-center mb-2">
-                        <Calendar size={18} className="mr-2 text-yellow-300" />
-                        <span className="text-sm text-yellow-200">Established</span>
-                      </div>
-                      <div className="text-2xl font-bold">{currentCampus.established}</div>
+                  {campus.collegePrograms.length > 0 && (
+                    <div className="text-center p-3 bg-amber-50 dark:bg-gray-700 rounded-lg">
+                      <GraduationCap size={20} className="mx-auto mb-2 text-[#7b1112]" />
+                      <div className="text-xl font-bold text-gray-800 dark:text-white">{campus.collegePrograms.length}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-300">College Programs</div>
                     </div>
-                    <div data-aos="fade-up" data-aos-delay="900">
-                      <div className="flex items-center mb-2">
-                        <Users size={18} className="mr-2 text-yellow-300" />
-                        <span className="text-sm text-yellow-200">Students</span>
-                      </div>
-                      <div className="text-2xl font-bold">{currentCampus.students}</div>
-                    </div>
+                  )}
+                  <div className="text-center p-3 bg-amber-50 dark:bg-gray-700 rounded-lg">
+                    <BookOpen size={20} className="mx-auto mb-2 text-[#7b1112]" />
+                    <div className="text-xl font-bold text-gray-800 dark:text-white">{campus.seniorHighStrands.length}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-300">SHS Strands</div>
                   </div>
+                </div>
 
-                  <div data-aos="fade-up" data-aos-delay="1000">
-                    <h4 className="text-lg font-semibold mb-3 text-yellow-200">Programs Offered:</h4>
+                {/* College Programs - Only show if campus has college programs */}
+                {campus.collegePrograms.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold mb-3 text-gray-800 dark:text-white flex items-center">
+                      <University size={18} className="mr-2 text-[#FFB302]" />
+                      College Programs Offered
+                    </h4>
                     <div className="flex flex-wrap gap-2">
-                      {currentCampus.programs.map((program, index) => (
+                      {campus.collegePrograms.map((program, programIndex) => (
                         <span
-                          key={index}
-                          className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm border border-white/30"
+                          key={programIndex}
+                          className="px-3 py-1 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-gray-700 dark:to-gray-600 text-gray-700 dark:text-gray-300 rounded-full text-sm border border-amber-200 dark:border-gray-600"
                         >
                           {program}
                         </span>
                       ))}
                     </div>
                   </div>
+                )}
+
+                {/* Senior High Strands */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold mb-3 text-gray-800 dark:text-white flex items-center">
+                    <School size={18} className="mr-2 text-[#FFB302]" />
+                    Senior High Strands Offered
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {campus.seniorHighStrands.map((strand, strandIndex) => (
+                      <span
+                        key={strandIndex}
+                        className="px-3 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600 text-gray-700 dark:text-gray-300 rounded-full text-sm border border-blue-200 dark:border-gray-600"
+                      >
+                        {strand}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Highlights */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold mb-3 text-gray-800 dark:text-white flex items-center">
+                    <Star size={18} className="mr-2 text-[#FFB302]" />
+                    Campus Highlights
+                  </h4>
+                  <ul className="space-y-2">
+                    {campus.highlights.map((highlight, highlightIndex) => (
+                      <li key={highlightIndex} className="flex items-start text-sm text-gray-600 dark:text-gray-300">
+                        <div className="w-2 h-2 bg-[#7b1112] rounded-full mt-1.5 mr-3 flex-shrink-0"></div>
+                        {highlight}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>
+          ))}
+        </div>
 
-            {/* Previous Button - Maroon with hover animation */}
-            <button
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-[#7b1112] hover:bg-gradient-to-r hover:from-[#7b1112] hover:to-[#FFB302] text-white rounded-full p-4 transition-all duration-300 z-20 shadow-lg hover:shadow-xl transform hover:scale-110 group"
-              onClick={() => handleSlideChange('prev')}
-              aria-label="Previous campus"
-            >
-              <ChevronLeft size={24} className="group-hover:animate-pulse" />
-            </button>
-
-            {/* Next Button - Maroon with hover animation */}
-            <button
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-[#7b1112] hover:bg-gradient-to-r hover:from-[#7b1112] hover:to-[#FFB302] text-white rounded-full p-4 transition-all duration-300 z-20 shadow-lg hover:shadow-xl transform hover:scale-110 group"
-              onClick={() => handleSlideChange('next')}
-              aria-label="Next campus"
-            >
-              <ChevronRight size={24} className="group-hover:animate-pulse" />
-            </button>
-          </div>
-
-          {/* Campus Indicator Buttons */}
-          <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-6">
-            <div className="flex justify-center items-center space-x-4">
-              {campuses.map((campus, index) => (
-                <button
-                  key={campus.id}
-                  className={`flex items-center space-x-3 px-6 py-3 rounded-full transition-all duration-300 group relative overflow-hidden ${
-                    index === current
-                      ? 'bg-gradient-to-r from-[#7b1112] to-[#FFB302] text-white shadow-lg transform scale-105'
-                      : 'bg-[#7b1112] text-white hover:bg-gradient-to-r hover:from-[#7b1112] hover:to-[#FFB302] shadow-md'
-                  }`}
-                  onClick={() => goToSlide(index)}
-                  aria-label={`Go to ${campus.name}`}
-                >
-                  {/* Hover animation effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#FFB302] to-[#7b1112] opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full"></div>
-                  
-                  <div className={`w-3 h-3 rounded-full relative z-10 ${
-                    index === current ? 'bg-white animate-pulse' : 'bg-amber-200'
-                  }`} />
-                  <span className="font-medium hidden sm:block relative z-10 group-hover:text-white transition-colors duration-300">
-                    {campus.name.split(' ')[1]}
-                  </span>
-                </button>
-              ))}
+        {/* Comparison Section */}
+        <div className="mt-16 bg-white dark:bg-gray-800 rounded-3xl shadow-3xl p-8 border border-gray-200 dark:border-gray-700">
+          <h3 className="text-2xl font-bold text-center mb-8 text-gray-800 dark:text-white">
+            Campus Comparison
+          </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="text-center p-6 bg-amber-50 dark:bg-gray-700 rounded-xl">
+              <div className="text-3xl font-bold text-[#7b1112] mb-2">2</div>
+              <div className="text-gray-600 dark:text-gray-300">Strategic Locations</div>
             </div>
-
-            {/* Progress Bar */}
-            <div className="mt-4 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div
-                className="bg-gradient-to-r from-[#7b1112] to-[#FFB302] h-2 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${((current + 1) / campuses.length) * 100}%` }}
-              />
+            <div className="text-center p-6 bg-amber-50 dark:bg-gray-700 rounded-xl">
+              <div className="text-3xl font-bold text-[#7b1112] mb-2">1500+</div>
+              <div className="text-gray-600 dark:text-gray-300">Total Students</div>
+            </div>
+            <div className="text-center p-6 bg-amber-50 dark:bg-gray-700 rounded-xl">
+              <div className="text-3xl font-bold text-[#7b1112] mb-2">3</div>
+              <div className="text-gray-600 dark:text-gray-300">College Programs</div>
+            </div>
+            <div className="text-center p-6 bg-amber-50 dark:bg-gray-700 rounded-xl">
+              <div className="text-3xl font-bold text-[#7b1112] mb-2">8</div>
+              <div className="text-gray-600 dark:text-gray-300">SHS Strands</div>
             </div>
           </div>
         </div>
       </div>
 
       <style>{`
-        @keyframes fade-in-up {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes scale-in-up {
-          from { opacity: 0; transform: scale(0.95) translateY(20px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        @keyframes maroon-gold-pulse {
-          0%, 100% { background-color: #7b1112; }
-          50% { background-color: #FFB302; }
-        }
-        .animate-fade-in-up {
-          animation: fade-in-up 1s ease-out;
-        }
-        .animate-scale-in-up {
-          animation: scale-in-up 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .animate-maroon-gold-pulse {
-          animation: maroon-gold-pulse 2s ease-in-out infinite;
-        }
-        .delay-100 { animation-delay: 0.1s; }
-        .delay-200 { animation-delay: 0.2s; }
-        .delay-300 { animation-delay: 0.3s; }
-        .delay-400 { animation-delay: 0.4s; }
-        .delay-500 { animation-delay: 0.5s; }
         .shadow-3xl {
-          box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
-        
-        /* Custom hover animations */
-        .hover-glow:hover {
-          box-shadow: 0 0 20px rgba(255, 179, 2, 0.5);
+        .shadow-4xl {
+          box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
       `}</style>
     </section>
   );
 };
 
-const OngoingEventsSection: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+const NewsAndAnnouncementsSection: React.FC = () => {
+  const [selectedNews, setSelectedNews] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  const events = [
+  const newsItems = [
     {
       id: 1,
-      title: "Tech Innovation Summit 2024",
-      category: "academic",
-      date: "2024-03-15",
-      time: "9:00 AM - 4:00 PM",
-      location: "PHILTECH GMA Auditorium",
-      image: "/images/events/3.jpg",
-      description: "Annual technology conference featuring industry experts, workshops, and innovation showcases.",
-      status: "ongoing",
-      attendees: 150,
-      maxAttendees: 200,
-      tags: ["Technology", "Workshop", "Networking"],
-      organizer: "Computer Science Department",
-      requirements: ["Student ID", "Registration"],
-      contact: "techsummit@philtech.edu"
+      title: "Marketing Summit and Team Building 2025",
+      date: "2025-10-29",
+      author: "Philtech GmaPage",
+      image: "/images/News&Announcements/team-building .jpg",
+      excerpt: "The Marketing Summit and Team Building held last October 29–30, 2025, at Shercon Resort Tropical Farm Suites Ecology Park, was a resounding success! 🌿💼",
+      content: "✨ Theme: Connect, Create, Conquer — Strategic Planning of Marketing Techniques for 2026–2027 ✨ The Marketing Summit and Team Building held last October 29–30, 2025, at Shercon Resort Tropical Farm Suites Ecology Park, was a resounding success! 🌿💼 Through this event, the PhilTech Administrative and Faculty Staff strengthened their bonds, shared innovative ideas, and developed strategic plans to gear up for the upcoming Senior High School Curriculum 2026–2027. Together, we are ready to connect, create, and conquer new challenges ahead! 💪🎯",
+      tags: ["Connect", "Create", "Conquer"],
+      department: "Faculties, Marketing and Admins",
+      contact: "philtech.2013gma@gmail.com"
     },
     {
       id: 2,
-      title: "Cultural Festival Week",
-      category: "cultural",
-      date: "2024-03-10",
-      time: "10:00 AM - 8:00 PM",
-      location: "PHILTECH GMA Grounds",
-      image: "/images/events/1.jpg",
-      description: "Celebrate diversity with cultural performances, food fairs, and traditional arts exhibition.",
-      status: "ongoing",
-      attendees: 300,
-      maxAttendees: 500,
-      tags: ["Culture", "Food", "Performance"],
-      organizer: "Student Affairs Office",
-      requirements: ["Open to all"],
-      contact: "culture@philtech.edu"
+      title: "Supreme Student Government",
+      date: "2025-10-14",
+      author: "Philtech GmaPage",
+      image: "/images/News&Announcements/votes.jpg",
+      excerpt: "Philtech Supreme Student Government! Check out the list below and get ready to make your voices be heard!📢",
+      content: "The results are in! 🗳️ Congratulations, to our Student Government winners! 📣 A new chapter begins for the Philtech GMA! Remember that leadership is a privilege, not a right.",
+      tags: ["PSSGElection2025"],
+      department: "Senior High Students",
+      contact: "philtech.2013gma@gmail.com"
     },
     {
       id: 3,
-      title: "Career Fair 2024",
-      category: "career",
-      date: "2024-03-20",
-      time: "8:00 AM - 5:00 PM",
-      location: "PHILTECH GMA Gymnasium",
-      image: "/images/events/2.jpg",
-      description: "Connect with top employers and explore internship and job opportunities.",
-      status: "upcoming",
-      attendees: 200,
-      maxAttendees: 400,
-      tags: ["Employment", "Networking", "Career"],
-      organizer: "Career Development Center",
-      requirements: ["Resume", "Business Attire"],
+      title: "World Teachers Day",
+      date: "2025-10-04",
+      author: "Philtech GmaPage",
+      image: "/images/News&Announcements/teacherday.jpg",
+      excerpt: "On this World Teachers' Day, we express our heartfelt gratitude to all educators who guide our journey of learning with dedication, compassion, and wisdom.",
+      content: "Happy World Teachers' Day! 💐 Behind every successful student is a teacher who believed, encouraged, and patiently guided them. Your tireless dedication, kindness, and sacrifices make an everlasting impact on our lives. Thank you for shaping not only our skills but also our values, giving us wings to fly higher and dreams to chase. You are truly the heart of education and the hope of tomorrow.🌍❤️.",
+      tags: ["WorldTeachersday"],
+      department: "All Teachers",
       contact: "career@philtech.edu"
-    }
+    },
   ];
 
-  const filteredEvents = events.filter(event => {
-    if (activeCategory === 'all') return true;
-    if (activeCategory === 'ongoing') return event.status === 'ongoing';
-    if (activeCategory === 'upcoming') return event.status === 'upcoming';
-    return event.category === activeCategory;
-  });
+  // Function to calculate relative time (e.g., "2 months ago", "1 day ago")
+  const getRelativeTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    const diffInMonths = Math.floor(diffInDays / 30);
+    const diffInYears = Math.floor(diffInMonths / 12);
 
-  const handleEventClick = (event: any) => {
-    setSelectedEvent(event);
+    if (diffInYears > 0) {
+      return `${diffInYears} year${diffInYears > 1 ? 's' : ''} ago`;
+    } else if (diffInMonths > 0) {
+      return `${diffInMonths} month${diffInMonths > 1 ? 's' : ''} ago`;
+    } else if (diffInDays > 0) {
+      return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    } else {
+      return 'Today';
+    }
+  };
+
+  const handleNewsClick = (news: any) => {
+    setSelectedNews(news);
     setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedNews(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -1251,32 +966,8 @@ const OngoingEventsSection: React.FC = () => {
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
-  const getStatusBadge = (status: string) => {
-    const styles = {
-      ongoing: 'bg-[#7b1112] text-white dark:bg-[#BC1F27] dark:text-white',
-      upcoming: 'bg-[#FFB302] text-gray-800 dark:bg-[#FFD700] dark:text-gray-800'
-    };
-    
-    return (
-      <span className={`px-3 py-1 rounded-full text-sm font-medium ${styles[status as keyof typeof styles]}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    );
-  };
-
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      academic: 'from-[#7b1112] to-[#BC1F27]',
-      cultural: 'from-[#FFB302] to-[#FFD700]',
-      sports: 'from-[#7b1112] to-[#FFB302]',
-      career: 'from-[#BC1F27] to-[#FFB302]',
-      social: 'from-[#FFB302] to-[#BC1F27]'
-    };
-    return colors[category as keyof typeof colors] || 'from-[#7b1112] to-[#FFB302]';
-  };
-
   return (
-    <section className="w-full py-20 px-4 bg-gradient-to-br from-red-50 via-amber-50 to-red-50 dark:from-gray-900 dark:via-red-950/20 dark:to-amber-950/20 relative overflow-hidden">
+    <section className="w-full py-20 px-4 bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-blue-950/20 dark:to-gray-800 relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-10 left-10 w-32 h-32 bg-[#7b1112] rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-40 h-40 bg-[#FFB302] rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -1289,7 +980,7 @@ const OngoingEventsSection: React.FC = () => {
             className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-[#7b1112] via-[#BC1F27] to-[#FFB302] bg-clip-text text-transparent"
             data-aos="fade-up"
           >
-            Ongoing Events
+            News & Announcements
           </h2>
           <div 
             className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg"
@@ -1301,87 +992,66 @@ const OngoingEventsSection: React.FC = () => {
             data-aos="fade-up"
             data-aos-delay="300"
           >
-            Stay updated with the latest events, activities, and opportunities at PHILTECH GMA
+            Stay informed with the latest updates, achievements, and important announcements from PHILTECH GMA
           </p>
         </div>
 
-        {/* Category Filter */}
-        <div 
-          className="flex flex-wrap justify-center gap-4 mb-12"
-          data-aos="fade-up"
-          data-aos-delay="400"
-        >
-        </div>
-
-        {/* Events Grid */}
+        {/* Announcements Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {filteredEvents.map((event, index) => (
+          {newsItems.map((news, index) => (
             <div
-              key={event.id}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+              key={news.id}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:scale-105 hover:shadow-2xl flex flex-col"
               data-aos="fade-up"
               data-aos-delay={index * 200}
             >
               <div className="relative">
                 <img
-                  src={event.image}
-                  alt={event.title}
+                  src={news.image}
+                  alt={news.title}
                   className="w-full h-48 object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://picsum.photos/400/300?random=${event.id}`;
+                    (e.target as HTMLImageElement).src = `https://picsum.photos/400/300?random=${news.id}`;
                   }}
                 />
-                <div className="absolute top-4 right-4">
-                  {getStatusBadge(event.status)}
-                </div>
-                <div className="absolute bottom-4 left-4">
-                  <span className={`px-3 py-1 rounded-full text-white text-sm font-medium bg-gradient-to-r ${getCategoryColor(event.category)}`}>
-                    {event.category.charAt(0).toUpperCase() + event.category.slice(1)}
+                <div className="absolute top-4 left-4">
+                  <span className="px-3 py-1 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#7b1112] to-[#BC1F27]">
+                    Announcement
                   </span>
                 </div>
               </div>
 
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-3 line-clamp-2">
-                  {event.title}
+              <div className="p-6 flex-1 flex flex-col">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4 line-clamp-2">
+                  {news.title}
                 </h3>
                 
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center text-gray-600 dark:text-gray-300">
-                    <Calendar size={16} className="mr-2 text-[#7b1112]" />
-                    <span className="text-sm">{formatDate(event.date)}</span>
-                  </div>
-                  <div className="flex items-center text-gray-600 dark:text-gray-300">
-                    <Clock size={16} className="mr-2 text-[#FFB302]" />
-                    <span className="text-sm">{event.time}</span>
-                  </div>
-                  <div className="flex items-center text-gray-600 dark:text-gray-300">
-                    <MapPin size={16} className="mr-2 text-[#BC1F27]" />
-                    <span className="text-sm">{event.location}</span>
-                  </div>
-                </div>
-
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
-                  {event.description}
-                </p>
-
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-2">
-                    <Users size={16} className="text-[#7b1112]" />
-                    <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {event.attendees}/{event.maxAttendees}
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-gray-600 dark:text-gray-300">
+                      <Calendar size={16} className="mr-2 text-[#7b1112]" />
+                      <span className="text-sm font-semibold">{getRelativeTime(news.date)}</span>
+                    </div>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                      {formatDate(news.date)}
                     </span>
                   </div>
-                  <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div 
-                      className="bg-gradient-to-r from-[#7b1112] to-[#FFB302] h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${(event.attendees / event.maxAttendees) * 100}%` }}
-                    />
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
+                    <User size={16} className="mr-2 text-[#FFB302]" />
+                    <span className="text-sm">{news.author}</span>
+                  </div>
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Building size={16} className="mr-2 text-[#BC1F27]" />
+                    <span className="text-sm">{news.department}</span>
                   </div>
                 </div>
 
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3 flex-1">
+                  {news.excerpt}
+                </p>
+
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {event.tags.slice(0, 2).map((tag, tagIndex) => (
+                  {news.tags.map((tag: string, tagIndex: number) => (
                     <span
                       key={tagIndex}
                       className="px-2 py-1 bg-[#7b1112]/10 text-[#7b1112] dark:bg-[#FFB302]/20 dark:text-[#FFB302] text-xs rounded"
@@ -1389,69 +1059,71 @@ const OngoingEventsSection: React.FC = () => {
                       #{tag}
                     </span>
                   ))}
-                  {event.tags.length > 2 && (
-                    <span className="px-2 py-1 bg-[#7b1112]/10 text-[#7b1112] dark:bg-[#FFB302]/20 dark:text-[#FFB302] text-xs rounded">
-                      +{event.tags.length - 2}
-                    </span>
-                  )}
+                </div>
+
+                <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-600">
+                  <button
+                    onClick={() => handleNewsClick(news)}
+                    className="w-full bg-gradient-to-r from-[#7b1112] to-[#BC1F27] hover:from-[#f7a102] hover:to-[#f7a102] text-white px-4 py-3 rounded-lg font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
+                  >
+                    <Newspaper size={16} />
+                    Read Full Story
+                  </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {filteredEvents.length === 0 && (
+        {newsItems.length === 0 && (
           <div className="text-center py-12">
             <div className="w-24 h-24 mx-auto mb-4 bg-[#7b1112]/10 rounded-full flex items-center justify-center">
-              <Calendar size={40} className="text-[#7b1112]" />
+              <Newspaper size={40} className="text-[#7b1112]" />
             </div>
             <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">
-              No events found
+              No announcements found
             </h3>
             <p className="text-gray-500 dark:text-gray-400">
-              There are no events matching your selected category.
+              There are no announcements at the moment.
             </p>
           </div>
         )}
-
-        <div className="text-center" data-aos="fade-up" data-aos-delay="600">
-          <Link to="/events" className="bg-gradient-to-r from-[#7b1112] to-[#7b1112] hover:from-[#f7a102] hover:to-[#f7a102] text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 inline-block text-center">
-            View All Events
-          </Link>
-        </div>
       </div>
 
-      {/* Event Detail Modal */}
-      {isModalOpen && selectedEvent && (
+      {/* Announcement Detail Modal */}
+      {isModalOpen && selectedNews && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
           <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in-up"
-            data-aos="zoom-in"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-scale-in-up"
           >
             <div className="relative">
               <img
-                src={selectedEvent.image}
-                alt={selectedEvent.title}
-                className="w-full h-64 object-cover"
+                src={selectedNews.image}
+                alt={selectedNews.title}
+                className="w-full h-80 object-cover"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = `https://picsum.photos/800/400?random=${selectedEvent.id}`;
+                  (e.target as HTMLImageElement).src = `https://picsum.photos/800/400?random=${selectedNews.id}`;
                 }}
               />
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleCloseModal}
                 className="absolute top-4 right-4 bg-[#7b1112] hover:bg-[#BC1F27] text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200 shadow-lg"
-                aria-label="Close event details"
+                aria-label="Close announcement details"
               >
                 <X size={24} />
               </button>
             </div>
 
             <div className="p-8">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-white">
-                  {selectedEvent.title}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-3 py-1 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#7b1112] to-[#BC1F27]">
+                    Announcement
+                  </span>
+                </div>
+                <h3 className="text-3xl font-bold text-gray-800 dark:text-white">
+                  {selectedNews.title}
                 </h3>
-                {getStatusBadge(selectedEvent.status)}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -1459,29 +1131,39 @@ const OngoingEventsSection: React.FC = () => {
                   <div className="flex items-center">
                     <Calendar className="w-5 h-5 text-[#7b1112] mr-3" />
                     <div>
-                      <p className="text-sm text-gray-500">Date</p>
-                      <p className="font-semibold">{formatDate(selectedEvent.date)}</p>
+                      <p className="text-sm text-gray-500">Published</p>
+                      <p className="font-semibold">{getRelativeTime(selectedNews.date)}</p>
+                      <p className="text-sm text-gray-400">{formatDate(selectedNews.date)}</p>
                     </div>
                   </div>
                   <div className="flex items-center">
-                    <Clock className="w-5 h-5 text-[#FFB302] mr-3" />
+                    <User className="w-5 h-5 text-[#FFB302] mr-3" />
                     <div>
-                      <p className="text-sm text-gray-500">Time</p>
-                      <p className="font-semibold">{selectedEvent.time}</p>
+                      <p className="text-sm text-gray-500">Author</p>
+                      <p className="font-semibold">{selectedNews.author}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center">
+                    <Building className="w-5 h-5 text-[#BC1F27] mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-500">Department</p>
+                      <p className="font-semibold">{selectedNews.department}</p>
                     </div>
                   </div>
                   <div className="flex items-center">
-                    <MapPin className="w-5 h-5 text-[#BC1F27] mr-3" />
+                    <Mail className="w-5 h-5 text-[#7b1112] mr-3" />
                     <div>
-                      <p className="text-sm text-gray-500">Location</p>
-                      <p className="font-semibold">{selectedEvent.location}</p>
+                      <p className="text-sm text-gray-500">Contact</p>
+                      <p className="font-semibold">{selectedNews.contact}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-2 mb-6">
-                {selectedEvent.tags.map((tag: string, index: number) => (
+                {selectedNews.tags.map((tag: string, index: number) => (
                   <span
                     key={index}
                     className="px-3 py-1 bg-[#7b1112]/10 text-[#7b1112] dark:bg-[#FFB302]/20 dark:text-[#FFB302] text-sm rounded-full"
@@ -1489,6 +1171,21 @@ const OngoingEventsSection: React.FC = () => {
                     #{tag}
                   </span>
                 ))}
+              </div>
+
+              <div className="prose dark:prose-invert max-w-none">
+                <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed whitespace-pre-line">
+                  {selectedNews.content}
+                </p>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
+                <button
+                  onClick={handleCloseModal}
+                  className="bg-gradient-to-r from-[#7b1112] to-[#BC1F27] hover:from-[#f7a102] hover:to-[#f7a102] text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                >
+                  Close Announcement
+                </button>
               </div>
             </div>
           </div>
@@ -1502,9 +1199,11 @@ const OngoingEventsSection: React.FC = () => {
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
-        @keyframes fade-in-up {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
         @keyframes fade-in {
           from { opacity: 0; }
@@ -1513,9 +1212,6 @@ const OngoingEventsSection: React.FC = () => {
         @keyframes scale-in-up {
           from { opacity: 0; transform: scale(0.95) translateY(20px); }
           to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .animate-fade-in-up {
-          animation: fade-in-up 0.6s ease-out;
         }
         .animate-fade-in {
           animation: fade-in 0.3s ease-out;
@@ -1932,15 +1628,15 @@ const EnrollmentCTASection: React.FC = () => {
                 data-aos-delay="900"
               >
                 <div>
-                  <div className="text-2xl font-bold text-amber-300">2,000+</div>
+                  <div className="text-2xl font-bold text-amber-300">500+</div>
                   <div className="text-sm text-white/80">Students</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-amber-300">50+</div>
+                  <div className="text-2xl font-bold text-amber-300">8+</div>
                   <div className="text-sm text-white/80">Programs</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-amber-300">95%</div>
+                  <div className="text-2xl font-bold text-amber-300">98%</div>
                   <div className="text-sm text-white/80">Graduation Rate</div>
                 </div>
               </div>
@@ -1982,18 +1678,6 @@ const EnrollmentCTASection: React.FC = () => {
                       </div>
                     </div>
                   </div>
-
-                  <div 
-                    className="absolute -top-6 -right-6 bg-amber-100 rounded-2xl p-4 shadow-2xl border-2 border-amber-400 animate-float-delayed"
-                    data-aos="fade-left"
-                    data-aos-delay="700"
-                  >
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-[#7b1112]">"</div>
-                      <div className="text-sm font-medium text-gray-700">Ready to assist you!</div>
-                      <div className="text-xs text-gray-600 mt-1">10+ years experience</div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Background Decorative Elements */}
@@ -2016,14 +1700,14 @@ const EnrollmentCTASection: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Email:</span>
                 <a href="mailto:registrar@philtech.edu" className="text-[#BC1F27] font-medium hover:text-[#7b1112]">
-                  registrar@philtech.edu
+                  philtech.2013gma@gmail.com
                 </a>
                   </div>
                   
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Phone:</span>
                 <a href="tel:+6321234567" className="text-[#BC1F27] font-medium hover:text-[#7b1112]">
-                  (02) 123-4567
+                  (+63) 997-224-0222
                 </a>
                   </div>
                   
@@ -2100,13 +1784,13 @@ const Footer: React.FC = () => {
             <h2 className="text-2xl font-bold text-white">Philtech GMA</h2>
           </div>
           <p className="text-gray-300 mb-6 max-w-xs">
-            Innovating technology solutions for a better tomorrow. We provide cutting-edge services to help your business grow.
+            Global Success Through Academic Excellence.
           </p>
 
           <div className="flex gap-4">
             {[
               {
-                href: "https://facebook.com",
+                href: "https://www.facebook.com/philtechgma2013",
                 label: "Facebook",
                 svg: (
                   <path d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.408.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.408 24 22.674V1.326C24 .592 23.406 0 22.675 0" />
@@ -2163,10 +1847,10 @@ const Footer: React.FC = () => {
           <ul className="space-y-3">
             {[
               { href: "/about", label: "About Us" },
-              { href: "/services", label: "Our Services" },
-              { href: "/projects", label: "Projects" },
-              { href: "/team", label: "Our Team" },
-              { href: "/careers", label: "Careers" },
+              { href: "/regular", label: "College" },
+              { href: "/seniorhigh", label: "Senior High" },
+              { href: "/developer", label: "Our Team" },
+              { href: "/enrollment-process", label: "Enrollment Process" },
             ].map((link, i) => (
               <li key={i}>
                 <a
@@ -2190,7 +1874,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Email us at</p>
-                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
+                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">philtech.2013gma@gmail.com</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -2199,7 +1883,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Call us</p>
-                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
+                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+63 997 224 0222</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -2208,7 +1892,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Visit us</p>
-                <p className="text-white">123 Tech Street, Manila, Philippines</p>
+                <p className="text-white">2nd Floor CRDM Building Governor's Drive Baranggay Maderan, GMA, Cavite, General Mariano Alvarez, Philippines</p>
               </div>
             </div>
           </div>
@@ -2241,10 +1925,10 @@ export {
   NavLinks,
   Navbar,
   Dropdown,
-  Carousel,
+  HeroBackground,
   HistorySection,
   CampusSection,
-  OngoingEventsSection,
+  NewsAndAnnouncementsSection,
   TestimonialsSection,
   EnrollmentCTASection,
   Footer

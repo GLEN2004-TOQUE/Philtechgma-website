@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { X, Sun, Moon, User, ChevronDown} from "lucide-react";
+import { X, Sun, Moon, User, ChevronDown, ChevronLeft, ChevronRight, Code, Briefcase, Award, Linkedin, Github, Twitter, Globe } from "lucide-react";
+import { useAOS } from "../hooks/useAOS";
 
 const Logo: React.FC = () => {
   return (
@@ -268,9 +269,6 @@ const Dropdown: React.FC<DropdownProps> = ({ title, items }) => {
     </div>
   );
 };
-import { ChevronLeft, ChevronRight } from "lucide-react";
-
-// Dark Mode Hook
 export function useDarkMode(): [boolean, () => void] {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
@@ -635,11 +633,348 @@ const Carousel: React.FC = () => {
   );
 };
 
+const DeveloperProfile: React.FC = () => {
+
+  useAOS();
+
+  const developers = [
+    {
+      id: 1,
+      name: "John Doe",
+      role: "Full-Stack Developer",
+      avatar: "JD",
+      about: "Dedicated software developer with a passion for creating efficient, scalable, and user-friendly applications. Specializes in modern web technologies and best practices.",
+      experience: "Over 5 years of experience in web development, working on projects ranging from small business websites to complex enterprise applications.",
+      skills: [
+        { name: "React", level: 95 },
+        { name: "TypeScript", level: 90 },
+        { name: "Node.js", level: 88 },
+        { name: "Python", level: 85 },
+        { name: "REST APIs", level: 92 }
+      ]
+    },
+    {
+      id: 2,
+      name: "Sarah Chen",
+      role: "Frontend Developer",
+      avatar: "SC",
+      about: "Creative frontend developer focused on crafting beautiful and intuitive user interfaces. Expert in modern JavaScript frameworks and responsive design.",
+      experience: "4+ years specializing in frontend development with extensive experience in React, Vue.js, and modern CSS frameworks.",
+      skills: [
+        { name: "React", level: 90 },
+        { name: "Vue.js", level: 85 },
+        { name: "JavaScript", level: 95 },
+        { name: "CSS", level: 92 },
+        { name: "UI/UX Design", level: 88 }
+      ]
+    },
+    {
+      id: 3,
+      name: "Mike Johnson",
+      role: "Backend Developer",
+      avatar: "MJ",
+      about: "Backend specialist with expertise in server-side technologies, databases, and API development. Passionate about building robust and scalable systems.",
+      experience: "6 years of backend development experience, working with various databases, APIs, and cloud platforms.",
+      skills: [
+        { name: "Node.js", level: 94 },
+        { name: "Python", level: 89 },
+        { name: "PostgreSQL", level: 87 },
+        { name: "MongoDB", level: 85 },
+        { name: "AWS", level: 82 }
+      ]
+    },
+    {
+      id: 4,
+      name: "Emily Rodriguez",
+      role: "Mobile Developer",
+      avatar: "ER",
+      about: "Mobile app developer creating native and cross-platform applications. Committed to delivering exceptional mobile experiences.",
+      experience: "3+ years developing mobile applications for iOS and Android platforms using React Native and Flutter.",
+      skills: [
+        { name: "React Native", level: 88 },
+        { name: "Flutter", level: 85 },
+        { name: "iOS", level: 80 },
+        { name: "Android", level: 82 },
+        { name: "Firebase", level: 78 }
+      ]
+    },
+    {
+      id: 5,
+      name: "Alex Kim",
+      role: "DevOps Engineer",
+      avatar: "AK",
+      about: "DevOps engineer focused on automation, CI/CD pipelines, and infrastructure management. Ensures smooth deployment and monitoring of applications.",
+      experience: "4 years in DevOps and infrastructure management, implementing automated deployment pipelines and monitoring solutions.",
+      skills: [
+        { name: "Docker", level: 90 },
+        { name: "Kubernetes", level: 85 },
+        { name: "AWS", level: 88 },
+        { name: "Jenkins", level: 82 },
+        { name: "Terraform", level: 80 }
+      ]
+    }
+  ];
+
+  const skillColors: { [key: string]: string } = {
+    "React": "from-red-700 to-amber-500",
+    "TypeScript": "from-red-800 to-amber-600",
+    "Node.js": "from-red-700 to-amber-500",
+    "Python": "from-red-800 to-amber-600",
+    "REST APIs": "from-red-900 to-amber-700",
+    "Vue.js": "from-red-700 to-amber-500",
+    "JavaScript": "from-red-800 to-amber-600",
+    "CSS": "from-red-700 to-amber-500",
+    "UI/UX Design": "from-red-800 to-amber-600",
+    "PostgreSQL": "from-red-700 to-amber-500",
+    "MongoDB": "from-red-800 to-amber-600",
+    "AWS": "from-red-900 to-amber-700",
+    "React Native": "from-red-700 to-amber-500",
+    "Flutter": "from-red-800 to-amber-600",
+    "iOS": "from-red-700 to-amber-500",
+    "Android": "from-red-800 to-amber-600",
+    "Firebase": "from-red-900 to-amber-700",
+    "Docker": "from-red-700 to-amber-500",
+    "Kubernetes": "from-red-800 to-amber-600",
+    "Jenkins": "from-red-900 to-amber-700",
+    "Terraform": "from-red-700 to-amber-500"
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-amber-50 dark:from-gray-900 dark:to-amber-900/20 py-16 pt-24">
+      {/* Background Elements */}
+      <div className="absolute top-10 left-10 w-72 h-72 bg-red-200/30 rounded-full blur-3xl opacity-60"></div>
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl opacity-60"></div>
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Section */}
+          <div 
+            className="text-center mb-16"
+            data-aos="fade-down"
+            data-aos-duration="800"
+            data-aos-easing="ease-out-cubic"
+          >
+            <div 
+              className="inline-flex items-center gap-3 text-red-800 dark:text-red-400 mb-4"
+              data-aos="fade-up"
+              data-aos-delay="200"
+              data-aos-duration="600"
+            >
+              <div className="w-8 h-0.5 bg-red-800 dark:bg-red-400"></div>
+              <span className="text-sm font-semibold tracking-wider uppercase">Development Team</span>
+              <div className="w-8 h-0.5 bg-red-800 dark:bg-red-400"></div>
+            </div>
+            <h1 
+              className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6"
+              data-aos="fade-up"
+              data-aos-delay="300"
+              data-aos-duration="800"
+            >
+              Meet Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-800 to-amber-600">Team</span>
+            </h1>
+            <p 
+              className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed"
+              data-aos="fade-up"
+              data-aos-delay="400"
+              data-aos-duration="800"
+            >
+              Meet our talented team of developers, each bringing unique expertise and passion
+              to create innovative solutions and deliver high-quality code.
+            </p>
+          </div>
+
+          {/* Developers Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            {developers.map((developer, index) => (
+              <div
+                key={developer.id}
+                className="group relative bg-white dark:bg-gray-800 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-200 dark:border-gray-700 hover:-translate-y-2"
+                data-aos="fade-up"
+                data-aos-delay={index * 150}
+                data-aos-duration="800"
+                data-aos-easing="ease-out-cubic"
+              >
+                {/* Background Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-amber-50 dark:from-gray-700 dark:to-amber-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div className="relative p-6">
+                  {/* Header with Avatar */}
+                  <div className="text-center mb-6">
+                    <div className="relative inline-block mb-4">
+                      <div 
+                        className="w-28 h-28 bg-gradient-to-br from-red-800 to-amber-600 rounded-3xl mx-auto flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-lg"
+                        data-aos="zoom-in"
+                        data-aos-delay="200"
+                      >
+                        <span className="text-white text-2xl font-bold">{developer.avatar}</span>
+                      </div>
+                      <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white dark:border-gray-800"></div>
+                    </div>
+                    <h3 
+                      className="text-2xl font-bold text-gray-900 dark:text-white mb-2"
+                      data-aos="fade-up"
+                      data-aos-delay="100"
+                    >
+                      {developer.name}
+                    </h3>
+                    <div 
+                      className="inline-flex items-center gap-2 bg-gradient-to-r from-red-800 to-amber-600 text-white px-4 py-2 rounded-full text-sm font-semibold"
+                      data-aos="fade-up"
+                      data-aos-delay="150"
+                    >
+                      <Code className="w-4 h-4" />
+                      {developer.role}
+                    </div>
+                  </div>
+
+                  {/* About & Experience */}
+                  <div className="space-y-4 mb-6">
+                    <div 
+                      className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4"
+                      data-aos="fade-right"
+                      data-aos-delay="200"
+                    >
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 uppercase tracking-wide flex items-center gap-2">
+                        <User className="w-4 h-4 text-red-700" />
+                        About
+                      </h4>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        {developer.about}
+                      </p>
+                    </div>
+
+                    <div 
+                      className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4"
+                      data-aos="fade-right"
+                      data-aos-delay="250"
+                    >
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 uppercase tracking-wide flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-amber-600" />
+                        Experience
+                      </h4>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        {developer.experience}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Skills Section */}
+                  <div>
+                    <h4 
+                      className="text-sm font-semibold text-gray-900 dark:text-white mb-4 uppercase tracking-wide flex items-center gap-2"
+                      data-aos="fade-up"
+                      data-aos-delay="300"
+                    >
+                      <Award className="w-4 h-4 text-red-700" />
+                      Skills & Technologies
+                    </h4>
+                    <div className="space-y-3">
+                      {developer.skills.map((skill, skillIndex) => (
+                        <div 
+                          key={skillIndex}
+                          className="group/skill"
+                          data-aos="fade-right"
+                          data-aos-delay={300 + skillIndex * 50}
+                          data-aos-duration="600"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {skill.name}
+                              </span>
+                            </div>
+                            <span className="text-xs font-bold text-red-700 dark:text-red-400">
+                              {skill.level}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full bg-gradient-to-r ${skillColors[skill.name] || "from-red-700 to-amber-500"} transition-all duration-1000 ease-out group-hover/skill:scale-105`}
+                              style={{ width: `${skill.level}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Social Links */}
+                  <div 
+                    className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700"
+                    data-aos="fade-up"
+                    data-aos-delay="400"
+                  >
+                    <div className="flex justify-center gap-4">
+                      <button className="p-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-xl hover:bg-red-700 hover:text-white transition-all duration-300 transform hover:scale-110" aria-label="LinkedIn">
+                        <Linkedin className="w-5 h-5" />
+                      </button>
+                      <button className="p-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-800 hover:text-white transition-all duration-300 transform hover:scale-110" aria-label="GitHub">
+                        <Github className="w-5 h-5" />
+                      </button>
+                      <button className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-xl hover:bg-amber-600 hover:text-white transition-all duration-300 transform hover:scale-110" aria-label="Twitter">
+                        <Twitter className="w-5 h-5" />
+                      </button>
+                      <button className="p-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-xl hover:bg-red-700 hover:text-white transition-all duration-300 transform hover:scale-110" aria-label="Website">
+                        <Globe className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Corner Accent */}
+                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-red-800 to-amber-600 rounded-bl-3xl opacity-10 group-hover:opacity-20 transition-opacity duration-500"></div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA Section */}
+          <div 
+            className="text-center mt-16"
+            data-aos="fade-up"
+            data-aos-delay="300"
+            data-aos-duration="800"
+          >
+            <div 
+              className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-xl border border-gray-200 dark:border-gray-700"
+              data-aos="zoom-in"
+              data-aos-delay="400"
+            >
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                Ready to Work With Us?
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
+                Our development team is ready to bring your ideas to life. Let's create something amazing together.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button 
+                  className="bg-gradient-to-r from-red-800 to-amber-600 hover:from-red-900 hover:to-amber-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  data-aos="fade-right"
+                  data-aos-delay="500"
+                >
+                  Contact Our Team
+                </button>
+                <button 
+                  className="border-2 border-red-300 dark:border-red-600 text-red-700 dark:text-red-300 hover:border-red-800 hover:text-red-800 dark:hover:border-amber-400 dark:hover:text-amber-400 font-semibold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105"
+                  data-aos="fade-left"
+                  data-aos-delay="500"
+                >
+                  View Our Projects
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Developer: React.FC = () => {
   return (
     <div className="bg-white dark:bg-gray-800 min-h-screen">
       <Navbar />
       <Carousel />
+      <DeveloperProfile />
       <Footer />
     </div>
   );
@@ -648,6 +983,8 @@ const Developer: React.FC = () => {
 export default Developer;
 
 const Footer: React.FC = () => {
+  useAOS();
+
   return (
     <footer 
       className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-16 overflow-hidden"

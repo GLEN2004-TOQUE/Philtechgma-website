@@ -301,65 +301,19 @@ export function useDarkMode(): [boolean, () => void] {
 }
 
 // Main Carousel Component
-const Carousel: React.FC = () => {
-  const slides = [
-    { img: "/images/carousel-backgrounds/3.jpg" },
-    { img: "/images/carousel-backgrounds/1.jpg" },
-    { img: "/images/carousel-backgrounds/2.jpg" },
-  ];
-
-  const [current, setCurrent] = useState<number>(0);
+const HeroBackground: React.FC = () => {
   const [typewriterText, setTypewriterText] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [typeIndex, setTypeIndex] = useState<number>(0);
-  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
-  const [showDots, setShowDots] = useState<boolean>(true);
-  const [isDarkMode] = useDarkMode(); // Kunin ang dark mode state
+  const [isDarkMode] = useDarkMode();
 
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef<number>(0);
-  const touchStartY = useRef<number>(0);
-  const isDragging = useRef<boolean>(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Intersection Observer for dots visibility
-  useEffect(() => {
-    const observer = new window.IntersectionObserver(
-      ([entry]) => {
-        setShowDots(entry.isIntersecting);
-      },
-      { threshold: 0.2 }
-    );
-    if (carouselRef.current) {
-      observer.observe(carouselRef.current);
-    }
-    return () => {
-      if (carouselRef.current) observer.unobserve(carouselRef.current);
-    };
-  }, []);
-
-  // Auto-slide interval
-  useEffect(() => {
-    const startInterval = () => {
-      intervalRef.current = setInterval(() => {
-        if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev: number) => (prev + 1) % slides.length);
-        }
-      }, 5000);
-    };
-
-    startInterval();
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isTransitioning, slides.length]);
+  const backgroundImage = "/images/carousel-backgrounds/3.jpg";
 
   // Typewriter effect
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
     let timeout: NodeJS.Timeout;
+    
     if (!isDeleting && typeIndex < text.length) {
       timeout = setTimeout(() => {
         setTypewriterText((prev: string) => prev + text.charAt(typeIndex));
@@ -379,217 +333,64 @@ const Carousel: React.FC = () => {
         setIsDeleting(false);
       }, 500);
     }
+    
     return () => clearTimeout(timeout);
   }, [typeIndex, isDeleting]);
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        handleSlideChange('prev');
-      } else if (e.key === 'ArrowRight') {
-        handleSlideChange('next');
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isTransitioning]);
-
-  // Slide change handler
-  const handleSlideChange = useCallback((direction: 'next' | 'prev') => {
-    if (isTransitioning) return;
-
-    setIsTransitioning(true);
-
-    if (direction === 'next') {
-      setCurrent((prev: number) => (prev + 1) % slides.length);
-    } else {
-      setCurrent((prev: number) => (prev - 1 + slides.length) % slides.length);
-    }
-
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 300);
-  }, [isTransitioning, slides.length]);
-
-  // Touch handlers
-  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    isDragging.current = true;
-
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-
-    const touchCurrentX = e.touches[0].clientX;
-    const touchCurrentY = e.touches[0].clientY;
-    const deltaX = Math.abs(touchCurrentX - touchStartX.current);
-    const deltaY = Math.abs(touchCurrentY - touchStartY.current);
-
-    if (deltaX > deltaY && deltaX > 10) {
-      e.preventDefault();
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const deltaX = touchStartX.current - touchEndX;
-    const deltaY = Math.abs(touchStartY.current - touchEndY);
-
-    isDragging.current = false;
-
-    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > deltaY) {
-      if (deltaX > 0) {
-        handleSlideChange('next');
-      } else {
-        handleSlideChange('prev');
-      }
-    }
-
-    setTimeout(() => {
-      intervalRef.current = setInterval(() => {
-        if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev: number) => (prev + 1) % slides.length);
-        }
-      }, 5000);
-    }, 1000);
-  }, [handleSlideChange, isTransitioning, slides.length]);
-
-  // Go to specific slide
-  const goToSlide = (index: number) => {
-    if (!isTransitioning && index !== current) {
-      setIsTransitioning(true);
-      setCurrent(index);
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 300);
-    }
-  };
-
   return (
     <>
-      <div 
-        ref={carouselRef} 
-        className="w-full carousel-container relative overflow-hidden bg-gray-900 group"
-      >
+      <div className="w-full hero-container relative overflow-hidden bg-gray-900">
         <div className="relative w-full h-full">
-          {slides.map((slide, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-                index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
-            >
-              {/* Background Image Container */}
-              <div className="absolute inset-0">
-                <img
-                  src={slide.img}
-                  alt={`Slide ${index + 1}`}
-                  className="carousel-image w-full h-full object-cover object-center"
-                  draggable="false"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://picsum.photos/1920/1080?random=${index}`;
-                  }}
-                />
-              </div>
+          {/* Background Image Container */}
+          <div className="absolute inset-0">
+            <img
+              src={backgroundImage}
+              alt="Philtech GMA Background"
+              className="hero-image w-full h-full object-cover object-center"
+              draggable="false"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "https://picsum.photos/1920/1080?random=1";
+              }}
+            />
+          </div>
 
-              {/* Background Overlay - nagbabago base sa dark mode */}
-              <div 
-                className={`absolute inset-0 pointer-events-none z-20 ${
-                  isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
-                }`}
-              />
-
-              {/* Content */}
-              <div className="absolute inset-0 flex items-center justify-center z-30">
-                <div className="text-center px-4 max-w-4xl mx-auto">
-                  <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
-                    <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
-                      WELCOME TO
-                    </span>
-                    <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
-                      PHILTECH GMA
-                    </span>
-                    <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
-                          style={{paddingRight: '5px'}}>
-                      {typewriterText}
-                      <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Touch Area for Mobile Swiping */}
-          <div
-            className="absolute inset-0 z-40 touch-pan-y"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            style={{
-              touchAction: 'pan-y',
-              WebkitTouchCallout: 'none',
-              WebkitUserSelect: 'none',
-              userSelect: 'none'
-            }}
+          {/* Background Overlay */}
+          <div 
+            className={`absolute inset-0 pointer-events-none z-20 ${
+              isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
+            }`}
           />
 
-          {/* Navigation Dots */}
-          {showDots && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50">
-              {slides.map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === current
-                      ? 'bg-[#FFB302] w-6'
-                      : 'bg-white/50 hover:bg-white/75'
-                  }`}
-                  onClick={() => goToSlide(index)}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
+          {/* Content */}
+          <div className="absolute inset-0 flex items-center justify-center z-30">
+            <div className="text-center px-4 max-w-4xl mx-auto">
+              <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
+                <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
+                  WELCOME TO
+                </span>
+                <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
+                  PHILTECH GMA
+                </span>
+                <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
+                      style={{paddingRight: '5px'}}>
+                  {typewriterText}
+                  <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
+                </span>
+              </div>
             </div>
-          )}
-
-          {/* Navigation Arrows */}
-          <button
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
-            onClick={() => handleSlideChange('prev')}
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={24} />
-          </button>
-
-          <button
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
-            onClick={() => handleSlideChange('next')}
-            aria-label="Next slide"
-          >
-            <ChevronRight size={24} />
-          </button>
+          </div>
         </div>
       </div>
 
       <style>{`
-        .carousel-container {
+        .hero-container {
           /* Para sa desktop - full viewport height */
           height: 100vh;
           min-height: 500px;
         }
 
         @media (max-width: 768px) {
-          .carousel-container {
+          .hero-container {
             height: 70vh;
             min-height: 400px;
             max-height: 600px;
@@ -597,14 +398,14 @@ const Carousel: React.FC = () => {
         }
 
         @media (max-width: 480px) {
-          .carousel-container {
+          .hero-container {
             height: 60vh;
             min-height: 350px;
             max-height: 500px;
           }
         }
 
-        .carousel-image {
+        .hero-image {
           width: 100%;
           height: 100%;
           object-fit: cover;
@@ -734,12 +535,6 @@ const FacultyShowcaseSection: React.FC = () => {
           >
             Meet Our Faculty
           </h2>
-          <div
-            className="w-32 h-1 bg-gradient-to-r from-[#7b1112] to-[#FFB302] mx-auto rounded-full shadow-lg mb-6"
-            data-aos="fade-down"
-            data-aos-delay="200"
-            data-aos-duration="600"
-          ></div>
           <p
             className="text-lg text-gray-600 dark:text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed"
             data-aos="fade-up"
@@ -911,7 +706,7 @@ const Faculties: React.FC = () => {
   return (
     <div className="bg-white dark:bg-gray-800 min-h-screen">
       <Navbar />
-      <Carousel />
+      <HeroBackground />
       <FacultyShowcaseSection />
       <Footer />
     </div>
@@ -944,13 +739,13 @@ const Footer: React.FC = () => {
             <h2 className="text-2xl font-bold text-white">Philtech GMA</h2>
           </div>
           <p className="text-gray-300 mb-6 max-w-xs">
-            Innovating technology solutions for a better tomorrow. We provide cutting-edge services to help your business grow.
+            Global Success Through Academic Excellence.
           </p>
 
           <div className="flex gap-4">
             {[
               {
-                href: "https://facebook.com",
+                href: "https://www.facebook.com/philtechgma2013",
                 label: "Facebook",
                 svg: (
                   <path d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.408.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.408 24 22.674V1.326C24 .592 23.406 0 22.675 0" />
@@ -1007,10 +802,10 @@ const Footer: React.FC = () => {
           <ul className="space-y-3">
             {[
               { href: "/about", label: "About Us" },
-              { href: "/services", label: "Our Services" },
-              { href: "/projects", label: "Projects" },
-              { href: "/team", label: "Our Team" },
-              { href: "/careers", label: "Careers" },
+              { href: "/regular", label: "College" },
+              { href: "/seniorhigh", label: "Senior High" },
+              { href: "/developer", label: "Our Team" },
+              { href: "/enrollment-process", label: "Enrollment Process" },
             ].map((link, i) => (
               <li key={i}>
                 <a
@@ -1034,7 +829,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Email us at</p>
-                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
+                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">philtech.2013gma@gmail.com</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -1043,7 +838,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Call us</p>
-                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
+                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+63 997 224 0222</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -1052,7 +847,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Visit us</p>
-                <p className="text-white">123 Tech Street, Manila, Philippines</p>
+                <p className="text-white">2nd Floor CRDM Building Governor's Drive Baranggay Maderan, GMA, Cavite, General Mariano Alvarez, Philippines</p>
               </div>
             </div>
           </div>
@@ -1079,12 +874,11 @@ const Footer: React.FC = () => {
     </footer>
   );
 };
-
 export {
   Logo,
   NavLinks,
   Navbar,
   Dropdown,
-  Carousel,
+  HeroBackground,
   Footer
 };

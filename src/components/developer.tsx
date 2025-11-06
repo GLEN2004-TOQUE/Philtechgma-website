@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { X, Sun, Moon, User, ChevronDown, ChevronLeft, ChevronRight, Code, Briefcase, Award, Linkedin, Github, Twitter, Globe } from "lucide-react";
+import { X, Sun, Moon, User, ChevronDown, Code, Award } from "lucide-react";
 import { useAOS } from "../hooks/useAOS";
 
 const Logo: React.FC = () => {
@@ -298,65 +298,19 @@ export function useDarkMode(): [boolean, () => void] {
 }
 
 // Main Carousel Component
-const Carousel: React.FC = () => {
-  const slides = [
-    { img: "/images/carousel-backgrounds/3.jpg" },
-    { img: "/images/carousel-backgrounds/1.jpg" },
-    { img: "/images/carousel-backgrounds/2.jpg" },
-  ];
-
-  const [current, setCurrent] = useState<number>(0);
+const HeroBackground: React.FC = () => {
   const [typewriterText, setTypewriterText] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [typeIndex, setTypeIndex] = useState<number>(0);
-  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
-  const [showDots, setShowDots] = useState<boolean>(true);
-  const [isDarkMode] = useDarkMode(); // Kunin ang dark mode state
+  const [isDarkMode] = useDarkMode();
 
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef<number>(0);
-  const touchStartY = useRef<number>(0);
-  const isDragging = useRef<boolean>(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Intersection Observer for dots visibility
-  useEffect(() => {
-    const observer = new window.IntersectionObserver(
-      ([entry]) => {
-        setShowDots(entry.isIntersecting);
-      },
-      { threshold: 0.2 }
-    );
-    if (carouselRef.current) {
-      observer.observe(carouselRef.current);
-    }
-    return () => {
-      if (carouselRef.current) observer.unobserve(carouselRef.current);
-    };
-  }, []);
-
-  // Auto-slide interval
-  useEffect(() => {
-    const startInterval = () => {
-      intervalRef.current = setInterval(() => {
-        if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev: number) => (prev + 1) % slides.length);
-        }
-      }, 5000);
-    };
-
-    startInterval();
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isTransitioning, slides.length]);
+  const backgroundImage = "/images/carousel-backgrounds/3.jpg";
 
   // Typewriter effect
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
     let timeout: NodeJS.Timeout;
+    
     if (!isDeleting && typeIndex < text.length) {
       timeout = setTimeout(() => {
         setTypewriterText((prev: string) => prev + text.charAt(typeIndex));
@@ -376,217 +330,64 @@ const Carousel: React.FC = () => {
         setIsDeleting(false);
       }, 500);
     }
+    
     return () => clearTimeout(timeout);
   }, [typeIndex, isDeleting]);
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        handleSlideChange('prev');
-      } else if (e.key === 'ArrowRight') {
-        handleSlideChange('next');
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isTransitioning]);
-
-  // Slide change handler
-  const handleSlideChange = useCallback((direction: 'next' | 'prev') => {
-    if (isTransitioning) return;
-
-    setIsTransitioning(true);
-
-    if (direction === 'next') {
-      setCurrent((prev: number) => (prev + 1) % slides.length);
-    } else {
-      setCurrent((prev: number) => (prev - 1 + slides.length) % slides.length);
-    }
-
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 300);
-  }, [isTransitioning, slides.length]);
-
-  // Touch handlers
-  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    isDragging.current = true;
-
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-
-    const touchCurrentX = e.touches[0].clientX;
-    const touchCurrentY = e.touches[0].clientY;
-    const deltaX = Math.abs(touchCurrentX - touchStartX.current);
-    const deltaY = Math.abs(touchCurrentY - touchStartY.current);
-
-    if (deltaX > deltaY && deltaX > 10) {
-      e.preventDefault();
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const deltaX = touchStartX.current - touchEndX;
-    const deltaY = Math.abs(touchStartY.current - touchEndY);
-
-    isDragging.current = false;
-
-    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > deltaY) {
-      if (deltaX > 0) {
-        handleSlideChange('next');
-      } else {
-        handleSlideChange('prev');
-      }
-    }
-
-    setTimeout(() => {
-      intervalRef.current = setInterval(() => {
-        if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev: number) => (prev + 1) % slides.length);
-        }
-      }, 5000);
-    }, 1000);
-  }, [handleSlideChange, isTransitioning, slides.length]);
-
-  // Go to specific slide
-  const goToSlide = (index: number) => {
-    if (!isTransitioning && index !== current) {
-      setIsTransitioning(true);
-      setCurrent(index);
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 300);
-    }
-  };
-
   return (
     <>
-      <div 
-        ref={carouselRef} 
-        className="w-full carousel-container relative overflow-hidden bg-gray-900 group"
-      >
+      <div className="w-full hero-container relative overflow-hidden bg-gray-900">
         <div className="relative w-full h-full">
-          {slides.map((slide, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-                index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
-            >
-              {/* Background Image Container */}
-              <div className="absolute inset-0">
-                <img
-                  src={slide.img}
-                  alt={`Slide ${index + 1}`}
-                  className="carousel-image w-full h-full object-cover object-center"
-                  draggable="false"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://picsum.photos/1920/1080?random=${index}`;
-                  }}
-                />
-              </div>
+          {/* Background Image Container */}
+          <div className="absolute inset-0">
+            <img
+              src={backgroundImage}
+              alt="Philtech GMA Background"
+              className="hero-image w-full h-full object-cover object-center"
+              draggable="false"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "https://picsum.photos/1920/1080?random=1";
+              }}
+            />
+          </div>
 
-              {/* Background Overlay - nagbabago base sa dark mode */}
-              <div 
-                className={`absolute inset-0 pointer-events-none z-20 ${
-                  isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
-                }`}
-              />
-
-              {/* Content */}
-              <div className="absolute inset-0 flex items-center justify-center z-30">
-                <div className="text-center px-4 max-w-4xl mx-auto">
-                  <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
-                    <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
-                      WELCOME TO
-                    </span>
-                    <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
-                      PHILTECH GMA
-                    </span>
-                    <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
-                          style={{paddingRight: '5px'}}>
-                      {typewriterText}
-                      <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Touch Area for Mobile Swiping */}
-          <div
-            className="absolute inset-0 z-40 touch-pan-y"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            style={{
-              touchAction: 'pan-y',
-              WebkitTouchCallout: 'none',
-              WebkitUserSelect: 'none',
-              userSelect: 'none'
-            }}
+          {/* Background Overlay */}
+          <div 
+            className={`absolute inset-0 pointer-events-none z-20 ${
+              isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
+            }`}
           />
 
-          {/* Navigation Dots */}
-          {showDots && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50">
-              {slides.map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === current
-                      ? 'bg-[#FFB302] w-6'
-                      : 'bg-white/50 hover:bg-white/75'
-                  }`}
-                  onClick={() => goToSlide(index)}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
+          {/* Content */}
+          <div className="absolute inset-0 flex items-center justify-center z-30">
+            <div className="text-center px-4 max-w-4xl mx-auto">
+              <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
+                <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
+                  WELCOME TO
+                </span>
+                <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
+                  PHILTECH GMA
+                </span>
+                <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
+                      style={{paddingRight: '5px'}}>
+                  {typewriterText}
+                  <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
+                </span>
+              </div>
             </div>
-          )}
-
-          {/* Navigation Arrows */}
-          <button
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
-            onClick={() => handleSlideChange('prev')}
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={24} />
-          </button>
-
-          <button
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
-            onClick={() => handleSlideChange('next')}
-            aria-label="Next slide"
-          >
-            <ChevronRight size={24} />
-          </button>
+          </div>
         </div>
       </div>
 
       <style>{`
-        .carousel-container {
+        .hero-container {
           /* Para sa desktop - full viewport height */
           height: 100vh;
           min-height: 500px;
         }
 
         @media (max-width: 768px) {
-          .carousel-container {
+          .hero-container {
             height: 70vh;
             min-height: 400px;
             max-height: 600px;
@@ -594,14 +395,14 @@ const Carousel: React.FC = () => {
         }
 
         @media (max-width: 480px) {
-          .carousel-container {
+          .hero-container {
             height: 60vh;
             min-height: 350px;
             max-height: 500px;
           }
         }
 
-        .carousel-image {
+        .hero-image {
           width: 100%;
           height: 100%;
           object-fit: cover;
@@ -640,26 +441,26 @@ const DeveloperProfile: React.FC = () => {
   const developers = [
     {
       id: 1,
-      name: "John Doe",
+      name: "Christopher Glen Toque",
       role: "Full-Stack Developer",
-      avatar: "JD",
-      about: "Dedicated software developer with a passion for creating efficient, scalable, and user-friendly applications. Specializes in modern web technologies and best practices.",
-      experience: "Over 5 years of experience in web development, working on projects ranging from small business websites to complex enterprise applications.",
+      image: "/images/Devs/toque.png",
+      about: "Motivated Full Stack Developer skilled in front-end and back-end technologies, including HTML, CSS, JavaScript, and frameworks like React and Node.js. Passionate about building scalable, user-friendly web applications and eager to contribute to a collaborative development team.",
       skills: [
-        { name: "React", level: 95 },
-        { name: "TypeScript", level: 90 },
-        { name: "Node.js", level: 88 },
-        { name: "Python", level: 85 },
-        { name: "REST APIs", level: 92 }
+        { name: "React", level: 70 },
+        { name: "TypeScript", level: 65 },
+        { name: "Node.js", level: 60 },
+        { name: "Git", level: 75 },
+        { name: "Php", level: 50 },
+        { name: "MySql", level: 55 },
+        { name: "Github", level: 60}
       ]
     },
     {
       id: 2,
-      name: "Sarah Chen",
+      name: "Mhaytan James Reñases",
       role: "Frontend Developer",
-      avatar: "SC",
+      image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face", // Replace with actual image URL
       about: "Creative frontend developer focused on crafting beautiful and intuitive user interfaces. Expert in modern JavaScript frameworks and responsive design.",
-      experience: "4+ years specializing in frontend development with extensive experience in React, Vue.js, and modern CSS frameworks.",
       skills: [
         { name: "React", level: 90 },
         { name: "Vue.js", level: 85 },
@@ -670,11 +471,10 @@ const DeveloperProfile: React.FC = () => {
     },
     {
       id: 3,
-      name: "Mike Johnson",
+      name: "Mervin Micosa",
       role: "Backend Developer",
-      avatar: "MJ",
+      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face", // Replace with actual image URL
       about: "Backend specialist with expertise in server-side technologies, databases, and API development. Passionate about building robust and scalable systems.",
-      experience: "6 years of backend development experience, working with various databases, APIs, and cloud platforms.",
       skills: [
         { name: "Node.js", level: 94 },
         { name: "Python", level: 89 },
@@ -685,32 +485,28 @@ const DeveloperProfile: React.FC = () => {
     },
     {
       id: 4,
-      name: "Emily Rodriguez",
-      role: "Mobile Developer",
-      avatar: "ER",
-      about: "Mobile app developer creating native and cross-platform applications. Committed to delivering exceptional mobile experiences.",
-      experience: "3+ years developing mobile applications for iOS and Android platforms using React Native and Flutter.",
+      name: "Christian Dacula",
+      role: "Wire Frame Specialist",
+      image: "/images/Devs/dacula.jpg",
+      about: "Wireframe specialist with a strong focus on creating clear, user-friendly layouts and responsive design structures. Passionate about turning ideas into intuitive digital experiences.",
       skills: [
-        { name: "React Native", level: 88 },
-        { name: "Flutter", level: 85 },
-        { name: "iOS", level: 80 },
-        { name: "Android", level: 82 },
-        { name: "Firebase", level: 78 }
+        { name: "UI/UX", level: 65 },
+        { name: "Prototyping", level: 70 },
+        { name: "Figma", level: 50 },
+        { name: "Photoshop", level: 75 },
+        { name: "Responsive web", level: 65 }
       ]
     },
     {
       id: 5,
-      name: "Alex Kim",
-      role: "DevOps Engineer",
-      avatar: "AK",
-      about: "DevOps engineer focused on automation, CI/CD pipelines, and infrastructure management. Ensures smooth deployment and monitoring of applications.",
-      experience: "4 years in DevOps and infrastructure management, implementing automated deployment pipelines and monitoring solutions.",
+      name: "Angelica Anne Martinez",
+      role: "Wire Framing Support",
+      image: "/images/Devs/martinez.jpg",
+      about: "I support the creation of wireframes that simplify complex ideas into clear, user-friendly layouts. With a focus on responsive design structures, I aim to make digital experiences more intuitive and accessible.",
       skills: [
-        { name: "Docker", level: 90 },
-        { name: "Kubernetes", level: 85 },
-        { name: "AWS", level: 88 },
-        { name: "Jenkins", level: 82 },
-        { name: "Terraform", level: 80 }
+        { name: "Sketch", level: 60 },
+        { name: "Figma", level: 45 },
+        { name: "Photoshop", level: 55 }
       ]
     }
   ];
@@ -754,16 +550,6 @@ const DeveloperProfile: React.FC = () => {
             data-aos-duration="800"
             data-aos-easing="ease-out-cubic"
           >
-            <div 
-              className="inline-flex items-center gap-3 text-red-800 dark:text-red-400 mb-4"
-              data-aos="fade-up"
-              data-aos-delay="200"
-              data-aos-duration="600"
-            >
-              <div className="w-8 h-0.5 bg-red-800 dark:bg-red-400"></div>
-              <span className="text-sm font-semibold tracking-wider uppercase">Development Team</span>
-              <div className="w-8 h-0.5 bg-red-800 dark:bg-red-400"></div>
-            </div>
             <h1 
               className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6"
               data-aos="fade-up"
@@ -798,15 +584,29 @@ const DeveloperProfile: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-amber-50 dark:from-gray-700 dark:to-amber-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
                 <div className="relative p-6">
-                  {/* Header with Avatar */}
+                  {/* Header with Image */}
                   <div className="text-center mb-6">
                     <div className="relative inline-block mb-4">
                       <div 
-                        className="w-28 h-28 bg-gradient-to-br from-red-800 to-amber-600 rounded-3xl mx-auto flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-lg"
+                        className="w-28 h-28 rounded-3xl mx-auto overflow-hidden group-hover:scale-110 transition-transform duration-500 shadow-lg border-4 border-white dark:border-gray-700"
                         data-aos="zoom-in"
                         data-aos-delay="200"
                       >
-                        <span className="text-white text-2xl font-bold">{developer.avatar}</span>
+                        <img 
+                          src={developer.image} 
+                          alt={developer.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          onError={(e) => {
+                            // Fallback if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.parentElement!.innerHTML = `
+                              <div class="w-full h-full bg-gradient-to-br from-red-800 to-amber-600 flex items-center justify-center">
+                                <span class="text-white text-xl font-bold">${developer.name.split(' ').map(n => n[0]).join('')}</span>
+                              </div>
+                            `;
+                          }}
+                        />
                       </div>
                       <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white dark:border-gray-800"></div>
                     </div>
@@ -840,20 +640,6 @@ const DeveloperProfile: React.FC = () => {
                       </h4>
                       <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                         {developer.about}
-                      </p>
-                    </div>
-
-                    <div 
-                      className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4"
-                      data-aos="fade-right"
-                      data-aos-delay="250"
-                    >
-                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 uppercase tracking-wide flex items-center gap-2">
-                        <Briefcase className="w-4 h-4 text-amber-600" />
-                        Experience
-                      </h4>
-                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                        {developer.experience}
                       </p>
                     </div>
                   </div>
@@ -897,71 +683,12 @@ const DeveloperProfile: React.FC = () => {
                       ))}
                     </div>
                   </div>
-
-                  {/* Social Links */}
-                  <div 
-                    className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700"
-                    data-aos="fade-up"
-                    data-aos-delay="400"
-                  >
-                    <div className="flex justify-center gap-4">
-                      <button className="p-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-xl hover:bg-red-700 hover:text-white transition-all duration-300 transform hover:scale-110" aria-label="LinkedIn">
-                        <Linkedin className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-800 hover:text-white transition-all duration-300 transform hover:scale-110" aria-label="GitHub">
-                        <Github className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-xl hover:bg-amber-600 hover:text-white transition-all duration-300 transform hover:scale-110" aria-label="Twitter">
-                        <Twitter className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-xl hover:bg-red-700 hover:text-white transition-all duration-300 transform hover:scale-110" aria-label="Website">
-                        <Globe className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Corner Accent */}
                 <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-red-800 to-amber-600 rounded-bl-3xl opacity-10 group-hover:opacity-20 transition-opacity duration-500"></div>
               </div>
             ))}
-          </div>
-
-          {/* CTA Section */}
-          <div 
-            className="text-center mt-16"
-            data-aos="fade-up"
-            data-aos-delay="300"
-            data-aos-duration="800"
-          >
-            <div 
-              className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-xl border border-gray-200 dark:border-gray-700"
-              data-aos="zoom-in"
-              data-aos-delay="400"
-            >
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                Ready to Work With Us?
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-                Our development team is ready to bring your ideas to life. Let's create something amazing together.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button 
-                  className="bg-gradient-to-r from-red-800 to-amber-600 hover:from-red-900 hover:to-amber-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                  data-aos="fade-right"
-                  data-aos-delay="500"
-                >
-                  Contact Our Team
-                </button>
-                <button 
-                  className="border-2 border-red-300 dark:border-red-600 text-red-700 dark:text-red-300 hover:border-red-800 hover:text-red-800 dark:hover:border-amber-400 dark:hover:text-amber-400 font-semibold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105"
-                  data-aos="fade-left"
-                  data-aos-delay="500"
-                >
-                  View Our Projects
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -973,7 +700,7 @@ const Developer: React.FC = () => {
   return (
     <div className="bg-white dark:bg-gray-800 min-h-screen">
       <Navbar />
-      <Carousel />
+      <HeroBackground />
       <DeveloperProfile />
       <Footer />
     </div>
@@ -983,8 +710,6 @@ const Developer: React.FC = () => {
 export default Developer;
 
 const Footer: React.FC = () => {
-  useAOS();
-
   return (
     <footer 
       className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-16 overflow-hidden"
@@ -1008,13 +733,13 @@ const Footer: React.FC = () => {
             <h2 className="text-2xl font-bold text-white">Philtech GMA</h2>
           </div>
           <p className="text-gray-300 mb-6 max-w-xs">
-            Innovating technology solutions for a better tomorrow. We provide cutting-edge services to help your business grow.
+            Global Success Through Academic Excellence.
           </p>
 
           <div className="flex gap-4">
             {[
               {
-                href: "https://facebook.com",
+                href: "https://www.facebook.com/philtechgma2013",
                 label: "Facebook",
                 svg: (
                   <path d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.408.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.408 24 22.674V1.326C24 .592 23.406 0 22.675 0" />
@@ -1071,10 +796,10 @@ const Footer: React.FC = () => {
           <ul className="space-y-3">
             {[
               { href: "/about", label: "About Us" },
-              { href: "/services", label: "Our Services" },
-              { href: "/projects", label: "Projects" },
-              { href: "/team", label: "Our Team" },
-              { href: "/careers", label: "Careers" },
+              { href: "/regular", label: "College" },
+              { href: "/seniorhigh", label: "Senior High" },
+              { href: "/developer", label: "Our Team" },
+              { href: "/enrollment-process", label: "Enrollment Process" },
             ].map((link, i) => (
               <li key={i}>
                 <a
@@ -1098,7 +823,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Email us at</p>
-                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
+                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">philtech.2013gma@gmail.com</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -1107,7 +832,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Call us</p>
-                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
+                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+63 997 224 0222</a>
               </div>
             </div>
             <div className="flex items-start">
@@ -1116,7 +841,7 @@ const Footer: React.FC = () => {
               </svg>
               <div>
                 <p className="text-gray-300">Visit us</p>
-                <p className="text-white">123 Tech Street, Manila, Philippines</p>
+                <p className="text-white">2nd Floor CRDM Building Governor's Drive Baranggay Maderan, GMA, Cavite, General Mariano Alvarez, Philippines</p>
               </div>
             </div>
           </div>
@@ -1149,6 +874,6 @@ export {
   NavLinks,
   Navbar,
   Dropdown,
-  Carousel,
+  HeroBackground,
   Footer
 };

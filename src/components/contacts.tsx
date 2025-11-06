@@ -10,9 +10,9 @@ const Logo: React.FC = () => {
       <img
         src="/images/logo/logo.png"
         alt="Logo"
-        className="h-10 w-10 transition-transform duration-700 group-hover:animate-spin-vertical"
+        className="h-8 w-8 md:h-10 md:w-10 transition-transform duration-700 group-hover:animate-spin-vertical"
       />
-      <span className="text-xl font-bold text-white">PHILTECH</span>
+      <span className="text-lg md:text-xl font-bold text-white">PHILTECH</span>
     </a>
   );
 };
@@ -46,7 +46,7 @@ const NavLinks: React.FC = () => {
         <Link
           key={link.to}
           to={link.to}
-          className="relative px-2 py-2 md:px-0 md:py-0 w-full md:w-auto transition-colors text-white dark:text-gray-300 hover:text-[goldenrod] group"
+          className="relative px-2 py-2 md:px-0 md:py-0 w-full md:w-auto transition-colors text-white dark:text-gray-300 hover:text-[goldenrod] group text-sm md:text-base"
         >
           {link.title}
           <span
@@ -62,39 +62,39 @@ const NavLinks: React.FC = () => {
       <div className="relative w-full md:w-auto">
         <button
           onClick={handleProgramsClick}
-          className="text-white dark:text-gray-300 hover:text-[goldenrod] focus:outline-none flex items-center gap-1 px-2 py-2 md:px-0 md:py-0 w-full md:w-auto transition-colors"
+          className="text-white dark:text-gray-300 hover:text-[goldenrod] focus:outline-none flex items-center gap-1 px-2 py-2 md:px-0 md:py-0 w-full md:w-auto transition-colors text-sm md:text-base"
         >
           Programs
-          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+          <svg className="w-3 h-3 md:w-4 md:h-4 ml-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
         </button>
         {showPrograms && (
           <div className="md:absolute left-0 md:left-1/2 md:-translate-x-1/2 mt-2 w-full md:w-48 bg-white dark:bg-black shadow-lg rounded z-20 text-gray-900 dark:text-white">
             <button
               onClick={handleCollegeClick}
-              className="flex items-center justify-between w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="flex items-center justify-between w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm md:text-base"
             >
               <span>College</span>
-              <svg className={`w-4 h-4 ml-2 transition-transform ${showCollege ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+              <svg className={`w-3 h-3 md:w-4 md:h-4 ml-2 transition-transform ${showCollege ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
             </button>
             {showCollege && (
               <div className="ml-0 md:ml-6 mt-1 bg-gray-50 dark:bg-gray-900 rounded shadow-inner">
-            <Link
-              to="/regular"
-              className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              Regular
-            </Link>
-            <Link
-              to="/sunday"
-              className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              Sunday
-            </Link>
+                <Link
+                  to="/regular"
+                  className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white text-sm md:text-base"
+                >
+                  Regular
+                </Link>
+                <Link
+                  to="/sunday"
+                  className="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white text-sm md:text-base"
+                >
+                  Sunday
+                </Link>
               </div>
             )}
             <Link
               to="/seniorhigh"
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white"
+              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white text-sm md:text-base"
             >
               Senior High
             </Link>
@@ -121,11 +121,9 @@ const Navbar: React.FC = () => {
       if (typeof window !== 'undefined') {
         const currentScrollY = window.scrollY;
 
-        // Show navbar when scrolling up or at the top
         if (currentScrollY < lastScrollY || currentScrollY < 100) {
           setIsVisible(true);
         } 
-        // Hide navbar when scrolling down
         else if (currentScrollY > lastScrollY && currentScrollY > 100) {
           setIsVisible(false);
         }
@@ -134,7 +132,6 @@ const Navbar: React.FC = () => {
       }
     };
 
-    // Throttle the scroll event for better performance
     let ticking = false;
     const throttledControlNavbar = () => {
       if (!ticking) {
@@ -162,29 +159,29 @@ const Navbar: React.FC = () => {
         ${!isDarkMode ? 'bg-[#7b1112]' : 'bg-black'}
       `}
     >
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3 flex justify-between items-center">
         <Logo />
 
-        <div className="hidden md:flex items-center space-x-8">
+        <div className="hidden md:flex items-center space-x-4 lg:space-x-8">
           <NavLinks />
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3 sm:space-x-4">
           <button
             onClick={toggleDarkMode}
             className="transition-colors group"
             aria-label="Toggle dark mode"
           >
             {isDarkMode
-              ? <Sun size={20} className="text-white group-hover:text-[goldenrod]" />
-              : <Moon size={20} className="text-white group-hover:text-[goldenrod]" />}
+              ? <Sun size={18} className="text-white group-hover:text-[goldenrod]" />
+              : <Moon size={18} className="text-white group-hover:text-[goldenrod]" />}
           </button>
           <Link
             to="/dblogin/login"
             className="transition-colors group"
             aria-label="Login"
           >
-            <User size={20} className="text-white group-hover:text-[goldenrod]" />
+            <User size={18} className="text-white group-hover:text-[goldenrod]" />
           </Link>
           <div className="md:hidden">
             <button
@@ -193,8 +190,8 @@ const Navbar: React.FC = () => {
               aria-label="Toggle menu"
             >
               {isMenuOpen
-                ? <X size={20} className="text-white group-hover:text-[goldenrod]" />
-                : <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-menu text-white group-hover:text-[goldenrod]" aria-hidden="true"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>}
+                ? <X size={18} className="text-white group-hover:text-[goldenrod]" />
+                : <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-menu text-white group-hover:text-[goldenrod]" aria-hidden="true"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>}
             </button>
           </div>
         </div>
@@ -208,7 +205,7 @@ const Navbar: React.FC = () => {
             ? 'bg-[#7b1112]'
             : 'bg-[#BC1F27]')
         }>
-          <div className="px-4 pt-2 pb-4 space-y-2">
+          <div className="px-3 pt-2 pb-3 space-y-1">
             <NavLinks />
           </div>
         </div>
@@ -216,61 +213,6 @@ const Navbar: React.FC = () => {
     </header>
   );
 };
-
-interface DropdownItem {
-  title: string;
-  href?: string;
-  submenu?: DropdownItem[];
-}
-
-interface DropdownProps {
-  title: string;
-  items: DropdownItem[];
-}
-
-const Dropdown: React.FC<DropdownProps> = ({ title, items }) => {
-  return (
-    <div className="relative group">
-      <button className="flex items-center space-x-1 focus:outline-none">
-        <span>{title}</span>
-        <ChevronDown size={16} />
-      </button>
-      <div className="absolute left-0 mt-2 w-48 bg-gray-700 text-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        {items.map((item: DropdownItem, index: number) => (
-          <div key={index}>
-            {item.submenu ? (
-              <div className="relative group">
-                <button className="w-full text-left px-4 py-2 hover:bg-gray-600 flex justify-between items-center">
-                  <span>{item.title}</span>
-                  <ChevronDown size={16} />
-                </button>
-                <div className="absolute left-full top-0 mt-0 w-48 bg-gray-600 text-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  {item.submenu.map((subItem: DropdownItem, subIndex: number) => (
-                    <a
-                      key={subIndex}
-                      href={subItem.href}
-                      className="block px-4 py-2 hover:bg-gray-500"
-                    >
-                      {subItem.title}
-                    </a>
-                  ))}
-                </div>
-              </div>
-          ) : (
-            <a
-              href={item.href}
-              className="block px-4 py-2 hover:bg-gray-600"
-            >
-              {item.title}
-            </a>
-          )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // Dark Mode Hook
 export function useDarkMode(): [boolean, () => void] {
@@ -302,65 +244,19 @@ export function useDarkMode(): [boolean, () => void] {
 }
 
 // Main Carousel Component
-const Carousel: React.FC = () => {
-  const slides = [
-    { img: "/images/carousel-backgrounds/3.jpg" },
-    { img: "/images/carousel-backgrounds/1.jpg" },
-    { img: "/images/carousel-backgrounds/2.jpg" },
-  ];
-
-  const [current, setCurrent] = useState<number>(0);
+const HeroBackground: React.FC = () => {
   const [typewriterText, setTypewriterText] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [typeIndex, setTypeIndex] = useState<number>(0);
-  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
-  const [showDots, setShowDots] = useState<boolean>(true);
-  const [isDarkMode] = useDarkMode(); // Kunin ang dark mode state
+  const [isDarkMode] = useDarkMode();
 
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef<number>(0);
-  const touchStartY = useRef<number>(0);
-  const isDragging = useRef<boolean>(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Intersection Observer for dots visibility
-  useEffect(() => {
-    const observer = new window.IntersectionObserver(
-      ([entry]) => {
-        setShowDots(entry.isIntersecting);
-      },
-      { threshold: 0.2 }
-    );
-    if (carouselRef.current) {
-      observer.observe(carouselRef.current);
-    }
-    return () => {
-      if (carouselRef.current) observer.unobserve(carouselRef.current);
-    };
-  }, []);
-
-  // Auto-slide interval
-  useEffect(() => {
-    const startInterval = () => {
-      intervalRef.current = setInterval(() => {
-        if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev: number) => (prev + 1) % slides.length);
-        }
-      }, 5000);
-    };
-
-    startInterval();
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isTransitioning, slides.length]);
+  const backgroundImage = "/images/carousel-backgrounds/3.jpg";
 
   // Typewriter effect
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
     let timeout: NodeJS.Timeout;
+    
     if (!isDeleting && typeIndex < text.length) {
       timeout = setTimeout(() => {
         setTypewriterText((prev: string) => prev + text.charAt(typeIndex));
@@ -380,217 +276,64 @@ const Carousel: React.FC = () => {
         setIsDeleting(false);
       }, 500);
     }
+    
     return () => clearTimeout(timeout);
   }, [typeIndex, isDeleting]);
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        handleSlideChange('prev');
-      } else if (e.key === 'ArrowRight') {
-        handleSlideChange('next');
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isTransitioning]);
-
-  // Slide change handler
-  const handleSlideChange = useCallback((direction: 'next' | 'prev') => {
-    if (isTransitioning) return;
-
-    setIsTransitioning(true);
-
-    if (direction === 'next') {
-      setCurrent((prev: number) => (prev + 1) % slides.length);
-    } else {
-      setCurrent((prev: number) => (prev - 1 + slides.length) % slides.length);
-    }
-
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 300);
-  }, [isTransitioning, slides.length]);
-
-  // Touch handlers
-  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    isDragging.current = true;
-
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-
-    const touchCurrentX = e.touches[0].clientX;
-    const touchCurrentY = e.touches[0].clientY;
-    const deltaX = Math.abs(touchCurrentX - touchStartX.current);
-    const deltaY = Math.abs(touchCurrentY - touchStartY.current);
-
-    if (deltaX > deltaY && deltaX > 10) {
-      e.preventDefault();
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const deltaX = touchStartX.current - touchEndX;
-    const deltaY = Math.abs(touchStartY.current - touchEndY);
-
-    isDragging.current = false;
-
-    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > deltaY) {
-      if (deltaX > 0) {
-        handleSlideChange('next');
-      } else {
-        handleSlideChange('prev');
-      }
-    }
-
-    setTimeout(() => {
-      intervalRef.current = setInterval(() => {
-        if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev: number) => (prev + 1) % slides.length);
-        }
-      }, 5000);
-    }, 1000);
-  }, [handleSlideChange, isTransitioning, slides.length]);
-
-  // Go to specific slide
-  const goToSlide = (index: number) => {
-    if (!isTransitioning && index !== current) {
-      setIsTransitioning(true);
-      setCurrent(index);
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 300);
-    }
-  };
-
   return (
     <>
-      <div 
-        ref={carouselRef} 
-        className="w-full carousel-container relative overflow-hidden bg-gray-900 group"
-      >
+      <div className="w-full hero-container relative overflow-hidden bg-gray-900">
         <div className="relative w-full h-full">
-          {slides.map((slide, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-                index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
-            >
-              {/* Background Image Container */}
-              <div className="absolute inset-0">
-                <img
-                  src={slide.img}
-                  alt={`Slide ${index + 1}`}
-                  className="carousel-image w-full h-full object-cover object-center"
-                  draggable="false"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://picsum.photos/1920/1080?random=${index}`;
-                  }}
-                />
-              </div>
+          {/* Background Image Container */}
+          <div className="absolute inset-0">
+            <img
+              src={backgroundImage}
+              alt="Philtech GMA Background"
+              className="hero-image w-full h-full object-cover object-center"
+              draggable="false"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "https://picsum.photos/1920/1080?random=1";
+              }}
+            />
+          </div>
 
-              {/* Background Overlay - nagbabago base sa dark mode */}
-              <div 
-                className={`absolute inset-0 pointer-events-none z-20 ${
-                  isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
-                }`}
-              />
-
-              {/* Content */}
-              <div className="absolute inset-0 flex items-center justify-center z-30">
-                <div className="text-center px-4 max-w-4xl mx-auto">
-                  <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
-                    <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
-                      WELCOME TO
-                    </span>
-                    <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
-                      PHILTECH GMA
-                    </span>
-                    <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
-                          style={{paddingRight: '5px'}}>
-                      {typewriterText}
-                      <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Touch Area for Mobile Swiping */}
-          <div
-            className="absolute inset-0 z-40 touch-pan-y"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            style={{
-              touchAction: 'pan-y',
-              WebkitTouchCallout: 'none',
-              WebkitUserSelect: 'none',
-              userSelect: 'none'
-            }}
+          {/* Background Overlay */}
+          <div 
+            className={`absolute inset-0 pointer-events-none z-20 ${
+              isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
+            }`}
           />
 
-          {/* Navigation Dots */}
-          {showDots && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50">
-              {slides.map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === current
-                      ? 'bg-[#FFB302] w-6'
-                      : 'bg-white/50 hover:bg-white/75'
-                  }`}
-                  onClick={() => goToSlide(index)}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
+          {/* Content */}
+          <div className="absolute inset-0 flex items-center justify-center z-30">
+            <div className="text-center px-4 max-w-4xl mx-auto">
+              <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
+                <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
+                  WELCOME TO
+                </span>
+                <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
+                  PHILTECH GMA
+                </span>
+                <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
+                      style={{paddingRight: '5px'}}>
+                  {typewriterText}
+                  <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
+                </span>
+              </div>
             </div>
-          )}
-
-          {/* Navigation Arrows */}
-          <button
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
-            onClick={() => handleSlideChange('prev')}
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={24} />
-          </button>
-
-          <button
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
-            onClick={() => handleSlideChange('next')}
-            aria-label="Next slide"
-          >
-            <ChevronRight size={24} />
-          </button>
+          </div>
         </div>
       </div>
 
       <style>{`
-        .carousel-container {
+        .hero-container {
           /* Para sa desktop - full viewport height */
           height: 100vh;
           min-height: 500px;
         }
 
         @media (max-width: 768px) {
-          .carousel-container {
+          .hero-container {
             height: 70vh;
             min-height: 400px;
             max-height: 600px;
@@ -598,14 +341,14 @@ const Carousel: React.FC = () => {
         }
 
         @media (max-width: 480px) {
-          .carousel-container {
+          .hero-container {
             height: 60vh;
             min-height: 350px;
             max-height: 500px;
           }
         }
 
-        .carousel-image {
+        .hero-image {
           width: 100%;
           height: 100%;
           object-fit: cover;
@@ -636,10 +379,10 @@ const Carousel: React.FC = () => {
     </>
   );
 };
-
 const Contact: React.FC = () => {
   const [] = useAOS();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showMapPopup, setShowMapPopup] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -675,85 +418,127 @@ const Contact: React.FC = () => {
     });
     setIsSubmitting(false);
     
-    // Show success message (you can replace this with a toast notification)
+    // Show success message
     alert('Thank you for your message! We will get back to you soon.');
   };
 
   return (
     <div className="bg-white dark:bg-gray-900 min-h-screen">
       <Navbar />
-      <Carousel />
+      <HeroBackground />
+
+      {/* Enhanced Responsive Map Popup */}
+      {showMapPopup && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-2 sm:p-3 md:p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl md:rounded-2xl shadow-2xl w-full max-w-xs xs:max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-4xl max-h-[85vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-3 sm:p-4 md:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Our Location</h3>
+              <button
+                onClick={() => setShowMapPopup(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors p-1"
+              >
+                <X size={20} className="sm:w-6 sm:h-6" />
+              </button>
+            </div>
+            
+            {/* Map Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-3 sm:p-4 md:p-6">
+                {/* Responsive Map Container */}
+                <div className="aspect-video w-full rounded-lg sm:rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-700">
+                  <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15465.91734094016!2d120.98096015541995!3d14.283559399999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397d604cb43d9bf%3A0x52511a523c76345!2sPhiltech!5e0!3m2!1sen!2sph!4v1762400223976!5m2!1sen!2sph" 
+                    width="100%" 
+                    height="100%" 
+                    style={{ border: 0 }} 
+                    allowFullScreen 
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Philtech GMA Location"
+                    className="w-full h-full"
+                  ></iframe>
+                </div>
+                
+                {/* Location Details */}
+                <div className="mt-3 sm:mt-4 text-center">
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-2 sm:mb-3 leading-relaxed">
+                    2nd Floor CRDM Building Governor's Drive Baranggay Maderan, GMA, Cavite, General Mariano Alvarez, Philippines
+                  </p>
+                  <a
+                    href="https://www.google.com/maps/dir/?api=1&destination=2nd+Floor+CRDM+Building+Governor's+Drive+Baranggay+Maderan+GMA+Cavite+General+Mariano+Alvarez+Philippines"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1 sm:gap-2 bg-[#BC1F27] hover:bg-[#781112] text-white px-3 sm:px-4 py-2 sm:py-2 rounded-lg transition-all duration-300 transform hover:scale-105 text-xs sm:text-sm w-full sm:w-auto"
+                  >
+                    <MapPin size={14} className="sm:w-4 sm:h-4" />
+                    Get Directions
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Contact Section */}
-      <section className="pt-20 pb-16 px-4 relative overflow-hidden">
+      <section className="pt-16 sm:pt-20 pb-12 sm:pb-16 px-3 sm:px-4 relative overflow-hidden">
         {/* Background Elements */}
-        <div className="absolute top-0 left-0 w-72 h-72 bg-[#BC1F27]/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#BC1F27]/5 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
+        <div className="absolute top-0 left-0 w-48 h-48 sm:w-72 sm:h-72 bg-[#BC1F27]/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-64 h-64 sm:w-96 sm:h-96 bg-[#BC1F27]/5 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
         
         <div className="max-w-7xl mx-auto relative z-10">
           {/* Header */}
-          <div className="text-center mb-20" data-aos="fade-up">
-            <div className="inline-flex items-center gap-2 text-[#BC1F27] mb-4">
-              <div className="w-4 h-0.5 bg-[#BC1F27]"></div>
-              <span className="text-sm font-semibold tracking-wider">CONTACT US</span>
-              <div className="w-4 h-0.5 bg-[#BC1F27]"></div>
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+          <div className="text-center mb-12 sm:mb-16 md:mb-20" data-aos="fade-up">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
               Get In <span className="text-[#BC1F27] relative">
                 Touch
-                <div className="absolute bottom-2 left-0 w-full h-2 bg-[#BC1F27]/20 -z-10"></div>
+                <div className="absolute bottom-1 sm:bottom-2 left-0 w-full h-1 sm:h-2 bg-[#BC1F27]/20 -z-10"></div>
               </span>
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed px-2">
               Ready to start your educational journey? Contact us today and discover how Philtech GMA can help you achieve your academic goals.
             </p>
           </div>
 
           {/* Contact Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-12 sm:mb-16 md:mb-20">
             {/* Address Card */}
             <div
-              className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 p-8 text-center border border-gray-100 dark:border-gray-600 hover:-translate-y-2"
+              className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 p-4 sm:p-6 md:p-8 text-center border border-gray-100 dark:border-gray-600 hover:-translate-y-1 sm:hover:-translate-y-2"
               data-aos="fade-up"
               data-aos-delay="100"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-[#BC1F27] to-[#781112] opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#BC1F27] to-[#781112] opacity-0 group-hover:opacity-5 rounded-xl sm:rounded-2xl transition-opacity duration-500"></div>
               <div className="relative">
-                <div className="w-20 h-20 bg-gradient-to-br from-[#BC1F27] to-[#781112] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500 shadow-lg">
-                  <MapPin className="w-8 h-8 text-white" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#BC1F27] to-[#781112] rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-105 sm:group-hover:scale-110 transition-transform duration-500 shadow-lg">
+                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Visit Us</h3>
-                <div className="text-gray-600 dark:text-gray-300 space-y-3 text-lg">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Visit Us</h3>
+                <div className="text-gray-600 dark:text-gray-300 space-y-2 text-sm sm:text-base">
                   <p className="font-medium">Philtech GMA Campus</p>
-                  <p>GMA, Cavite, Philippines</p>
-                  <p>2009, Philippines</p>
+                  <p className="text-xs sm:text-sm">2nd Floor CRDM Building Governor's Drive Baranggay Maderan, GMA, Cavite, General Mariano Alvarez, Philippines</p>
                 </div>
               </div>
             </div>
 
             {/* Phone Card */}
             <div
-              className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 p-8 text-center border border-gray-100 dark:border-gray-600 hover:-translate-y-2"
+              className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 p-4 sm:p-6 md:p-8 text-center border border-gray-100 dark:border-gray-600 hover:-translate-y-1 sm:hover:-translate-y-2"
               data-aos="fade-up"
               data-aos-delay="200"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-[#BC1F27] to-[#781112] opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#BC1F27] to-[#781112] opacity-0 group-hover:opacity-5 rounded-xl sm:rounded-2xl transition-opacity duration-500"></div>
               <div className="relative">
-                <div className="w-20 h-20 bg-gradient-to-br from-[#BC1F27] to-[#781112] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500 shadow-lg">
-                  <Phone className="w-8 h-8 text-white" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#BC1F27] to-[#781112] rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-105 sm:group-hover:scale-110 transition-transform duration-500 shadow-lg">
+                  <Phone className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Call Us</h3>
-                <div className="text-gray-600 dark:text-gray-300 space-y-3">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Call Us</h3>
+                <div className="text-gray-600 dark:text-gray-300 space-y-2">
                   <div>
-                    <p className="font-medium mb-1">Main Office</p>
-                    <a href="tel:+63464712345" className="text-[#BC1F27] hover:text-[#781112] font-semibold text-lg transition-all duration-300 hover:underline">
-                      +63 (46) 471-2345
-                    </a>
-                  </div>
-                  <div>
-                    <p className="font-medium mb-1">Admissions</p>
-                    <a href="tel:+63464767890" className="text-[#BC1F27] hover:text-[#781112] font-semibold text-lg transition-all duration-300 hover:underline">
-                      +63 (46) 476-7890
+                    <p className="font-medium mb-1 text-sm sm:text-base">Admissions</p>
+                    <a href="tel:+639972240222" className="text-[#BC1F27] hover:text-[#781112] font-semibold text-sm sm:text-base md:text-lg transition-all duration-300 hover:underline">
+                      +63 997 224 0222
                     </a>
                   </div>
                 </div>
@@ -762,27 +547,21 @@ const Contact: React.FC = () => {
 
             {/* Email Card */}
             <div
-              className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 p-8 text-center border border-gray-100 dark:border-gray-600 hover:-translate-y-2"
+              className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 p-4 sm:p-6 md:p-8 text-center border border-gray-100 dark:border-gray-600 hover:-translate-y-1 sm:hover:-translate-y-2"
               data-aos="fade-up"
               data-aos-delay="300"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-[#BC1F27] to-[#781112] opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#BC1F27] to-[#781112] opacity-0 group-hover:opacity-5 rounded-xl sm:rounded-2xl transition-opacity duration-500"></div>
               <div className="relative">
-                <div className="w-20 h-20 bg-gradient-to-br from-[#BC1F27] to-[#781112] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500 shadow-lg">
-                  <Mail className="w-8 h-8 text-white" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#BC1F27] to-[#781112] rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-105 sm:group-hover:scale-110 transition-transform duration-500 shadow-lg">
+                  <Mail className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Email Us</h3>
-                <div className="text-gray-600 dark:text-gray-300 space-y-3">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Email Us</h3>
+                <div className="text-gray-600 dark:text-gray-300 space-y-2">
                   <div>
-                    <p className="font-medium mb-1">General Inquiries</p>
-                    <a href="mailto:info@philtechgma.com" className="text-[#BC1F27] hover:text-[#781112] font-semibold text-lg transition-all duration-300 hover:underline break-all">
-                      info@philtechgma.com
-                    </a>
-                  </div>
-                  <div>
-                    <p className="font-medium mb-1">Admissions</p>
-                    <a href="mailto:admissions@philtechgma.com" className="text-[#BC1F27] hover:text-[#781112] font-semibold text-lg transition-all duration-300 hover:underline break-all">
-                      admissions@philtechgma.com
+                    <p className="font-medium mb-1 text-sm sm:text-base">General Inquiries</p>
+                    <a href="mailto:philtech.2013gma@gmail.com" className="text-[#BC1F27] hover:text-[#781112] font-semibold text-sm sm:text-base md:text-lg transition-all duration-300 hover:underline break-all">
+                      philtech.2013gma@gmail.com
                     </a>
                   </div>
                 </div>
@@ -791,19 +570,19 @@ const Contact: React.FC = () => {
           </div>
 
           {/* Contact Form and Map */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
             {/* Contact Form */}
             <div
-              className="relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-3xl shadow-2xl p-8 md:p-10 border border-gray-100 dark:border-gray-600"
+              className="relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 md:p-8 lg:p-10 border border-gray-100 dark:border-gray-600"
               data-aos="fade-right"
               data-aos-delay="400"
             >
-              <div className="absolute top-0 left-8 -translate-y-1/2 bg-[#BC1F27] text-white px-6 py-3 rounded-2xl font-semibold text-lg shadow-lg">
+              <div className="absolute top-0 left-4 sm:left-6 md:left-8 -translate-y-1/2 bg-[#BC1F27] text-white px-3 sm:px-4 md:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base md:text-lg shadow-lg">
                 Send us a Message
               </div>
               
-              <form className="space-y-6 mt-4" onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <form className="space-y-4 sm:space-y-6 mt-6 sm:mt-8" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       First Name *
@@ -815,7 +594,7 @@ const Contact: React.FC = () => {
                       value={formData.firstName}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400"
+                      className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400 text-sm sm:text-base"
                       placeholder="Enter your first name"
                     />
                   </div>
@@ -830,7 +609,7 @@ const Contact: React.FC = () => {
                       value={formData.lastName}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400"
+                      className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400 text-sm sm:text-base"
                       placeholder="Enter your last name"
                     />
                   </div>
@@ -847,7 +626,7 @@ const Contact: React.FC = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400"
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400 text-sm sm:text-base"
                     placeholder="Enter your email"
                   />
                 </div>
@@ -862,7 +641,7 @@ const Contact: React.FC = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400"
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400 text-sm sm:text-base"
                     placeholder="Enter your phone number"
                   />
                 </div>
@@ -877,7 +656,7 @@ const Contact: React.FC = () => {
                     value={formData.subject}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300"
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 text-sm sm:text-base"
                   >
                     <option value="">Select a subject</option>
                     <option value="admissions">Admissions Inquiry</option>
@@ -895,11 +674,11 @@ const Contact: React.FC = () => {
                   <textarea
                     id="message"
                     name="message"
-                    rows={5}
+                    rows={4}
                     value={formData.message}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400 resize-vertical"
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#BC1F27] focus:border-[#BC1F27] bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300 placeholder-gray-400 resize-vertical text-sm sm:text-base"
                     placeholder="Tell us about your inquiry..."
                   ></textarea>
                 </div>
@@ -907,11 +686,11 @@ const Contact: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-[#BC1F27] to-[#781112] hover:from-[#781112] hover:to-[#5a0d0e] text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[#BC1F27]/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl"
+                  className="w-full bg-gradient-to-r from-[#BC1F27] to-[#781112] hover:from-[#781112] hover:to-[#5a0d0e] text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg sm:rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[#BC1F27]/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl text-sm sm:text-base"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center justify-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       Sending...
                     </div>
                   ) : (
@@ -923,28 +702,35 @@ const Contact: React.FC = () => {
 
             {/* Map and Additional Info */}
             <div
-              className="space-y-8"
+              className="space-y-6 sm:space-y-8"
               data-aos="fade-left"
               data-aos-delay="500"
             >
               {/* Enhanced Map */}
-              <div className="group bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-600 hover:shadow-2xl transition-all duration-300">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-                  <MapPin className="w-6 h-6 text-[#BC1F27]" />
+              <div className="group bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 md:p-8 border border-gray-100 dark:border-gray-600 hover:shadow-xl transition-all duration-300">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-[#BC1F27]" />
                   Our Location
                 </h3>
-                <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-600 dark:to-gray-700 rounded-2xl overflow-hidden relative group-hover:shadow-lg transition-shadow duration-300">
+                <div 
+                  className="aspect-video rounded-lg sm:rounded-xl overflow-hidden relative group-hover:shadow-lg transition-shadow duration-300 cursor-pointer" 
+                  style={{ backgroundImage: 'url(/images/campuses/gma-campus.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+                  onClick={() => setShowMapPopup(true)}
+                >
                   <div className="absolute inset-0 bg-gradient-to-br from-[#BC1F27]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <div className="w-16 h-16 bg-[#BC1F27] rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                        <MapPin className="w-8 h-8 text-white" />
+                    <div className="text-center p-4 sm:p-6 md:p-8">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-[#BC1F27] rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-105 sm:group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                        <MapPin className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
                       </div>
-                      <p className="text-gray-600 dark:text-gray-300 text-lg font-semibold mb-2">Interactive Map</p>
-                      <p className="text-gray-500 dark:text-gray-400">
+                      <p className="text-[#BC1F27] dark:text-[#BC1F27] text-sm sm:text-base md:text-lg font-semibold mb-1 sm:mb-2">Interactive Map</p>
+                      <p className="text-[#ffffff] dark:text-[#f5f5f5] text-xs sm:text-sm">
                         GMA, Cavite, Philippines
                       </p>
-                      <button className="mt-4 bg-[#BC1F27] hover:bg-[#781112] text-white px-6 py-2 rounded-lg transition-all duration-300 transform hover:scale-105">
+                      <button
+                        onClick={() => setShowMapPopup(true)}
+                        className="mt-3 sm:mt-4 bg-[#BC1F27] hover:bg-[#781112] text-white px-4 sm:px-6 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 text-xs sm:text-sm"
+                      >
                         View on Google Maps
                       </button>
                     </div>
@@ -953,50 +739,29 @@ const Contact: React.FC = () => {
               </div>
 
               {/* Enhanced Office Hours */}
-              <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-600">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-                  <Clock className="w-6 h-6 text-[#BC1F27]" />
+              <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 md:p-8 border border-gray-100 dark:border-gray-600">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+                  <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-[#BC1F27]" />
                   Office Hours
                 </h3>
-                <div className="space-y-4 text-gray-600 dark:text-gray-300">
+                <div className="space-y-3 sm:space-y-4 text-gray-600 dark:text-gray-300 text-sm sm:text-base">
                   {[
                     { day: 'Monday - Friday', time: '8:00 AM - 5:00 PM' },
                     { day: 'Saturday', time: '9:00 AM - 12:00 PM' },
                     { day: 'Sunday', time: 'Closed' }
                   ].map((schedule, index) => (
-                    <div key={index} className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                    <div key={index} className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 sm:py-3 border-b border-gray-200 dark:border-gray-600 last:border-b-0 gap-1 sm:gap-0">
                       <span className="font-semibold">{schedule.day}</span>
-                      <span className="bg-gray-100 dark:bg-gray-600 px-3 py-1 rounded-lg font-medium">
+                      <span className="bg-gray-100 dark:bg-gray-600 px-2 sm:px-3 py-1 rounded-lg font-medium text-xs sm:text-sm">
                         {schedule.time}
                       </span>
                     </div>
                   ))}
                 </div>
-                <div className="mt-6 p-4 bg-gradient-to-r from-[#BC1F27]/10 to-[#BC1F27]/5 rounded-2xl border border-[#BC1F27]/20">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-[#BC1F27]/10 to-[#BC1F27]/5 rounded-xl sm:rounded-2xl border border-[#BC1F27]/20">
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                     <strong className="text-[#BC1F27]">Note:</strong> Admissions office is open during regular business hours. For urgent inquiries, please call our hotline.
                   </p>
-                </div>
-              </div>
-
-              {/* Social Media Links */}
-              <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-600">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-                  <Share2 className="w-6 h-6 text-[#BC1F27]" />
-                  Connect With Us
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {['Facebook', 'Twitter', 'Instagram', 'LinkedIn'].map((social, index) => (
-                    <button
-                      key={social}
-                      className="flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-600 hover:bg-[#BC1F27] hover:text-white text-gray-700 dark:text-gray-300 py-3 px-4 rounded-xl transition-all duration-300 transform hover:scale-105 group"
-                    >
-                      <div className="w-8 h-8 bg-[#BC1F27] rounded-lg flex items-center justify-center group-hover:bg-white group-hover:text-[#BC1F27] transition-all duration-300">
-                        <Share2 className="w-4 h-4" />
-                      </div>
-                      <span className="font-semibold">{social}</span>
-                    </button>
-                  ))}
                 </div>
               </div>
             </div>
@@ -1009,40 +774,37 @@ const Contact: React.FC = () => {
   );
 };
 
-export default Contact;
-
-
 const Footer: React.FC = () => {
   return (
     <footer 
-      className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-16 overflow-hidden"
+      className="w-full bg-gradient-to-b from-[#4b0d0e] to-[#3a0a0b] relative mt-12 sm:mt-16 overflow-hidden"
       data-aos="fade-up"
     >
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-yellow-500 to-red-500"></div>
 
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-red-400 blur-xl"></div>
-        <div className="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-yellow-400 blur-xl"></div>
+        <div className="absolute top-10 left-10 w-20 h-20 sm:w-32 sm:h-32 rounded-full bg-red-400 blur-xl"></div>
+        <div className="absolute bottom-10 right-10 w-24 h-24 sm:w-40 sm:h-40 rounded-full bg-yellow-400 blur-xl"></div>
       </div>
 
-      <div className="max-w-6xl mx-auto py-12 px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
+      <div className="max-w-6xl mx-auto py-8 sm:py-12 px-4 sm:px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 relative z-10">
         <div className="lg:col-span-1" data-aos="fade-right" data-aos-delay="200">
-          <div className="flex items-center space-x-2 mb-4">
+          <div className="flex items-center space-x-2 mb-3 sm:mb-4">
              <img 
                 src="/images/logo/logo.png" 
                 alt="Philtech GMA Logo" 
-                className="w-10 h-10 object-contain"
+                className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
               />
-            <h2 className="text-2xl font-bold text-white">Philtech GMA</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-white">Philtech GMA</h2>
           </div>
-          <p className="text-gray-300 mb-6 max-w-xs">
-            Innovating technology solutions for a better tomorrow. We provide cutting-edge services to help your business grow.
+          <p className="text-gray-300 mb-4 sm:mb-6 max-w-xs text-sm sm:text-base">
+            Global Success Through Academic Excellence.
           </p>
 
-          <div className="flex gap-4">
+          <div className="flex gap-3 sm:gap-4">
             {[
               {
-                href: "https://facebook.com",
+                href: "https://www.facebook.com/philtechgma2013",
                 label: "Facebook",
                 svg: (
                   <path d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.408.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.408 24 22.674V1.326C24 .592 23.406 0 22.675 0" />
@@ -1079,13 +841,13 @@ const Footer: React.FC = () => {
                 href={icon.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`text-gray-200 hover:text-white transition-all duration-300 transform hover:scale-110 bg-white/10 rounded-full p-2 ${icon.color}`}
+                className={`text-gray-200 hover:text-white transition-all duration-300 transform hover:scale-110 bg-white/10 rounded-full p-1.5 sm:p-2 ${icon.color}`}
                 aria-label={icon.label}
               >
                 <svg
                   fill="currentColor"
                   viewBox="0 0 24 24"
-                  className="w-5 h-5"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                 >
                   {icon.svg}
                 </svg>
@@ -1095,21 +857,21 @@ const Footer: React.FC = () => {
         </div>
 
         <div data-aos="fade-up" data-aos-delay="300">
-          <h3 className="text-xl font-bold text-white mb-4">Quick Links</h3>
-          <ul className="space-y-3">
+          <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Quick Links</h3>
+          <ul className="space-y-2 sm:space-y-3">
             {[
               { href: "/about", label: "About Us" },
-              { href: "/services", label: "Our Services" },
-              { href: "/projects", label: "Projects" },
-              { href: "/team", label: "Our Team" },
-              { href: "/careers", label: "Careers" },
+              { href: "/regular", label: "College" },
+              { href: "/seniorhigh", label: "Senior High" },
+              { href: "/developer", label: "Our Team" },
+              { href: "/enrollment-process", label: "Enrollment Process" },
             ].map((link, i) => (
               <li key={i}>
                 <a
                   href={link.href}
-                  className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                  className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group text-sm sm:text-base"
                 >
-                  <span className="w-2 h-2 bg-red-500 rounded-full mr-3 group-hover:bg-yellow-500 transition-colors"></span>
+                  <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full mr-2 sm:mr-3 group-hover:bg-yellow-500 transition-colors"></span>
                   {link.label}
                 </a>
               </li>
@@ -1118,50 +880,50 @@ const Footer: React.FC = () => {
         </div>
         
         <div data-aos="fade-up" data-aos-delay="400">
-          <h3 className="text-xl font-bold text-white mb-4">Contact Us</h3>
-          <div className="space-y-4">
+          <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Contact Us</h3>
+          <div className="space-y-3 sm:space-y-4">
             <div className="flex items-start">
-              <svg className="w-5 h-5 text-yellow-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 mt-0.5 sm:mt-1 mr-2 sm:mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
               </svg>
               <div>
-                <p className="text-gray-300">Email us at</p>
-                <a href="mailto:info@philtechgma.com" className="text-white hover:text-yellow-400 transition-colors">info@philtechgma.com</a>
+                <p className="text-gray-300 text-sm sm:text-base">Email us at</p>
+                <a href="mailto:philtech.2013gma@gmail.com" className="text-white hover:text-yellow-400 transition-colors text-sm sm:text-base break-all">philtech.2013gma@gmail.com</a>
               </div>
             </div>
             <div className="flex items-start">
-              <svg className="w-5 h-5 text-yellow-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 mt-0.5 sm:mt-1 mr-2 sm:mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
               </svg>
               <div>
-                <p className="text-gray-300">Call us</p>
-                <a href="tel:+1234567890" className="text-white hover:text-yellow-400 transition-colors">+1 (234) 567-890</a>
+                <p className="text-gray-300 text-sm sm:text-base">Call us</p>
+                <a href="tel:+639972240222" className="text-white hover:text-yellow-400 transition-colors text-sm sm:text-base">+63 997 224 0222</a>
               </div>
             </div>
             <div className="flex items-start">
-              <svg className="w-5 h-5 text-yellow-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 mt-0.5 sm:mt-1 mr-2 sm:mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
               </svg>
               <div>
-                <p className="text-gray-300">Visit us</p>
-                <p className="text-white">123 Tech Street, Manila, Philippines</p>
+                <p className="text-gray-300 text-sm sm:text-base">Visit us</p>
+                <p className="text-white text-xs sm:text-sm">2nd Floor CRDM Building Governor's Drive Baranggay Maderan, GMA, Cavite, General Mariano Alvarez, Philippines</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Stay Updated Section - After Contact Us */}
+        {/* Stay Updated Section */}
         <div data-aos="fade-left" data-aos-delay="500">
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10 h-full">
-            <h4 className="text-lg font-semibold text-white mb-2">Stay Updated</h4>
-            <p className="text-gray-300 text-sm mb-3">Subscribe to our newsletter for the latest updates.</p>
+          <div className="bg-white/5 p-3 sm:p-4 rounded-lg border border-white/10 h-full">
+            <h4 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">Stay Updated</h4>
+            <p className="text-gray-300 text-xs sm:text-sm mb-2 sm:mb-3">Subscribe to our newsletter for the latest updates.</p>
             <div className="relative">
               <input
                 type="email"
                 placeholder="Your email"
-                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-500 pr-24"
+                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-500 pr-20 sm:pr-24 text-sm"
               />
-              <button className="absolute right-1 top-1 bottom-1 bg-gradient-to-r from-red-500 to-yellow-500 text-white px-4 rounded-md font-medium hover:opacity-90 transition-opacity text-sm">
+              <button className="absolute right-1 top-1 bottom-1 bg-gradient-to-r from-red-500 to-yellow-500 text-white px-2 sm:px-3 rounded text-xs sm:text-sm font-medium hover:opacity-90 transition-opacity">
                 Send
               </button>
             </div>
@@ -1172,11 +934,12 @@ const Footer: React.FC = () => {
   );
 };
 
+export default Contact;
+
 export {
   Logo,
   NavLinks,
   Navbar,
-  Dropdown,
-  Carousel,
+  HeroBackground,
   Footer
 };

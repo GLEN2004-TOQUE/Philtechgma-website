@@ -1231,52 +1231,52 @@ const TestimonialsSection: React.FC = () => {
   const testimonials = [
     {
       id: 1,
-      name: "Maria Santos",
-      role: "BSCS Graduate, Class of 2023",
-      image: "/images/testimonials/student1.jpg",
-      text: "PHILTECH GMA provided me with the perfect balance of theoretical knowledge and practical skills. The supportive faculty and modern facilities helped me secure a job even before graduation!",
+      name: "Christopher Glen",
+      role: "BSCS 3rd Year student of BSCS",
+      image: "/images/testimonials/tox.jpg",
+      text: "PHILTECH GMA provided me with the perfect balance of theoretical knowledge and practical skills. The supportive faculty and modern facilities helped me secure a job for the future",
       rating: 5,
       program: "Computer Science",
       campus: "GMA Campus"
     },
     {
       id: 2,
-      name: "John Michael Reyes",
-      role: "BTVTED-FBM Student",
-      image: "/images/testimonials/student2.jpg",
-      text: "The hands-on approach to learning at PHILTECH is exceptional. The industry partnerships and real-world projects have prepared me well for my future career in food and beverage management.",
+      name: "Mhaytan James",
+      role: "BSCS 3rd Year student of BSCS",
+      image: "/images/testimonials/tan.jpg",
+      text: "The hands-on approach to learning at PHILTECH is exceptional. The industry partnerships and real-world projects have prepared me well for my future career in Tech industry.",
       rating: 5,
-      program: "Technical Vocational Education",
+      program: "Computer Science",
       campus: "GMA Campus"
     },
     {
       id: 3,
-      name: "Dr. Roberto Dela Cruz",
-      role: "Faculty Member, IT Department",
-      image: "/images/testimonials/faculty1.jpg",
+      name: "Mervin",
+      role: "BSCS 3rd Year student of BSCS",
+      image: "/images/testimonials/mer.jpg",
       text: "Teaching at PHILTECH has been incredibly rewarding. The institution's commitment to academic excellence and student success creates an environment where both students and faculty can thrive.",
       rating: 5,
-      program: "Information Technology",
-      campus: "All Campuses"
+      program: "Computer Science",
+      campus: "GMA Campus"
     },
     {
       id: 4,
-      name: "Andrea Lopez",
-      role: "Alumni, Business Management",
-      image: "/images/testimonials/alumni1.jpg",
+      name: "Christian",
+      role: "BSCS 3rd Year student of BSCS",
+      image: "/images/Devs/dacula.jpg",
       text: "My PHILTECH education was the foundation of my successful career. The practical skills and industry connections I gained have been invaluable in my professional journey.",
       rating: 5,
-      program: "Business Management",
-      campus: "Santa Rosa Campus"
+      program: "Computer Science",
+      campus: "GMA Campus"
     },
     {
       id: 5,
-      name: "Mark Johnson Tan",
-      role: "Senior High School Student",
-      image: "/images/testimonials/student3.jpg",
-      text: "The Senior High program at PHILTECH has amazing facilities and teachers who genuinely care about our future. I feel well-prepared for college and beyond.",
+      name: "Angelica Anne",
+      role: "BSCS 3rd Year student of BSCS",
+      image: "/images/Devs/martinez.jpg",
+      text: "The BSCS program at PHILTECH has amazing facilities and teachers who genuinely care about our future.",
       rating: 5,
-      program: "Senior High School",
+      program: "Computer Science",
       campus: "GMA Campus"
     }
   ];

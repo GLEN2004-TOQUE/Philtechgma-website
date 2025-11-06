@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { X, Sun, Moon, User, ChevronDown} from "lucide-react";
+import { X, Sun, Moon, User, ChevronDown, Check, Book, Users, GraduationCap, Award, Clock, ArrowRight, Star, Target, ChevronLeft, ChevronRight, Beaker, FileText, Shirt, Gift } from "lucide-react";
 
 const Logo: React.FC = () => {
   return (
@@ -268,7 +268,7 @@ const Dropdown: React.FC<DropdownProps> = ({ title, items }) => {
     </div>
   );
 };
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useAOS } from "../hooks/useAOS";
 
 // Dark Mode Hook
 export function useDarkMode(): [boolean, () => void] {
@@ -300,65 +300,19 @@ export function useDarkMode(): [boolean, () => void] {
 }
 
 // Main Carousel Component
-const Carousel: React.FC = () => {
-  const slides = [
-    { img: "/images/carousel-backgrounds/3.jpg" },
-    { img: "/images/carousel-backgrounds/1.jpg" },
-    { img: "/images/carousel-backgrounds/2.jpg" },
-  ];
-
-  const [current, setCurrent] = useState<number>(0);
+const HeroBackground: React.FC = () => {
   const [typewriterText, setTypewriterText] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [typeIndex, setTypeIndex] = useState<number>(0);
-  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
-  const [showDots, setShowDots] = useState<boolean>(true);
-  const [isDarkMode] = useDarkMode(); // Kunin ang dark mode state
+  const [isDarkMode] = useDarkMode();
 
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef<number>(0);
-  const touchStartY = useRef<number>(0);
-  const isDragging = useRef<boolean>(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Intersection Observer for dots visibility
-  useEffect(() => {
-    const observer = new window.IntersectionObserver(
-      ([entry]) => {
-        setShowDots(entry.isIntersecting);
-      },
-      { threshold: 0.2 }
-    );
-    if (carouselRef.current) {
-      observer.observe(carouselRef.current);
-    }
-    return () => {
-      if (carouselRef.current) observer.unobserve(carouselRef.current);
-    };
-  }, []);
-
-  // Auto-slide interval
-  useEffect(() => {
-    const startInterval = () => {
-      intervalRef.current = setInterval(() => {
-        if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev: number) => (prev + 1) % slides.length);
-        }
-      }, 5000);
-    };
-
-    startInterval();
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isTransitioning, slides.length]);
+  const backgroundImage = "/images/carousel-backgrounds/3.jpg";
 
   // Typewriter effect
   useEffect(() => {
     const text = "Global Success Through Academic Excellence";
     let timeout: NodeJS.Timeout;
+    
     if (!isDeleting && typeIndex < text.length) {
       timeout = setTimeout(() => {
         setTypewriterText((prev: string) => prev + text.charAt(typeIndex));
@@ -378,217 +332,64 @@ const Carousel: React.FC = () => {
         setIsDeleting(false);
       }, 500);
     }
+    
     return () => clearTimeout(timeout);
   }, [typeIndex, isDeleting]);
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        handleSlideChange('prev');
-      } else if (e.key === 'ArrowRight') {
-        handleSlideChange('next');
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isTransitioning]);
-
-  // Slide change handler
-  const handleSlideChange = useCallback((direction: 'next' | 'prev') => {
-    if (isTransitioning) return;
-
-    setIsTransitioning(true);
-
-    if (direction === 'next') {
-      setCurrent((prev: number) => (prev + 1) % slides.length);
-    } else {
-      setCurrent((prev: number) => (prev - 1 + slides.length) % slides.length);
-    }
-
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 300);
-  }, [isTransitioning, slides.length]);
-
-  // Touch handlers
-  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    isDragging.current = true;
-
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-
-    const touchCurrentX = e.touches[0].clientX;
-    const touchCurrentY = e.touches[0].clientY;
-    const deltaX = Math.abs(touchCurrentX - touchStartX.current);
-    const deltaY = Math.abs(touchCurrentY - touchStartY.current);
-
-    if (deltaX > deltaY && deltaX > 10) {
-      e.preventDefault();
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const deltaX = touchStartX.current - touchEndX;
-    const deltaY = Math.abs(touchStartY.current - touchEndY);
-
-    isDragging.current = false;
-
-    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > deltaY) {
-      if (deltaX > 0) {
-        handleSlideChange('next');
-      } else {
-        handleSlideChange('prev');
-      }
-    }
-
-    setTimeout(() => {
-      intervalRef.current = setInterval(() => {
-        if (!isDragging.current && !isTransitioning) {
-          setCurrent((prev: number) => (prev + 1) % slides.length);
-        }
-      }, 5000);
-    }, 1000);
-  }, [handleSlideChange, isTransitioning, slides.length]);
-
-  // Go to specific slide
-  const goToSlide = (index: number) => {
-    if (!isTransitioning && index !== current) {
-      setIsTransitioning(true);
-      setCurrent(index);
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 300);
-    }
-  };
-
   return (
     <>
-      <div 
-        ref={carouselRef} 
-        className="w-full carousel-container relative overflow-hidden bg-gray-900 group"
-      >
+      <div className="w-full hero-container relative overflow-hidden bg-gray-900">
         <div className="relative w-full h-full">
-          {slides.map((slide, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-                index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
-            >
-              {/* Background Image Container */}
-              <div className="absolute inset-0">
-                <img
-                  src={slide.img}
-                  alt={`Slide ${index + 1}`}
-                  className="carousel-image w-full h-full object-cover object-center"
-                  draggable="false"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://picsum.photos/1920/1080?random=${index}`;
-                  }}
-                />
-              </div>
+          {/* Background Image Container */}
+          <div className="absolute inset-0">
+            <img
+              src={backgroundImage}
+              alt="Philtech GMA Background"
+              className="hero-image w-full h-full object-cover object-center"
+              draggable="false"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "https://picsum.photos/1920/1080?random=1";
+              }}
+            />
+          </div>
 
-              {/* Background Overlay - nagbabago base sa dark mode */}
-              <div 
-                className={`absolute inset-0 pointer-events-none z-20 ${
-                  isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
-                }`}
-              />
-
-              {/* Content */}
-              <div className="absolute inset-0 flex items-center justify-center z-30">
-                <div className="text-center px-4 max-w-4xl mx-auto">
-                  <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
-                    <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
-                      WELCOME TO
-                    </span>
-                    <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
-                      PHILTECH GMA
-                    </span>
-                    <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
-                          style={{paddingRight: '5px'}}>
-                      {typewriterText}
-                      <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Touch Area for Mobile Swiping */}
-          <div
-            className="absolute inset-0 z-40 touch-pan-y"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            style={{
-              touchAction: 'pan-y',
-              WebkitTouchCallout: 'none',
-              WebkitUserSelect: 'none',
-              userSelect: 'none'
-            }}
+          {/* Background Overlay */}
+          <div 
+            className={`absolute inset-0 pointer-events-none z-20 ${
+              isDarkMode ? 'bg-black/70' : 'bg-[#7b1112]/70'
+            }`}
           />
 
-          {/* Navigation Dots */}
-          {showDots && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50">
-              {slides.map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === current
-                      ? 'bg-[#FFB302] w-6'
-                      : 'bg-white/50 hover:bg-white/75'
-                  }`}
-                  onClick={() => goToSlide(index)}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
+          {/* Content */}
+          <div className="absolute inset-0 flex items-center justify-center z-30">
+            <div className="text-center px-4 max-w-4xl mx-auto">
+              <div className="flex flex-col items-center justify-center w-full animate-fade-in-up">
+                <span className="text-xs xs:text-base sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-widest mb-1 sm:mb-2">
+                  WELCOME TO
+                </span>
+                <span className="text-lg xs:text-2xl sm:text-5xl md:text-6xl font-extrabold text-center w-full bg-gradient-to-r from-[#FFB302] via-[#BC1F27] to-[#781112] bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] tracking-widest">
+                  PHILTECH GMA
+                </span>
+                <span className="mt-1 xs:mt-2 sm:mt-4 text-xs xs:text-base sm:text-2xl md:text-3xl font-bold italic text-[#FFB302] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] font-[cursive] whitespace-nowrap overflow-hidden" 
+                      style={{paddingRight: '5px'}}>
+                  {typewriterText}
+                  <span className="inline-block w-[3px] h-[1.5em] bg-[#FFB302] align-middle animate-blink ml-1"></span>
+                </span>
+              </div>
             </div>
-          )}
-
-          {/* Navigation Arrows */}
-          <button
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
-            onClick={() => handleSlideChange('prev')}
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={24} />
-          </button>
-
-          <button
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
-            onClick={() => handleSlideChange('next')}
-            aria-label="Next slide"
-          >
-            <ChevronRight size={24} />
-          </button>
+          </div>
         </div>
       </div>
 
       <style>{`
-        .carousel-container {
+        .hero-container {
           /* Para sa desktop - full viewport height */
           height: 100vh;
           min-height: 500px;
         }
 
         @media (max-width: 768px) {
-          .carousel-container {
+          .hero-container {
             height: 70vh;
             min-height: 400px;
             max-height: 600px;
@@ -596,14 +397,14 @@ const Carousel: React.FC = () => {
         }
 
         @media (max-width: 480px) {
-          .carousel-container {
+          .hero-container {
             height: 60vh;
             min-height: 350px;
             max-height: 500px;
           }
         }
 
-        .carousel-image {
+        .hero-image {
           width: 100%;
           height: 100%;
           object-fit: cover;
@@ -636,10 +437,451 @@ const Carousel: React.FC = () => {
 };
 
 const SeniorHigh: React.FC = () => {
+  useAOS();
   return (
-    <div className="bg-white dark:bg-gray-800 min-h-screen">
+    <div className="bg-white dark:bg-gray-900 min-h-screen">
       <Navbar />
-      <Carousel />
+      <HeroBackground />
+
+      {/* Enhanced Program Overview */}
+      <section className="py-20 bg-white dark:bg-gray-900">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16" data-aos="fade-up">
+            <div className="inline-block bg-gradient-to-r from-[#7b1112] to-[#9a1a1b] text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
+              WHY CHOOSE PHILTECH SHS?
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              Building <span className="text-[#7b1112] dark:text-yellow-400">Future Leaders</span>
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              Our Senior High School program combines academic excellence with practical skills, 
+              preparing students for both higher education and immediate employment.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            {[
+              {
+                icon: <GraduationCap className="w-8 h-8" />,
+                title: "Academic Excellence",
+                description: "Rigorous academic preparation with modern teaching methodologies and college-ready curriculum",
+                features: ["College Prep", "Scholarship Support", "Research Skills"]
+              },
+              {
+                icon: <Target className="w-8 h-8" />,
+                title: "Career-Focused",
+                description: "Industry-aligned programs with hands-on training and real-world application",
+                features: ["Industry Partners", "On-the-Job Training", "Career Guidance"]
+              },
+              {
+                icon: <Users className="w-8 h-8" />,
+                title: "Expert Mentorship",
+                description: "Learn from experienced educators and industry professionals dedicated to your success",
+                features: ["Expert Faculty", "Personalized Mentoring", "Industry Experts"]
+              }
+            ].map((feature, index) => (
+              <div 
+                key={index}
+                className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 dark:border-gray-600 hover:border-[#7b1112]/20 dark:hover:border-yellow-400/30"
+                data-aos="fade-up"
+                data-aos-delay={index * 150}
+              >
+                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                  <div className="bg-gradient-to-r from-[#7b1112] to-[#9a1a1b] p-3 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    {feature.icon}
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 text-center mt-4">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 text-center leading-relaxed">
+                  {feature.description}
+                </p>
+                <ul className="space-y-3">
+                  {feature.features.map((item, idx) => (
+                    <li key={idx} className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+{/* Enhanced Strands Offered */}
+<section className="py-20 relative" style={{ backgroundImage: 'url(/images/campuses/gma-campus.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+  <div className="absolute inset-0 bg-white/80 dark:bg-black/70"></div>
+  <div className="container mx-auto px-4 relative z-10">
+    <div className="text-center mb-16" data-aos="fade-up">
+      <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+        Choose Your <span className="text-[#7b1112] dark:text-yellow-400">Academic Path</span>
+      </h2>
+      <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+        Select from our diverse range of tracks designed to match your interests and career goals
+      </p>
+    </div>
+
+    {/* Academic Track */}
+    <div className="mb-16" data-aos="fade-up">
+      <div className="bg-gradient-to-r from-[#7b1112] to-[#9a1a1b] p-8 rounded-2xl shadow-2xl mb-8">
+        <div className="flex items-center gap-4 text-white">
+          <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
+            <Book className="w-8 h-8" />
+          </div>
+          <div>
+            <h3 className="text-3xl font-bold">ACADEMIC TRACK</h3>
+            <p className="text-yellow-200 text-lg">College preparatory programs</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="grid lg:grid-cols-3 gap-8">
+        {[
+          {
+            title: "Accountancy, Business and Management (ABM)",
+            description: "Master business principles, and accounting fundamentals for future entrepreneurs",
+            image: "/images/logo/abm.png",
+            color: "from-blue-500 to-blue-600",
+            features: ["Business Management", "Accounting", "Entrepreneurship"]
+          },
+          {
+            title: "General Academic Strand (GAS)",
+            description: "Flexible program allowing exploration across various fields before committing to a specific college course",
+            image: "/images/logo/GAS.png",
+            color: "from-green-500 to-green-600",
+            features: ["Multiple Disciplines", "College Preparation", "Flexible Curriculum"]
+          },
+          {
+            title: "Humanities and Social Sciences (HUMSS)",
+            description: "Dive into arts, literature, politics, and social sciences for careers in law, education, and public service",
+            image: "/images/logo/HUMSS.png",
+            color: "from-purple-500 to-purple-600",
+            features: ["Social Sciences", "Arts & Literature", "Public Service"]
+          }
+        ].map((strand, index) => (
+          <div 
+            key={index}
+            className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-200 dark:border-gray-600 hover:border-transparent overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay={index * 100}
+          >
+            <div className="relative h-48 flex items-center justify-center" style={{ backgroundImage: `url(${strand.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+              <div className="absolute inset-0 bg-white/80 dark:bg-black/70"></div>
+              <img src={strand.image} alt={strand.title} className="w-20 h-20 rounded-2xl object-cover relative z-10" />
+            </div>
+            
+            <div className="p-6">
+              <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-[#7b1112] dark:group-hover:text-yellow-400 transition-colors">
+                {strand.title}
+              </h4>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+                {strand.description}
+              </p>
+              
+              <div className="mb-6">
+                <h5 className="font-semibold text-gray-900 dark:text-white mb-2 text-sm">Key Focus Areas:</h5>
+                <div className="flex flex-wrap gap-2">
+                  {strand.features.map((feature, idx) => (
+                    <span 
+                      key={idx}
+                      className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-xs font-medium"
+                    >
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <Link
+                to="https://forms.gle/MRkPYNErMHKoCUWk6"
+                className="w-full bg-gradient-to-r from-[#7b1112] to-[#9a1a1b] hover:from-[#9a1a1b] hover:to-[#7b1112] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 group/btn"
+              >
+                <GraduationCap className="w-5 h-5" />
+                Enroll Now
+                <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Technical-Vocational Track */}
+    <div data-aos="fade-up">
+      <div className="bg-gradient-to-r from-[#9a1a1b] to-[#7b1112] p-8 rounded-2xl shadow-2xl mb-8">
+        <div className="flex items-center gap-4 text-white">
+          <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
+            <Award className="w-8 h-8" />
+          </div>
+          <div>
+            <h3 className="text-3xl font-bold">TECHNICAL-VOCATIONAL LIVELIHOOD TRACK</h3>
+            <p className="text-yellow-200 text-lg">Skills for immediate employment</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="grid lg:grid-cols-2 gap-8">
+        {[
+          {
+            title: "Information and Communications Technology (ICT)",
+            description: "Comprehensive training in computer systems, programming, web development, and digital technology for the modern workforce",
+            image: "/images/logo/ICT.png", 
+            color: "from-indigo-500 to-indigo-600",
+            features: ["Programming", "Web Design", "Networking", "Digital Technology"]
+          },
+          {
+            title: "Home Economics",
+            description: "Hands-on training in culinary arts, hospitality management, tourism, and home management industries",
+            image: "/images/logo/HE.png",
+            color: "from-pink-500 to-pink-600",
+            features: ["Culinary Arts", "Tourism", "Hospitality", "Home Management"]
+          }
+        ].map((strand, index) => (
+          <div 
+            key={index}
+            className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-200 dark:border-gray-600 hover:border-transparent overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay={index * 150}
+          >
+            <div className="relative h-48 flex items-center justify-center" style={{ backgroundImage: `url(${strand.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+              <div className="absolute inset-0 bg-white/80 dark:bg-black/70"></div>
+              <img src={strand.image} alt={strand.title} className="w-20 h-20 rounded-2xl object-cover relative z-10" />
+            </div>
+            
+            <div className="p-6">
+              <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-[#7b1112] dark:group-hover:text-yellow-400 transition-colors">
+                {strand.title}
+              </h4>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+                {strand.description}
+              </p>
+              
+              <div className="mb-6">
+                <h5 className="font-semibold text-gray-900 dark:text-white mb-2 text-sm">Specializations:</h5>
+                <div className="flex flex-wrap gap-2">
+                  {strand.features.map((feature, idx) => (
+                    <span 
+                      key={idx}
+                      className={`${
+                        strand.title.includes("ICT") 
+                          ? "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                          : "bg-pink-100 dark:bg-pink-900 text-pink-800 dark:text-pink-200"
+                      } px-3 py-1 rounded-full text-xs font-medium`}
+                    >
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <Link
+                to="https://forms.gle/MRkPYNErMHKoCUWk6"
+                className="w-full bg-gradient-to-r from-[#7b1112] to-[#9a1a1b] hover:from-[#9a1a1b] hover:to-[#7b1112] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 group/btn"
+              >
+                <GraduationCap className="w-5 h-5" />
+                Enroll Now
+                <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+      {/* Enhanced Fee Structure */}
+<section className="py-20 bg-white dark:bg-gray-900">
+  <div className="container mx-auto px-4">
+    <div className="text-center mb-16" data-aos="fade-up">
+      <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+        Transparent <span className="text-[#7b1112] dark:text-yellow-400">Fee Structure</span>
+      </h2>
+      <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+        Quality education with no hidden costs. Everything you need for success is included.
+      </p>
+    </div>
+
+    <div className="max-w-4xl mx-auto" data-aos="fade-up">
+      <div className="bg-gradient-to-r from-[#7b1112] to-[#9a1a1b] p-8 rounded-2xl shadow-2xl mb-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+        
+        <div className="relative z-10 text-center">
+          <div className="flex justify-center mb-4">
+            <div className="bg-white/20 p-4 rounded-2xl backdrop-blur-sm">
+              <Award className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <h3 className="text-3xl font-bold text-white mb-2">INVESTMENT IN YOUR FUTURE</h3>
+          <p className="text-yellow-200 text-lg">All-inclusive package for comprehensive education</p>
+        </div>
+      </div>
+      
+      <div className="grid gap-6">
+        {[
+          { 
+            fee: "TUITION FEE", 
+            amount: "Affordable Rates", 
+            description: "Comprehensive academic instruction with expert faculty",
+            highlight: false,
+            icon: <Book className="w-6 h-6" />,
+            color: "blue",
+            features: ["Quality Instruction", "Expert Faculty", "Modern Curriculum"]
+          },
+          { 
+            fee: "LABORATORY FEE", 
+            amount: "Inclusive", 
+            description: "Hands-on practical sessions with modern equipment",
+            highlight: false,
+            icon: <Beaker className="w-6 h-6" />,
+            color: "green",
+            features: ["Modern Equipment", "Practical Sessions", "Safety Gear"]
+          },
+          { 
+            fee: "MISCELLANEOUS FEE", 
+            amount: "Comprehensive", 
+            description: "Access to all campus facilities and resources",
+            highlight: false,
+            icon: <FileText className="w-6 h-6" />,
+            color: "purple",
+            features: ["Library Access", "Athletic Facilities", "Student Services"]
+          },
+          { 
+            fee: "COMPLETE SCHOOL UNIFORM PACKAGE", 
+            amount: "FREE", 
+            description: "Full uniform set included at no additional cost",
+            highlight: true,
+            icon: <Shirt className="w-6 h-6" />,
+            color: "red",
+            features: ["School Uniform", "PE Uniform", "SHS T-Shirt", "ID with Holder"]
+          }
+        ].map((item, index) => (
+          <div 
+            key={index}
+            className={`group relative p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 border-2 ${
+              item.highlight 
+                ? 'bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-yellow-200 dark:border-yellow-700 hover:border-[#7b1112] dark:hover:border-yellow-400' 
+                : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+            }`}
+            data-aos="fade-up"
+            data-aos-delay={index * 100}
+          >
+            {item.highlight && (
+              <div className="absolute -top-3 -right-3 bg-green-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                COMPLIMENTARY
+              </div>
+            )}
+            
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+              {/* Icon Section */}
+              <div className={`flex-shrink-0 w-16 h-16 rounded-2xl flex items-center justify-center ${
+                item.highlight 
+                  ? 'bg-gradient-to-r from-[#7b1112] to-[#9a1a1b] text-white' 
+                  : `bg-${item.color}-100 dark:bg-${item.color}-900 text-${item.color}-600 dark:text-${item.color}-400`
+              }`}>
+                {item.icon}
+              </div>
+              
+              {/* Content Section */}
+              <div className="flex-1">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                  <div className="flex-1">
+                    <h4 className={`text-xl font-bold flex items-center gap-3 ${
+                      item.highlight ? 'text-[#7b1112] dark:text-yellow-400' : 'text-gray-900 dark:text-white'
+                    }`}>
+                      {item.fee}
+                      {item.highlight && (
+                        <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full font-medium">
+                          FREE PACKAGE
+                        </span>
+                      )}
+                    </h4>
+                    <p className="text-gray-600 dark:text-gray-300 mt-2 leading-relaxed">
+                      {item.description}
+                    </p>
+                    
+                    {/* Features */}
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      {item.features.map((feature, idx) => (
+                        <span 
+                          key={idx}
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+                            item.highlight
+                              ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
+                              : `bg-${item.color}-100 dark:bg-${item.color}-900 text-${item.color}-800 dark:text-${item.color}-200`
+                          }`}
+                        >
+                          <Check className="w-3 h-3" />
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Amount Section */}
+                  <div className={`text-center lg:text-right ${
+                    item.highlight ? 'text-[#7b1112] dark:text-yellow-400' : 'text-gray-900 dark:text-white'
+                  }`}>
+                    <div className={`text-2xl lg:text-3xl font-bold mb-2 ${
+                      item.highlight ? 'text-green-600 dark:text-green-400' : ''
+                    }`}>
+                      {item.amount}
+                    </div>
+                    {item.highlight ? (
+                      <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-semibold text-sm">
+                        <Gift className="w-4 h-4" />
+                        Included at no cost
+                      </div>
+                    ) : (
+                      <div className="text-gray-500 dark:text-gray-400 text-sm">
+                        No hidden fees
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Hover Effect Border */}
+            <div className={`absolute inset-0 rounded-2xl border-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
+              item.highlight 
+                ? 'border-[#7b1112] dark:border-yellow-400' 
+                : 'border-gray-300 dark:border-gray-500'
+            }`}></div>
+          </div>
+        ))}
+      </div>
+
+      {/* Additional Info */}
+      <div className="mt-8 text-center" data-aos="fade-up" data-aos-delay="400">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-gray-600 dark:text-gray-300">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[#7b1112] dark:text-yellow-400" />
+              <span>Flexible payment plans available</span>
+            </div>
+            <div className="hidden sm:block w-1 h-1 bg-gray-300 rounded-full"></div>
+            <div className="flex items-center gap-2">
+              <Star className="w-4 h-4 text-[#7b1112] dark:text-yellow-400" />
+              <span>Scholarship opportunities</span>
+            </div>
+            <div className="hidden sm:block w-1 h-1 bg-gray-300 rounded-full"></div>
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-[#7b1112] dark:text-yellow-400" />
+              <span>Sibling discounts</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
       <Footer />
     </div>
   );
@@ -812,6 +1054,6 @@ export {
   NavLinks,
   Navbar,
   Dropdown,
-  Carousel,
+  HeroBackground,
   Footer
 };

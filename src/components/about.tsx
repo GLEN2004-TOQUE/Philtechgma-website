@@ -520,7 +520,6 @@ const About: React.FC = () => {
           <h2 className="text-5xl font-bold mb-6 text-[#BC1F27] dark:text-[#FFB302]">
             About Philtech GMA
           </h2>
-          <div className="w-24 h-1 bg-[#BC1F27] dark:bg-[#FFB302] mx-auto mb-8" data-aos="fade-up" data-aos-delay="200"></div>
         </div>
 
         {/* Main Content */}

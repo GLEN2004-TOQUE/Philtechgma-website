@@ -12,6 +12,7 @@ import Regular from "./components/regular";
 import Sunday from "./components/sunday";
 import SeniorHigh from "./components/seniorhigh";
 import Login from "./dblogin/login";
+import CollegePortal from "./components/CollegePortal";
 import { useEffect } from "react";
 
 const Home: React.FC = () => {
@@ -54,6 +55,7 @@ const App: React.FC = () => {
         <Route path="/contacts" element={<Contact />} />
         <Route path="/developer" element={<Developer />} />
         <Route path="/dblogin/login" element={<Login />} />
+        <Route path="/college-portal" element={<CollegePortal />} />
         <Route path="/regular" element={<Regular />} />
         <Route path="/sunday" element={<Sunday />} />
         <Route path="/seniorhigh" element={<SeniorHigh />} />

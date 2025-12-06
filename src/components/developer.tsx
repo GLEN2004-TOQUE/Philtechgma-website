@@ -459,7 +459,7 @@ const DeveloperProfile: React.FC = () => {
       id: 2,
       name: "Mhaytan James Reñases",
       role: "Frontend Developer",
-      image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face", // Replace with actual image URL
+      image: "/images/Devs/raneses.jpg",
       about: "Creative frontend developer focused on crafting beautiful and intuitive user interfaces. Expert in modern JavaScript frameworks and responsive design.",
       skills: [
         { name: "React", level: 90 },
@@ -473,7 +473,7 @@ const DeveloperProfile: React.FC = () => {
       id: 3,
       name: "Mervin Micosa",
       role: "Backend Developer",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face", // Replace with actual image URL
+      image: "/images/Devs/micosa.jpg",
       about: "Backend specialist with expertise in server-side technologies, databases, and API development. Passionate about building robust and scalable systems.",
       skills: [
         { name: "Node.js", level: 94 },

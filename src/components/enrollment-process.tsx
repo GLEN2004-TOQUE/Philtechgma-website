@@ -620,9 +620,7 @@ const EnrollmentProcess: React.FC = () => {
                 Our dedicated team is here to support you every step of the way.
               </p>
               <Link to="/dblogin/login">
-                <button className="bg-gradient-to-r from-[#FFB302] to-[#FFD700] text-gray-900 px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                  Apply Now
-                </button>
+                
               </Link>
             </div>
           </div>

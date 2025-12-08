@@ -14,7 +14,7 @@ import {
   BarChart, FileBarChart, ClipboardCheck, Clock4,
   Users as Students, FolderOpen, PenTool, CalendarRange
 } from "lucide-react";
-import { supabase } from '../supabaseclient';
+import { supabase } from '../supabaseClient';
 
 // Skeleton Loading Components
 const SkeletonCard = () => (

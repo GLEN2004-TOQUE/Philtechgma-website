@@ -20,8 +20,31 @@ const Login: React.FC = () => {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [signupEmail, setSignupEmail] = useState("");
 
+  // Constants for error messages
+  const duplicateEmailError = "This email is already registered. Please use a different email or try signing in.";
+
   const handleClose = () => {
     navigate("/");
+  };
+
+  const checkEmailExists = async (email: string): Promise<boolean> => {
+    try {
+      const { data, error: checkError } = await supabase
+        .from('users')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        console.error('Error checking email:', checkError);
+        return false;
+      }
+
+      return !!data; // Returns true if email exists
+    } catch (error) {
+      console.error('Error checking email:', error);
+      return false;
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -52,6 +75,14 @@ const Login: React.FC = () => {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address");
+      setIsLoading(false);
+      return;
+    }
+
     if (isSignUp) {
       // Additional validation for student type
       if (formData.role === "student" && !formData.studentType) {
@@ -62,6 +93,13 @@ const Login: React.FC = () => {
 
       if (!formData.fullName) {
         setError("Full name is required");
+        setIsLoading(false);
+        return;
+      }
+
+      // Validate full name format
+      if (formData.fullName.trim().split(' ').length < 2) {
+        setError("Please enter your full name (first and last name)");
         setIsLoading(false);
         return;
       }
@@ -79,6 +117,14 @@ const Login: React.FC = () => {
       }
 
       try {
+        // Check if email already exists
+        const emailExists = await checkEmailExists(formData.email);
+        if (emailExists) {
+          setError(duplicateEmailError);
+          setIsLoading(false);
+          return;
+        }
+
         // Create auth user with OTP verification
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: formData.email,
@@ -87,25 +133,48 @@ const Login: React.FC = () => {
             data: {
               full_name: formData.fullName,
               role: formData.role,
-              student_type: formData.studentType // Include student type in metadata
+              student_type: formData.studentType
             },
             emailRedirectTo: undefined
           }
         });
 
         if (authError) {
-          throw authError;
+          // Check if it's a duplicate email error from Supabase Auth
+          if (authError.message.includes('already registered') || 
+              authError.message.includes('User already registered') ||
+              authError.code === 'user_already_exists') {
+            setError(duplicateEmailError);
+          } else {
+            throw authError;
+          }
+          setIsLoading(false);
+          return;
         }
 
         if (authData.user) {
-          // Show OTP modal immediately after successful signup
-          setSignupEmail(formData.email);
-          setShowOtpModal(true);
-          setError("");
+          // Show success message
+          setError("✓ Account created successfully! Please check your email for verification code.");
+          
+          // Show OTP modal after a delay
+          setTimeout(() => {
+            setSignupEmail(formData.email);
+            setShowOtpModal(true);
+            setError("");
+          }, 1000);
         }
       } catch (error: any) {
         console.error('Sign up error:', error);
-        setError(error.message || "Sign up failed. Please try again.");
+        // Handle specific duplicate email errors
+        if (error.message?.includes('already registered') || 
+            error.message?.includes('duplicate') ||
+            error.code === '23505') { // PostgreSQL unique violation
+          setError(duplicateEmailError);
+        } else {
+          setError(error.message || "Sign up failed. Please try again.");
+        }
+      } finally {
+        setIsLoading(false);
       }
     } else {
       // Sign In Logic
@@ -122,12 +191,38 @@ const Login: React.FC = () => {
               setSignupEmail(formData.email);
               setShowOtpModal(true);
             }, 1500);
+            setIsLoading(false);
             return;
           }
-          throw authError;
+          // Handle invalid login credentials
+          if (authError.message.includes('Invalid login credentials')) {
+            // Check if user exists but credentials are wrong
+            const emailExists = await checkEmailExists(formData.email);
+            if (emailExists) {
+              setError('Invalid password. Please try again or click "Forgot Password" to reset.');
+            } else {
+              setError('No account found with this email. Please sign up first.');
+            }
+          } else {
+            throw authError;
+          }
+          setIsLoading(false);
+          return;
         }
 
         if (authData.user) {
+          // Check if user is verified
+          if (!authData.user.email_confirmed_at) {
+            setError('Please verify your email first. Check your inbox for the verification code.');
+            setTimeout(() => {
+              setSignupEmail(formData.email);
+              setShowOtpModal(true);
+            }, 1500);
+            await supabase.auth.signOut();
+            setIsLoading(false);
+            return;
+          }
+
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
@@ -188,22 +283,68 @@ const Login: React.FC = () => {
           };
 
           sessionStorage.setItem('philtech_user', JSON.stringify(userInfo));
-          navigate("/college-portal");
+          
+          // Show success message before redirect
+          setError("✓ Login successful! Redirecting...");
+          
+          // Determine redirect path based on role and student type
+          let redirectPath = "/";
+          
+          switch (formData.role) {
+            case 'student':
+              // Check student type from the fetched student data
+              if (roleData && (roleData as any).student_type === 'seniorHigh') {
+                redirectPath = "/SeniorHighPortal";
+              } else if (roleData && (roleData as any).student_type === 'college') {
+                redirectPath = "/CollegePortal";
+              } else {
+                // Default fallback for students
+                redirectPath = "/StudentPortal";
+              }
+              break;
+              
+            case 'teacher':
+              redirectPath = "/TeacherPortal";
+              break;
+              
+            case 'parent':
+              redirectPath = "/ParentsPortal";
+              break;
+              
+            case 'admin':
+              redirectPath = "/AdminPortal";
+              break;
+              
+            default:
+              redirectPath = "/";
+              break;
+          }
+
+          setTimeout(() => {
+            navigate(redirectPath);
+          }, 1000);
         }
       } catch (error: any) {
         console.error('Login error:', error);
         setError(error.message || "Login failed. Please check your credentials.");
+      } finally {
+        setIsLoading(false);
       }
     }
-
-    setIsLoading(false);
   };
 
   const handleSwitchToSignIn = () => {
     if (isSignUp) {
       setIsSignUp(false);
       setError("");
-      setFormData({ email: "", password: "", role: "student", fullName: "", confirmPassword: "", studentType: "" });
+      setFormData({ 
+        email: "", 
+        password: "", 
+        role: "student", 
+        fullName: "", 
+        confirmPassword: "", 
+        studentType: "" 
+      });
     }
   };
 
@@ -211,21 +352,42 @@ const Login: React.FC = () => {
     if (!isSignUp) {
       setIsSignUp(true);
       setError("");
-      setFormData({ email: "", password: "", role: "student", fullName: "", confirmPassword: "", studentType: "" });
+      setFormData({ 
+        email: "", 
+        password: "", 
+        role: "student", 
+        fullName: "", 
+        confirmPassword: "", 
+        studentType: "" 
+      });
     }
   };
 
   const handleCloseOtpModal = () => {
     setShowOtpModal(false);
     setIsSignUp(false);
-    setFormData({ email: "", password: "", role: "student", fullName: "", confirmPassword: "", studentType: "" });
+    setFormData({ 
+      email: "", 
+      password: "", 
+      role: "student", 
+      fullName: "", 
+      confirmPassword: "", 
+      studentType: "" 
+    });
     setError("");
   };
 
   const handleVerificationSuccess = () => {
     setShowOtpModal(false);
     setIsSignUp(false);
-    setFormData({ email: "", password: "", role: "student", fullName: "", confirmPassword: "", studentType: "" });
+    setFormData({ 
+      email: "", 
+      password: "", 
+      role: "student", 
+      fullName: "", 
+      confirmPassword: "", 
+      studentType: "" 
+    });
     setError("✓ Email verified successfully! You can now sign in.");
   };
 
@@ -299,6 +461,25 @@ const Login: React.FC = () => {
         </div>
 
         <div className="p-6">
+          {/* Email Already Registered Warning - Only show for sign up */}
+          {isSignUp && (
+            <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
+                    Each email can only be used for one account
+                  </p>
+                  <p className="text-xs text-yellow-700 dark:text-yellow-400 mt-1">
+                    If you've already registered, please sign in instead
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Role Selection */}
             <div className="space-y-2">
@@ -372,9 +553,12 @@ const Login: React.FC = () => {
                   required
                   value={formData.fullName}
                   onChange={handleChange}
-                  placeholder="Enter your full name"
+                  placeholder="Enter your full name (First Last)"
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200"
                 />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Enter your complete name as it appears on official documents
+                </p>
               </div>
             )}
 
@@ -395,6 +579,11 @@ const Login: React.FC = () => {
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200"
                 />
               </div>
+              {isSignUp && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Use your institutional email address
+                </p>
+              )}
             </div>
 
             {/* Password Field */}
@@ -411,6 +600,7 @@ const Login: React.FC = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Enter your password"
+                  minLength={6}
                   className="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200"
                 />
                 <button
@@ -421,6 +611,11 @@ const Login: React.FC = () => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {isSignUp && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Password must be at least 6 characters long
+                </p>
+              )}
             </div>
 
             {/* Confirm Password (Sign Up Only) */}
@@ -458,9 +653,20 @@ const Login: React.FC = () => {
             {/* Error Message */}
             {error && (
               <div className={`p-4 rounded-lg ${error.includes('✓') ? 'bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800'}`}>
-                <p className={`text-sm font-medium ${error.includes('✓') ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
-                  {error}
-                </p>
+                <div className="flex items-start">
+                  {error.includes('✓') ? (
+                    <svg className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  <p className={`text-sm font-medium ${error.includes('✓') ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                    {error}
+                  </p>
+                </div>
               </div>
             )}
 
@@ -488,6 +694,20 @@ const Login: React.FC = () => {
               )}
             </button>
           </form>
+
+          {/* Switch between Sign In/Sign Up */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {isSignUp ? "Already have an account?" : "Don't have an account?"}
+              <button
+                type="button"
+                onClick={isSignUp ? handleSwitchToSignIn : handleSwitchToSignUp}
+                className="ml-2 font-semibold text-[#7B1112] dark:text-[#FFB302] hover:underline focus:outline-none"
+              >
+                {isSignUp ? "Sign In" : "Sign Up"}
+              </button>
+            </p>
+          </div>
 
           {/* Terms and Privacy */}
           {isSignUp && (
@@ -553,9 +773,16 @@ const Login: React.FC = () => {
                     e.preventDefault();
                     const handleModalVerify = async () => {
                       try {
+                        const otpCode = (document.getElementById('modal-otp-code') as HTMLInputElement)?.value;
+                        
+                        if (!otpCode || otpCode.length !== 6) {
+                          setError("Please enter a valid 6-digit code");
+                          return;
+                        }
+
                         const { error } = await supabase.auth.verifyOtp({
                           email: signupEmail,
-                          token: (document.getElementById('modal-otp-code') as HTMLInputElement)?.value,
+                          token: otpCode,
                           type: 'email'
                         });
 
@@ -569,7 +796,11 @@ const Login: React.FC = () => {
 
                       } catch (error: any) {
                         console.error('Verification error:', error);
-                        setError(error.message || "Verification failed. Please check your code.");
+                        if (error.message.includes('Invalid OTP')) {
+                          setError("Invalid verification code. Please check and try again.");
+                        } else {
+                          setError(error.message || "Verification failed. Please check your code.");
+                        }
                       }
                     };
                     handleModalVerify();
@@ -581,17 +812,19 @@ const Login: React.FC = () => {
                       <input
                         id="modal-otp-code"
                         type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         onChange={(e) => {
-                          const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 8);
+                          const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
                           e.target.value = value;
                         }}
-                        placeholder="00000000"
+                        placeholder="000000"
                         required
-                        maxLength={8}
+                        maxLength={6}
                         className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 text-center text-2xl font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200"
                       />
                       <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                        Enter the 8-digit code from your email
+                        Enter the 6-digit code from your email
                       </p>
                     </div>
 

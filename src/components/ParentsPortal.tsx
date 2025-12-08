@@ -1,17 +1,17 @@
-import React, { useState, useEffect, JSX } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User, BookOpen, MessageSquare, Settings, Home,
-  Edit, CheckCircle, Phone, MapPin, Globe, Calendar,
-  Search, Filter, MoreVertical, Trash2, Eye, Bell,
-  TrendingUp, Users, Award, Clock, ChevronRight,
-  BarChart3, Download, FileText, Video, Shield,
-  Mail, LogOut, Menu, X, GraduationCap, BookMarked,
-  Upload, CreditCard, HelpCircle, ChevronDown, UserPlus,
-  Users as Family, AlertCircle, TrendingDown, FileCheck,
+  Edit, CheckCircle, Phone, MapPin, Calendar,
+  Search, MoreVertical, Trash2, Bell,
+  TrendingUp, Clock,
+  Download, Shield,
+  Mail, LogOut, Menu, X,
+  HelpCircle, ChevronDown, UserPlus,
+  Users as Family, AlertCircle,
   CalendarDays, MessageCircle, BookText, School, Heart
 } from "lucide-react";
-import { supabase } from '../supabaseclient';
+import { supabase } from '../supabaseClient';
 
 // Skeleton Loading Components
 const SkeletonCard = () => (

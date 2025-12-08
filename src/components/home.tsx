@@ -1673,7 +1673,7 @@ const EnrollmentCTASection: React.FC = () => {
                         <User className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <div className="font-bold text-gray-800">Ms. Rodriguez</div>
+                        <div className="font-bold text-gray-800">Ms. Misha</div>
                         <div className="text-sm text-gray-600">Registrar Officer</div>
                       </div>
                     </div>
@@ -1716,10 +1716,6 @@ const EnrollmentCTASection: React.FC = () => {
                     <span className="text-gray-800 font-medium">8:00 AM - 5:00 PM</span>
                   </div>
                 </div>
-
-                <button className="w-full mt-4 bg-gradient-to-r from-[#7b1112] to-[#BC1F27] text-white py-3 rounded-lg font-semibold hover:from-[#BC1F27] hover:to-[#FFB302] transition-all duration-300">
-                  Request Callback
-                </button>
               </div>
             </div>
           </div>

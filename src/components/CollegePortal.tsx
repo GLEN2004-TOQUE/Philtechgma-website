@@ -1,39 +1,15 @@
-import React, { useState, useEffect, JSX } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User, BookOpen, MessageSquare, Settings, Home,
-  Edit, CheckCircle, Phone, MapPin, Globe, Calendar,
-  Search, Filter, MoreVertical, Trash2, Eye, Bell,
-  TrendingUp, Users, Award, Clock, ChevronRight,
-  BarChart3, Download, FileText, Video, Shield,
-  Mail, LogOut, Menu, X, GraduationCap, BookMarked,
-  Upload, CreditCard, HelpCircle, ChevronDown,
-  School, BookText, Users as UsersIcon, CalendarDays
+  Edit, CheckCircle, Phone, MapPin, Calendar,
+  Search, MoreVertical, Trash2, Bell,
+  TrendingUp, Award, Clock,
+  BarChart3, Download, FileText, Shield,
+  Mail, LogOut, Menu, GraduationCap, BookMarked,
+  Upload, CreditCard, HelpCircle, ChevronDown
 } from "lucide-react";
-import { supabase } from '../supabaseclient';
-
-// Define TypeScript interfaces
-interface Course {
-  id: number;
-  code: string;
-  name: string;
-  progress: number;
-  color: string;
-  assignments: number;
-  nextClass: string;
-  professor?: string; // Only for college
-  teacher?: string; // Only for senior high
-}
-
-interface Assignment {
-  id: number;
-  title: string;
-  dueDate: string;
-  priority: string;
-  points: number;
-  course?: string; // Only for college
-  subject?: string; // Only for senior high
-}
+import { supabase } from '../supabaseClient';
 
 // Skeleton Loading Components
 const SkeletonCard = () => (
@@ -64,20 +40,12 @@ const SkeletonProfile = () => (
   </div>
 );
 
-// College Mock data
-const mockCollegeCourses: Course[] = [
+// Mock data
+const mockCourses = [
   { id: 1, code: "CS101", name: "Introduction to Programming", professor: "Dr. Smith", progress: 85, color: "from-blue-500 to-cyan-500", assignments: 5, nextClass: "Mon, 10:00 AM" },
   { id: 2, code: "MATH201", name: "Calculus II", professor: "Prof. Johnson", progress: 70, color: "from-purple-500 to-pink-500", assignments: 3, nextClass: "Tue, 2:00 PM" },
   { id: 3, code: "PHYS101", name: "Physics I", professor: "Dr. Williams", progress: 90, color: "from-green-500 to-emerald-500", assignments: 4, nextClass: "Wed, 9:00 AM" },
   { id: 4, code: "ENG101", name: "English Composition", professor: "Prof. Davis", progress: 60, color: "from-amber-500 to-orange-500", assignments: 2, nextClass: "Thu, 1:00 PM" },
-];
-
-// Senior High Mock data
-const mockSeniorHighSubjects: Course[] = [
-  { id: 1, code: "STEM11", name: "STEM Research", teacher: "Ms. Garcia", progress: 78, color: "from-blue-500 to-cyan-500", assignments: 3, nextClass: "Mon, 8:00 AM" },
-  { id: 2, code: "MATH11", name: "Pre-Calculus", teacher: "Mr. Rodriguez", progress: 82, color: "from-purple-500 to-pink-500", assignments: 4, nextClass: "Tue, 10:00 AM" },
-  { id: 3, code: "PHYS11", name: "General Physics", teacher: "Mrs. Santos", progress: 75, color: "from-green-500 to-emerald-500", assignments: 2, nextClass: "Wed, 1:00 PM" },
-  { id: 4, code: "ENG11", name: "Academic Writing", teacher: "Mr. Lee", progress: 88, color: "from-amber-500 to-orange-500", assignments: 3, nextClass: "Thu, 11:00 AM" },
 ];
 
 const mockMessages = [
@@ -86,39 +54,25 @@ const mockMessages = [
   { id: 3, sender: "Library", subject: "Book Due Soon", preview: "Your book 'Data Structures' is due...", time: "2d ago", unread: false },
 ];
 
-const collegeAssignments: Assignment[] = [
+const upcomingAssignments = [
   { id: 1, title: "Programming Project", course: "CS101", dueDate: "Tomorrow", priority: "high", points: 100 },
   { id: 2, title: "Calculus Problem Set", course: "MATH201", dueDate: "In 3 days", priority: "medium", points: 50 },
   { id: 3, title: "Physics Lab Report", course: "PHYS101", dueDate: "Next Week", priority: "low", points: 75 },
 ];
 
-const seniorHighAssignments: Assignment[] = [
-  { id: 1, title: "STEM Research Proposal", subject: "STEM11", dueDate: "Tomorrow", priority: "high", points: 50 },
-  { id: 2, title: "Math Problem Set", subject: "MATH11", dueDate: "In 2 days", priority: "medium", points: 30 },
-  { id: 3, title: "Physics Experiment Report", subject: "PHYS11", dueDate: "Next Week", priority: "low", points: 40 },
-];
-
-const collegeStatsData = [
+const statsData = [
   { label: "Current GPA", value: "3.8", change: "+0.2", icon: <TrendingUp />, color: "text-green-500", bgColor: "bg-green-500/10" },
   { label: "Active Courses", value: "6", change: "+2", icon: <BookOpen />, color: "text-blue-500", bgColor: "bg-blue-500/10" },
   { label: "Pending Tasks", value: "12", change: "-3", icon: <Clock />, color: "text-amber-500", bgColor: "bg-amber-500/10" },
   { label: "Unread Messages", value: "5", change: "-2", icon: <MessageSquare />, color: "text-purple-500", bgColor: "bg-purple-500/10" },
 ];
 
-const seniorHighStatsData = [
-  { label: "Current Average", value: "92%", change: "+3%", icon: <TrendingUp />, color: "text-green-500", bgColor: "bg-green-500/10" },
-  { label: "Active Subjects", value: "8", change: "+1", icon: <BookText />, color: "text-blue-500", bgColor: "bg-blue-500/10" },
-  { label: "Pending Tasks", value: "10", change: "-2", icon: <Clock />, color: "text-amber-500", bgColor: "bg-amber-500/10" },
-  { label: "Unread Messages", value: "3", change: "-1", icon: <MessageSquare />, color: "text-purple-500", bgColor: "bg-purple-500/10" },
-];
-
-const StudentsPortal: React.FC = () => {
+const CollegePortal: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userData, setUserData] = useState<any>(null);
-  const [userType, setUserType] = useState<"college" | "senior_high">("college");
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -147,13 +101,12 @@ const StudentsPortal: React.FC = () => {
           if (profileData) {
             setUserData(profileData);
             setUserName(profileData.full_name || user.email?.split('@')[0] || "User");
-            setUserType(profileData.user_type || "college");
           } else {
             setUserName(user.user_metadata?.full_name || user.email?.split('@')[0] || "User");
-            setUserType("college");
           }
         }
 
+        // Simulate loading for better UX
         setTimeout(() => setIsLoading(false), 1200);
       } catch (error) {
         console.error('Error:', error);
@@ -169,21 +122,6 @@ const StudentsPortal: React.FC = () => {
     localStorage.removeItem("authToken");
     navigate("/login");
   };
-
-  // Helper function to get instructor name based on user type
-  const getInstructorName = (course: Course) => {
-    return userType === "college" ? course.professor : course.teacher;
-  };
-
-  // Helper function to get assignment subject/course name
-  const getAssignmentSubject = (assignment: Assignment) => {
-    return userType === "college" ? assignment.course : assignment.subject;
-  };
-
-  // Get appropriate data based on user type
-  const getCourses = () => userType === "college" ? mockCollegeCourses : mockSeniorHighSubjects;
-  const getAssignments = () => userType === "college" ? collegeAssignments : seniorHighAssignments;
-  const getStatsData = () => userType === "college" ? collegeStatsData : seniorHighStatsData;
 
   // Top Header Component
   const Header = () => (
@@ -202,12 +140,8 @@ const StudentsPortal: React.FC = () => {
                 <img src="/images/logo/logo.png" alt="Logo" className="w-12 h-12" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                  {userType === "college" ? "College Portal" : "Senior High Portal"}
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {userType === "college" ? "Student Dashboard" : "Senior High Dashboard"}
-                </p>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">College Portal</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Student Dashboard</p>
               </div>
             </div>
           </div>
@@ -218,7 +152,7 @@ const StudentsPortal: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder={userType === "college" ? "Search courses, assignments..." : "Search subjects, assignments..."}
+                placeholder="Search courses, assignments..."
                 className="pl-10 pr-4 py-2 w-64 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7B1112] dark:focus:ring-[#FFB302]"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -246,9 +180,7 @@ const StudentsPortal: React.FC = () => {
                 </div>
                 <div className="hidden md:block text-left">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{userName}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {userType === "college" ? "College Student" : "Senior High Student"}
-                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Student</p>
                 </div>
                 <ChevronDown size={16} className="hidden md:block text-gray-400" />
               </button>
@@ -263,13 +195,6 @@ const StudentsPortal: React.FC = () => {
                     <div className="px-4 py-3 border-b dark:border-gray-700">
                       <p className="text-sm font-medium text-gray-900 dark:text-white">{userName}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{userEmail}</p>
-                      <span className={`mt-1 inline-block px-2 py-1 text-xs rounded-full ${
-                        userType === "college" 
-                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                          : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                      }`}>
-                        {userType === "college" ? "College" : "Senior High"}
-                      </span>
                     </div>
                     <button className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                       <User size={16} className="inline mr-2" />
@@ -302,8 +227,8 @@ const StudentsPortal: React.FC = () => {
     </header>
   );
 
-  // College Dashboard View
-  const CollegeDashboardView = () => (
+  // Dashboard View
+  const DashboardView = () => (
     <div className="space-y-8 p-6">
       {/* Welcome Header */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-gray-900 to-[#7B1112] p-8 text-white">
@@ -349,7 +274,7 @@ const StudentsPortal: React.FC = () => {
             </div>
           ))
         ) : (
-          getStatsData().map((stat, index) => (
+          statsData.map((stat, index) => (
             <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group">
               <div className="flex items-center justify-between">
                 <div>
@@ -393,15 +318,13 @@ const StudentsPortal: React.FC = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {getCourses().map((course) => (
+                  {mockCourses.map((course) => (
                     <div key={course.id} className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                       <div className="flex items-start justify-between mb-4">
                         <div>
                           <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">{course.code}</span>
                           <h3 className="font-bold text-gray-900 dark:text-white mt-1">{course.name}</h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                            {getInstructorName(course)}
-                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{course.professor}</p>
                         </div>
                         <div className={`p-2 rounded-lg bg-gradient-to-r ${course.color}`}>
                           <BookMarked size={20} className="text-white" />
@@ -448,7 +371,7 @@ const StudentsPortal: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {getAssignments().map((assignment) => (
+                  {upcomingAssignments.map((assignment) => (
                     <div key={assignment.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
                       <div className="flex items-center space-x-4">
                         <div className={`p-3 rounded-lg ${
@@ -460,9 +383,7 @@ const StudentsPortal: React.FC = () => {
                         </div>
                         <div>
                           <h4 className="font-semibold text-gray-900 dark:text-white">{assignment.title}</h4>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {getAssignmentSubject(assignment)} • {assignment.points} points • Due {assignment.dueDate}
-                          </p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{assignment.course} • {assignment.points} points • Due {assignment.dueDate}</p>
                         </div>
                       </div>
                       <button className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#7B1112] to-[#FFB302] rounded-lg hover:opacity-90 transition-opacity">
@@ -592,431 +513,111 @@ const StudentsPortal: React.FC = () => {
     </div>
   );
 
-  // Senior High Dashboard View
-  const SeniorHighDashboardView = () => (
+  // Courses Section
+  const CoursesSection = () => (
     <div className="space-y-8 p-6">
-      {/* Welcome Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-gray-900 to-green-700 p-8 text-white">
-        <div className="relative z-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">Welcome, {userName}!</h1>
-              <p className="text-gray-200">Your senior high school dashboard</p>
-            </div>
-            <div className="mt-4 md:mt-0">
-              <button className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 px-6 py-3 rounded-xl transition-all">
-                <CalendarDays size={20} />
-                <span>View Schedule</span>
-              </button>
-            </div>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-100 dark:border-gray-700">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">My Courses</h2>
+            <p className="text-gray-500 dark:text-gray-400 mt-2">Manage and track your course progress</p>
           </div>
-          <div className="mt-6 flex flex-wrap items-center gap-4 text-sm">
-            <span className="flex items-center px-3 py-1 bg-white/10 rounded-full">
-              <School size={16} className="mr-2" />
-              {userData?.strand || "STEM Track"}
-            </span>
-            <span className="flex items-center px-3 py-1 bg-white/10 rounded-full">
-              <Award size={16} className="mr-2" />
-              Grade 11 • Semester 2
-            </span>
-            <span className="flex items-center px-3 py-1 bg-white/10 rounded-full">
-              <CheckCircle size={16} className="mr-2" />
-              Good Standing
-            </span>
+          <div className="flex items-center space-x-4 mt-4 md:mt-0">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="text"
+                placeholder="Search courses..."
+                className="pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7B1112]"
+              />
+            </div>
+            <button className="px-6 py-2 bg-[#7B1112] text-white rounded-lg hover:bg-[#8B2122] transition-colors flex items-center">
+              + Add Course
+            </button>
           </div>
         </div>
-        <div className="absolute -right-20 -top-20 w-64 h-64 bg-gradient-to-br from-[#FFB302]/20 to-transparent rounded-full"></div>
-        <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-gradient-to-tr from-green-400/10 to-transparent rounded-full"></div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
         {isLoading ? (
-          Array(4).fill(0).map((_, i) => (
-            <div key={i} className="animate-pulse bg-gray-200 dark:bg-gray-700 rounded-xl p-6">
-              <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mb-4"></div>
-              <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-3/4"></div>
-            </div>
-          ))
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array(6).fill(0).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
         ) : (
-          getStatsData().map((stat, index) => (
-            <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group">
-              <div className="flex items-center justify-between">
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {mockCourses.map((course) => (
+                <div key={course.id} className="group relative bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                  <div className="absolute top-4 right-4">
+                    <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                      <MoreVertical className="text-gray-400" size={20} />
+                    </button>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <div className={`inline-block p-3 rounded-xl bg-gradient-to-r ${course.color} mb-4`}>
+                      <BookOpen className="text-white" size={24} />
+                    </div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">{course.code}</span>
+                      <span className="text-sm font-medium text-green-600 dark:text-green-400">{course.progress}%</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{course.name}</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">{course.professor}</p>
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      <span>📅 {course.nextClass}</span>
+                      <span>📝 {course.assignments} assignments</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-gray-600 dark:text-gray-300">Progress</span>
+                        <span className="font-semibold text-gray-900 dark:text-white">{course.progress}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div className={`h-2 rounded-full bg-gradient-to-r ${course.color}`} style={{ width: `${course.progress}%` }}></div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex space-x-2 pt-4">
+                      <button className="flex-1 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                        View Details
+                      </button>
+                      <button className="flex-1 py-3 text-sm font-medium text-white bg-gradient-to-r from-[#7B1112] to-[#FFB302] rounded-lg hover:opacity-90 transition-opacity">
+                        Continue
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-8 p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl">
+              <div className="flex flex-col md:flex-row md:items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
-                  <p className="text-3xl font-bold mt-2">{stat.value}</p>
-                  <p className={`text-sm mt-1 ${stat.change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
-                    {stat.change} from last month
-                  </p>
+                  <h3 className="font-bold text-gray-900 dark:text-white">Need help with courses?</h3>
+                  <p className="text-gray-600 dark:text-gray-300 mt-1">Schedule a meeting with your academic advisor</p>
                 </div>
-                <div className={`p-3 rounded-lg ${stat.bgColor} ${stat.color} group-hover:scale-110 transition-transform`}>
-                  {React.cloneElement(stat.icon, { size: 24 })}
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Subjects & Assignments */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Subjects Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">My Subjects</h2>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">Current quarter progress</p>
-              </div>
-              <button 
-                onClick={() => setActiveTab("courses")}
-                className="text-green-600 dark:text-green-400 font-medium hover:underline"
-              >
-                View All →
-              </button>
-            </div>
-            <div className="p-6">
-              {isLoading ? (
-                <div className="space-y-4">
-                  {Array(3).fill(0).map((_, i) => <SkeletonCard key={i} />)}
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {getCourses().map((subject) => (
-                    <div key={subject.id} className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">{subject.code}</span>
-                          <h3 className="font-bold text-gray-900 dark:text-white mt-1">{subject.name}</h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                            {getInstructorName(subject)}
-                          </p>
-                        </div>
-                        <div className={`p-2 rounded-lg bg-gradient-to-r ${subject.color}`}>
-                          <BookText size={20} className="text-white" />
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <div>
-                          <div className="flex justify-between text-sm mb-2">
-                            <span className="text-gray-600 dark:text-gray-300">Progress</span>
-                            <span className="font-semibold text-gray-900 dark:text-white">{subject.progress}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                            <div 
-                              className={`h-2 rounded-full bg-gradient-to-r ${subject.color} transition-all duration-500`}
-                              style={{ width: `${subject.progress}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                          <span>📅 {subject.nextClass}</span>
-                          <span>📝 {subject.assignments} assignments</span>
-                        </div>
-                      </div>
-                      <button className="mt-4 w-full py-2 text-sm font-medium text-green-600 dark:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                        Continue Learning →
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Assignments Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 dark:border-gray-700">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Upcoming Assignments</h2>
-              <p className="text-gray-500 dark:text-gray-400 mt-1">Due dates approaching</p>
-            </div>
-            <div className="p-6">
-              {isLoading ? (
-                <div className="space-y-4">
-                  {Array(3).fill(0).map((_, i) => <SkeletonCard key={i} />)}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {getAssignments().map((assignment) => (
-                    <div key={assignment.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
-                      <div className="flex items-center space-x-4">
-                        <div className={`p-3 rounded-lg ${
-                          assignment.priority === 'high' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                          assignment.priority === 'medium' ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400' :
-                          'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                        }`}>
-                          <FileText size={20} />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white">{assignment.title}</h4>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {getAssignmentSubject(assignment)} • {assignment.points} points • Due {assignment.dueDate}
-                          </p>
-                        </div>
-                      </div>
-                      <button className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-green-500 rounded-lg hover:opacity-90 transition-opacity">
-                        Submit
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column */}
-        <div className="space-y-8">
-          {/* Quick Actions */}
-          <div className="bg-gradient-to-br from-green-700 to-green-600 rounded-2xl p-6 text-white">
-            <h2 className="text-xl font-bold mb-6">Quick Actions</h2>
-            <div className="space-y-3">
-              <button className="w-full flex items-center justify-between p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all group">
-                <span>Submit Assignment</span>
-                <Upload size={20} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button className="w-full flex items-center justify-between p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all group">
-                <span>View Grades</span>
-                <BarChart3 size={20} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button className="w-full flex items-center justify-between p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all group">
-                <span>Schedule Consultation</span>
-                <UsersIcon size={20} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button className="w-full flex items-center justify-between p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all group">
-                <span>Parent Portal</span>
-                <Users size={20} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
-          </div>
-
-          {/* Messages Preview */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 dark:border-gray-700">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Recent Messages</h2>
-                <button 
-                  onClick={() => setActiveTab("messages")}
-                  className="text-green-600 dark:text-green-400 text-sm font-medium hover:underline"
-                >
-                  View All
+                <button className="mt-4 md:mt-0 px-6 py-3 bg-gradient-to-r from-[#7B1112] to-[#FFB302] text-white rounded-lg hover:opacity-90 transition-opacity">
+                  Schedule Advisor Meeting
                 </button>
               </div>
             </div>
-            <div className="p-6">
-              {isLoading ? (
-                <div className="space-y-4">
-                  {Array(3).fill(0).map((_, i) => <SkeletonCard key={i} />)}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {mockMessages.map((message) => (
-                    <div key={message.id} className={`p-4 rounded-xl border ${
-                      message.unread 
-                        ? 'border-blue-200 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-900/10' 
-                        : 'border-gray-100 dark:border-gray-700'
-                    } hover:shadow-md transition-all cursor-pointer group`}
-                    onClick={() => setActiveTab("messages")}>
-                      <div className="flex items-start space-x-3">
-                        <div className={`p-2 rounded-lg ${
-                          message.unread 
-                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' 
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-                        }`}>
-                          <Mail size={18} />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400">
-                              {message.sender}
-                            </h4>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">{message.time}</span>
-                          </div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white mt-1">{message.subject}</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">{message.preview}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* School Calendar */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">School Calendar</h2>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Quarter Exams</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Apr 15 - 19, 2024</p>
-                </div>
-                <div className="px-3 py-1 bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 text-sm rounded-full">
-                  4 weeks
-                </div>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Science Fair</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">May 3 - 5, 2024</p>
-                </div>
-                <div className="px-3 py-1 bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200 text-sm rounded-full">
-                  6 weeks
-                </div>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">End of Semester</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">June 15, 2024</p>
-                </div>
-                <div className="px-3 py-1 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 text-sm rounded-full">
-                  10 weeks
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
 
-  // Dashboard View selector
-  const DashboardView = () => {
-    if (userType === "senior_high") {
-      return <SeniorHighDashboardView />;
-    }
-    return <CollegeDashboardView />;
-  };
-
-  // Courses/Section (common for both)
-  const CoursesSection = () => {
-    const isCollege = userType === "college";
-    const courses = getCourses();
-    const title = isCollege ? "My Courses" : "My Subjects";
-    const placeholder = isCollege ? "Search courses..." : "Search subjects...";
-    const itemName = isCollege ? "course" : "subject";
-    
-    return (
-      <div className="space-y-8 p-6">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-100 dark:border-gray-700">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{title}</h2>
-              <p className="text-gray-500 dark:text-gray-400 mt-2">Manage and track your {itemName} progress</p>
-            </div>
-            <div className="flex items-center space-x-4 mt-4 md:mt-0">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  type="text"
-                  placeholder={placeholder}
-                  className="pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7B1112]"
-                />
-              </div>
-              <button className={`px-6 py-2 ${
-                isCollege 
-                  ? "bg-[#7B1112] hover:bg-[#8B2122]" 
-                  : "bg-green-600 hover:bg-green-700"
-              } text-white rounded-lg transition-colors flex items-center`}>
-                + Add {isCollege ? "Course" : "Subject"}
-              </button>
-            </div>
-          </div>
-          
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array(6).fill(0).map((_, i) => <SkeletonCard key={i} />)}
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {courses.map((item) => (
-                  <div key={item.id} className="group relative bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-                    <div className="absolute top-4 right-4">
-                      <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                        <MoreVertical className="text-gray-400" size={20} />
-                      </button>
-                    </div>
-                    
-                    <div className="mb-6">
-                      <div className={`inline-block p-3 rounded-xl bg-gradient-to-r ${item.color} mb-4`}>
-                        <BookOpen className="text-white" size={24} />
-                      </div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">{item.code}</span>
-                        <span className="text-sm font-medium text-green-600 dark:text-green-400">{item.progress}%</span>
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{item.name}</h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-4">
-                        {getInstructorName(item)}
-                      </p>
-                      
-                      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
-                        <span>📅 {item.nextClass}</span>
-                        <span>📝 {item.assignments} assignments</span>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between text-sm mb-2">
-                          <span className="text-gray-600 dark:text-gray-300">Progress</span>
-                          <span className="font-semibold text-gray-900 dark:text-white">{item.progress}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                          <div className={`h-2 rounded-full bg-gradient-to-r ${item.color}`} style={{ width: `${item.progress}%` }}></div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex space-x-2 pt-4">
-                        <button className="flex-1 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                          View Details
-                        </button>
-                        <button className={`flex-1 py-3 text-sm font-medium text-white ${
-                          isCollege 
-                            ? "bg-gradient-to-r from-[#7B1112] to-[#FFB302]" 
-                            : "bg-gradient-to-r from-green-600 to-green-500"
-                        } rounded-lg hover:opacity-90 transition-opacity`}>
-                          Continue
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-8 p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl">
-                <div className="flex flex-col md:flex-row md:items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-gray-900 dark:text-white">Need help with {isCollege ? "courses" : "subjects"}?</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mt-1">Schedule a meeting with your {isCollege ? "academic advisor" : "subject teacher"}</p>
-                  </div>
-                  <button className={`mt-4 md:mt-0 px-6 py-3 ${
-                    isCollege 
-                      ? "bg-gradient-to-r from-[#7B1112] to-[#FFB302]" 
-                      : "bg-gradient-to-r from-green-600 to-green-500"
-                  } text-white rounded-lg hover:opacity-90 transition-opacity`}>
-                    Schedule Meeting
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  // Messages Section (common for both)
+  // Messages Section
   const MessagesSection = () => (
     <div className="space-y-8 p-6">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-100 dark:border-gray-700">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Messages</h2>
-            <p className="text-gray-500 dark:text-gray-400 mt-2">Communicate with {userType === "college" ? "faculty and staff" : "teachers and staff"}</p>
+            <p className="text-gray-500 dark:text-gray-400 mt-2">Communicate with faculty and staff</p>
           </div>
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
             <div className="relative">
@@ -1027,11 +628,7 @@ const StudentsPortal: React.FC = () => {
                 className="pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7B1112]"
               />
             </div>
-            <button className={`px-6 py-2 ${
-              userType === "college" 
-                ? "bg-[#7B1112] hover:bg-[#8B2122]" 
-                : "bg-green-600 hover:bg-green-700"
-            } text-white rounded-lg transition-colors flex items-center`}>
+            <button className="px-6 py-2 bg-[#7B1112] text-white rounded-lg hover:bg-[#8B2122] transition-colors flex items-center">
               <Mail size={20} className="mr-2" />
               New Message
             </button>
@@ -1063,11 +660,7 @@ const StudentsPortal: React.FC = () => {
                       <p className="text-gray-600 dark:text-gray-300 mt-1">From: {message.sender}</p>
                       <p className="text-gray-700 dark:text-gray-300 mt-3">{message.preview}</p>
                       <div className="flex items-center space-x-4 mt-4">
-                        <button className={`text-sm ${
-                          userType === "college" 
-                            ? "text-[#7B1112] dark:text-[#FFB302]" 
-                            : "text-green-600 dark:text-green-400"
-                        } hover:underline`}>
+                        <button className="text-sm text-[#7B1112] dark:text-[#FFB302] hover:underline">
                           Reply
                         </button>
                         <button className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
@@ -1094,218 +687,169 @@ const StudentsPortal: React.FC = () => {
     </div>
   );
 
-  // Profile Section (common for both)
-  const ProfileSection = () => {
-    const isCollege = userType === "college";
-    
-    return (
-      <div className="space-y-8 p-6">
-        <div className={`bg-gradient-to-r from-gray-900 ${
-          isCollege ? "to-[#7B1112]" : "to-green-700"
-        } rounded-2xl p-8 text-white`}>
-          <div className="flex flex-col md:flex-row md:items-center justify-between">
-            <div>
-              <h2 className="text-3xl font-bold">My Profile</h2>
-              <p className="text-gray-200 mt-2">Manage your personal information and preferences</p>
-            </div>
-            <button className="mt-4 md:mt-0 flex items-center px-6 py-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all">
-              <Edit size={20} className="mr-2" />
-              Edit Profile
-            </button>
+  // Profile Section
+  const ProfileSection = () => (
+    <div className="space-y-8 p-6">
+      <div className="bg-gradient-to-r from-gray-900 to-[#7B1112] rounded-2xl p-8 text-white">
+        <div className="flex flex-col md:flex-row md:items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold">My Profile</h2>
+            <p className="text-gray-200 mt-2">Manage your personal information and preferences</p>
           </div>
+          <button className="mt-4 md:mt-0 flex items-center px-6 py-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all">
+            <Edit size={20} className="mr-2" />
+            Edit Profile
+          </button>
         </div>
+      </div>
 
-        {isLoading ? (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
-            <SkeletonProfile />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div className="p-8">
-                  <div className="flex flex-col md:flex-row gap-8">
-                    <div className="md:w-1/3">
-                      <div className="flex flex-col items-center">
-                        <div className="relative mb-6">
-                          <div className={`w-40 h-40 bg-gradient-to-br ${
-                            isCollege ? "from-[#7B1112] to-[#FFB302]" : "from-green-600 to-green-400"
-                          } rounded-full flex items-center justify-center text-white text-5xl font-bold`}>
-                            {userName.split(' ').map(n => n[0]).join('').toUpperCase()}
-                          </div>
-                          <div className="absolute bottom-6 right-6 w-10 h-10 bg-green-500 rounded-full border-4 border-white dark:border-gray-800 flex items-center justify-center">
-                            <CheckCircle size={20} className="text-white" />
-                          </div>
+      {isLoading ? (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+          <SkeletonProfile />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+              <div className="p-8">
+                <div className="flex flex-col md:flex-row gap-8">
+                  <div className="md:w-1/3">
+                    <div className="flex flex-col items-center">
+                      <div className="relative mb-6">
+                        <div className="w-40 h-40 bg-gradient-to-br from-[#7B1112] to-[#FFB302] rounded-full flex items-center justify-center text-white text-5xl font-bold">
+                          {userName.split(' ').map(n => n[0]).join('').toUpperCase()}
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center">{userName}</h3>
-                        <p className="text-gray-600 dark:text-gray-300 mt-1 text-center">{userEmail}</p>
-                        <div className="mt-4 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium">
-                          <CheckCircle size={16} className="inline mr-2" />
-                          Verified {isCollege ? "Student" : "Senior High Student"}
+                        <div className="absolute bottom-6 right-6 w-10 h-10 bg-green-500 rounded-full border-4 border-white dark:border-gray-800 flex items-center justify-center">
+                          <CheckCircle size={20} className="text-white" />
                         </div>
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center">{userName}</h3>
+                      <p className="text-gray-600 dark:text-gray-300 mt-1 text-center">{userEmail}</p>
+                      <div className="mt-4 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium">
+                        <CheckCircle size={16} className="inline mr-2" />
+                        Verified Student
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="md:w-2/3 space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Student ID</label>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-white">{userData?.student_id || "2023-0012345"}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Department</label>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-white">{userData?.department || "Computer Science"}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Year Level</label>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-white">{userData?.year_level || "3rd Year"}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Major</label>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-white">{userData?.major || "Software Engineering"}</p>
                       </div>
                     </div>
                     
-                    <div className="md:w-2/3 space-y-8">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
-                            {isCollege ? "Student ID" : "LRN"}
-                          </label>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{userData?.student_id || "2023-0012345"}</p>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
-                            {isCollege ? "Department" : "Track"}
-                          </label>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {isCollege 
-                              ? (userData?.department || "Computer Science")
-                              : (userData?.strand || "STEM Track")
-                            }
-                          </p>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
-                            {isCollege ? "Year Level" : "Grade Level"}
-                          </label>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {isCollege 
-                              ? (userData?.year_level || "3rd Year")
-                              : (userData?.grade_level || "Grade 11")
-                            }
-                          </p>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
-                            {isCollege ? "Major" : "Strand"}
-                          </label>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {isCollege 
-                              ? (userData?.major || "Software Engineering")
-                              : (userData?.strand || "STEM")
-                            }
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="pt-6 border-t dark:border-gray-700">
-                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contact Information</h4>
-                        <div className="space-y-4">
-                          <div className="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                            <Phone className="h-5 w-5 text-gray-400 mr-4" />
-                            <div>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
-                              <p className="font-medium text-gray-900 dark:text-white">{userData?.phone || "+1 (555) 123-4567"}</p>
-                            </div>
+                    <div className="pt-6 border-t dark:border-gray-700">
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contact Information</h4>
+                      <div className="space-y-4">
+                        <div className="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                          <Phone className="h-5 w-5 text-gray-400 mr-4" />
+                          <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
+                            <p className="font-medium text-gray-900 dark:text-white">{userData?.phone || "+1 (555) 123-4567"}</p>
                           </div>
-                          <div className="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                            <MapPin className="h-5 w-5 text-gray-400 mr-4" />
-                            <div>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">Address</p>
-                              <p className="font-medium text-gray-900 dark:text-white">{userData?.address || "123 College Ave, University City"}</p>
-                            </div>
+                        </div>
+                        <div className="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                          <MapPin className="h-5 w-5 text-gray-400 mr-4" />
+                          <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Address</p>
+                            <p className="font-medium text-gray-900 dark:text-white">{userData?.address || "123 College Ave, University City"}</p>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Academic Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {isCollege ? "Enrollment Date" : "School Year Start"}
-                    </p>
-                    <p className="font-bold text-gray-900 dark:text-white mt-1">{userData?.enrollment_date || "September 2023"}</p>
-                  </div>
-                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {isCollege ? "Expected Graduation" : "Expected Completion"}
-                    </p>
-                    <p className="font-bold text-gray-900 dark:text-white mt-1">{isCollege ? "May 2025" : "June 2024"}</p>
-                  </div>
-                  <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Academic Standing</p>
-                    <p className="font-bold text-green-600 dark:text-green-400 mt-1">Good Standing</p>
-                  </div>
-                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {isCollege ? "Credits Completed" : "Subjects Enrolled"}
-                    </p>
-                    <p className="font-bold text-gray-900 dark:text-white mt-1">
-                      {isCollege ? "92/120" : "8/8"}
-                    </p>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="space-y-6">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Academic Stats</h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {isCollege ? "Current GPA" : "Average Grade"}
-                    </span>
-                    <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">
-                      {isCollege ? "3.8" : "92%"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <span className="text-gray-700 dark:text-gray-300">Attendance Rate</span>
-                    <span className="font-bold text-2xl text-green-600 dark:text-green-400">95%</span>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                    <span className="text-gray-700 dark:text-gray-300">Assignments Done</span>
-                    <span className="font-bold text-2xl text-purple-600 dark:text-purple-400">78%</span>
-                  </div>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Academic Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Enrollment Date</p>
+                  <p className="font-bold text-gray-900 dark:text-white mt-1">{userData?.enrollment_date || "September 2021"}</p>
                 </div>
-              </div>
-              
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h4>
-                <div className="space-y-3">
-                  <button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <span className="text-gray-700 dark:text-gray-300">Download {isCollege ? "Transcript" : "Report Card"}</span>
-                    <Download size={16} className="text-gray-400" />
-                  </button>
-                  <button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {isCollege ? "Financial Information" : "Payment Status"}
-                    </span>
-                    <CreditCard size={16} className="text-gray-400" />
-                  </button>
-                  <button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {isCollege ? "Scholarship Status" : "Awards"}
-                    </span>
-                    <Award size={16} className="text-gray-400" />
-                  </button>
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Expected Graduation</p>
+                  <p className="font-bold text-gray-900 dark:text-white mt-1">May 2025</p>
                 </div>
-              </div>
-              
-              <div className={`bg-gradient-to-r ${
-                isCollege ? "from-[#7B1112] to-[#9B3132]" : "from-green-700 to-green-600"
-              } rounded-2xl p-6 text-white`}>
-                <h4 className="font-semibold mb-4">Need Help?</h4>
-                <p className="text-gray-200 text-sm mb-4">Contact our student support team for assistance</p>
-                <button className="w-full py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors">
-                  Contact Support
-                </button>
+                <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Academic Standing</p>
+                  <p className="font-bold text-green-600 dark:text-green-400 mt-1">Good Standing</p>
+                </div>
+                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Credits Completed</p>
+                  <p className="font-bold text-gray-900 dark:text-white mt-1">92/120</p>
+                </div>
               </div>
             </div>
           </div>
-        )}
-      </div>
-    );
-  };
+          
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Academic Stats</h4>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <span className="text-gray-700 dark:text-gray-300">Current GPA</span>
+                  <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">3.8</span>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <span className="text-gray-700 dark:text-gray-300">Attendance Rate</span>
+                  <span className="font-bold text-2xl text-green-600 dark:text-green-400">95%</span>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <span className="text-gray-700 dark:text-gray-300">Assignments Done</span>
+                  <span className="font-bold text-2xl text-purple-600 dark:text-purple-400">78%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h4>
+              <div className="space-y-3">
+                <button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                  <span className="text-gray-700 dark:text-gray-300">Download Transcript</span>
+                  <Download size={16} className="text-gray-400" />
+                </button>
+                <button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                  <span className="text-gray-700 dark:text-gray-300">Financial Information</span>
+                  <CreditCard size={16} className="text-gray-400" />
+                </button>
+                <button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                  <span className="text-gray-700 dark:text-gray-300">Scholarship Status</span>
+                  <Award size={16} className="text-gray-400" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-[#7B1112] to-[#9B3132] rounded-2xl p-6 text-white">
+              <h4 className="font-semibold mb-4">Need Help?</h4>
+              <p className="text-gray-200 text-sm mb-4">Contact our student support team for assistance</p>
+              <button className="w-full py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors">
+                Contact Support
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
-  // Settings Section (common for both)
+  // Settings Section
   const SettingsSection = () => (
     <div className="space-y-8 p-6">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-100 dark:border-gray-700">
@@ -1347,7 +891,7 @@ const StudentsPortal: React.FC = () => {
                     className="w-full px-4 py-3 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#7B1112] focus:border-transparent transition-all"
                     rows={3}
                     placeholder="Tell us about yourself..."
-                    defaultValue={`${userType === "college" ? "Computer Science" : "Senior High STEM"} student passionate about learning and development.`}
+                    defaultValue="Computer Science student passionate about software development and machine learning."
                   />
                 </div>
               </div>
@@ -1446,7 +990,7 @@ const StudentsPortal: React.FC = () => {
       action: () => setActiveTab("dashboard")
     },
     {
-      title: userType === "college" ? "Courses" : "Subjects",
+      title: "Courses",
       icon: <BookOpen />,
       action: () => setActiveTab("courses")
     },
@@ -1549,9 +1093,7 @@ const StudentsPortal: React.FC = () => {
                     w-full flex items-center space-x-3 px-4 py-3 rounded-xl
                     transition-all duration-300
                     ${activeTab === feature.title.toLowerCase()
-                      ? userType === "college"
-                        ? 'bg-gradient-to-r from-[#7B1112] to-[#FFB302] text-white shadow-lg'
-                        : 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg'
+                      ? 'bg-gradient-to-r from-[#7B1112] to-[#FFB302] text-white shadow-lg'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'
                     }
                   `}
@@ -1570,29 +1112,19 @@ const StudentsPortal: React.FC = () => {
               
               {/* Quick Stats */}
               <div className="mt-8 p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {userType === "college" ? "Academic Progress" : "School Progress"}
-                </p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Academic Progress</p>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      {userType === "college" ? "GPA" : "Average"}
-                    </span>
-                    <span className="font-bold text-green-600 dark:text-green-400">
-                      {userType === "college" ? "3.8" : "92%"}
-                    </span>
+                    <span className="text-gray-600 dark:text-gray-400">GPA</span>
+                    <span className="font-bold text-green-600 dark:text-green-400">3.8</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Attendance</span>
                     <span className="font-bold text-blue-600 dark:text-blue-400">95%</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      {userType === "college" ? "Credits" : "Subjects"}
-                    </span>
-                    <span className="font-bold text-purple-600 dark:text-purple-400">
-                      {userType === "college" ? "92/120" : "8/8"}
-                    </span>
+                    <span className="text-gray-600 dark:text-gray-400">Credits</span>
+                    <span className="font-bold text-purple-600 dark:text-purple-400">92/120</span>
                   </div>
                 </div>
               </div>
@@ -1617,4 +1149,4 @@ const StudentsPortal: React.FC = () => {
   );
 };
 
-export default StudentsPortal;
+export default CollegePortal; 

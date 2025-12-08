@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { MapPin, Phone, Mail, Clock, Share2 } from 'lucide-react';
 import { X, Sun, Moon, User, ChevronDown } from "lucide-react";
 import { useAOS } from "../hooks/useAOS";
+import { sendContactEmail } from "../emailjs-config";
 
 const Logo: React.FC = () => {
   return (
@@ -403,23 +404,28 @@ const Contact: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Reset form
-    setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      subject: '',
-      message: ''
-    });
-    setIsSubmitting(false);
-    
-    // Show success message
-    alert('Thank you for your message! We will get back to you soon.');
+
+    try {
+      await sendContactEmail(formData);
+
+      // Reset form on success
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: ''
+      });
+
+      // Show success message
+      alert('Thank you for your message! We will get back to you soon.');
+    } catch (error) {
+      // Show error message
+      alert(error instanceof Error ? error.message : 'Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { X, Sun, Moon, User, ChevronDown} from "lucide-react";
+import { X, Sun, Moon, User, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAOS } from "../hooks/useAOS";
 
 const Logo: React.FC = () => {
@@ -269,7 +269,6 @@ const Dropdown: React.FC<DropdownProps> = ({ title, items }) => {
     </div>
   );
 };
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // Dark Mode Hook
 export function useDarkMode(): [boolean, () => void] {
@@ -439,101 +438,80 @@ const HeroBackground: React.FC = () => {
 
 const FacultyShowcaseSection: React.FC = () => {
   useAOS();
+  const [activeTab, setActiveTab] = useState<'college' | 'seniorHigh'>('college');
 
-  const facultyMembers = [
-    {
-      id: 1,
-      name: "Dr. Maria Santos",
-      role: "Dean of Computer Science",
-      department: "Information Technology",
-      image: "/images/faculty/dean-maria.jpg",
-      specialization: "Artificial Intelligence & Machine Learning",
-      experience: "15+ years",
-      education: "PhD Computer Science, MIT",
-      email: "maria.santos@philtech.edu",
-      achievements: ["Published 50+ research papers", "IEEE Senior Member", "Best Teacher Award 2022"]
-    },
-    {
-      id: 2,
-      name: "Prof. Juan Dela Cruz",
-      role: "Head of Business Department",
-      department: "Business Management",
-      image: "/images/faculty/prof-juan.jpg",
-      specialization: "Entrepreneurship & Finance",
-      experience: "12+ years",
-      education: "MBA, Harvard Business School",
-      email: "juan.delacruz@philtech.edu",
-      achievements: ["Former CEO of Tech Startup", "Business Excellence Award", "Industry Consultant"]
-    },
-    {
-      id: 3,
-      name: "Engr. Ana Reyes",
-      role: "Technical Education Specialist",
-      department: "Engineering & Technology",
-      image: "/images/faculty/engr-ana.jpg",
-      specialization: "Food & Beverage Technology",
-      experience: "10+ years",
-      education: "MS Food Technology, UP Diliman",
-      email: "ana.reyes@philtech.edu",
-      achievements: ["Industry Certifications", "Research Collaborations", "Student Mentorship"]
-    },
-    {
-      id: 4,
-      name: "Dr. Roberto Garcia",
-      role: "Senior Lecturer",
-      department: "Information Technology",
-      image: "/images/faculty/dr-roberto.jpg",
-      specialization: "Cybersecurity & Networks",
-      experience: "18+ years",
-      education: "PhD Information Security, Stanford",
-      email: "roberto.garcia@philtech.edu",
-      achievements: ["CISSP Certified", "Security Consultant", "Published Author"]
-    },
-    {
-      id: 5,
-      name: "Ms. Carmen Lopez",
-      role: "Hospitality Instructor",
-      department: "Hotel & Restaurant Services",
-      image: "/images/faculty/ms-carmen.jpg",
-      specialization: "Culinary Arts & Service Excellence",
-      experience: "14+ years",
-      education: "BS Hotel Management, De La Salle",
-      email: "carmen.lopez@philtech.edu",
-      achievements: ["Michelin Star Experience", "Service Excellence Award", "Industry Trainer"]
-    },
-    {
-      id: 6,
-      name: "Prof. Miguel Torres",
-      role: "Mathematics Coordinator",
-      department: "General Education",
-      image: "/images/faculty/prof-miguel.jpg",
-      specialization: "Applied Mathematics & Statistics",
-      experience: "16+ years",
-      education: "MS Mathematics, Ateneo",
-      email: "miguel.torres@philtech.edu",
-      achievements: ["Math Olympiad Coach", "Research Publications", "Curriculum Developer"]
-    }
-  ];
+  // Sort teachers alphabetically by name
+  const sortedCollegeTeachers = [
+    { name: "MR. ATIENZA", subjects: ["Accounting", "Finance", "Economics"] },
+    { name: "MR. CALCEÑA", subjects: ["Civil Engineering", "Structural Design", "Construction Management"] },
+    { name: "MS. CARMONA", subjects: ["Human Resources", "Organizational Behavior", "Labor Laws"] },
+    { name: "MR. ELLO", subjects: ["Data Structures", "Algorithm Analysis", "Computer Architecture"] },
+    { name: "MR. GORDON", subjects: ["Physics", "Engineering Mechanics", "Thermodynamics"] },
+    { name: "MR. V. GORDON", subjects: ["Chemistry", "Materials Science", "Laboratory Techniques"] },
+    { name: "MS. IGHARAS", subjects: ["Hospitality Management", "Tourism", "Customer Service"] },
+    { name: "MR. ICABANDE", subjects: ["Software Engineering", "Mobile Development", "Algorithms"] },
+    { name: "MR. JIMENEZ", subjects: ["Business Management", "Entrepreneurship", "Marketing"] },
+    { name: "MR. LACERNA", subjects: ["Network Security", "System Administration", "Cybersecurity"] },
+    { name: "MS. MAGNO", subjects: ["Physical Education", "Health", "Wellness"] },
+    { name: "MR. MATILA", subjects: ["Operations Management", "Supply Chain", "Logistics"] },
+    { name: "MS. OCTAVO", subjects: ["Food Technology", "Food Safety", "Quality Control"] },
+    { name: "MR. ORNACHO", subjects: ["Philosophy", "Ethics", "Logic"] },
+    { name: "MR. PATALEN", subjects: ["Filipino", "Philippine Literature", "Cultural Studies"] },
+    { name: "MR. PATIAM", subjects: ["Electrical Circuits", "Electronics", "Digital Systems"] },
+    { name: "MS. RENDORA", subjects: ["English Communication", "Technical Writing", "Literature"] },
+    { name: "MR. RODRIGUEZ", subjects: ["Mathematics", "Statistics", "Calculus"] },
+    { name: "MS. TESORO", subjects: ["Art Appreciation", "Music", "Cultural Heritage"] },
+    { name: "MR. VALENZUELA", subjects: ["Mechanical Engineering", "Machine Design", "CAD/CAM"] },
+    { name: "MR. VELE", subjects: ["Computer Programming", "Database Management", "Web Development"] },
+    { name: "MS. VELE", subjects: ["Psychology", "Human Behavior", "Social Sciences"] },
+    { name: "MS. DIMAPILIS", subjects: ["Research Methods", "Thesis Writing", "Academic Writing"] },
+  ].sort((a, b) => a.name.localeCompare(b.name));
+
+  // Senior High School Teachers - sorted alphabetically
+  const sortedSeniorHighTeachers = [
+    { name: "MR. ALCEDO", subjects: ["General Mathematics", "Statistics", "Business Math"] },
+    { name: "MS. ANGELES", subjects: ["Practical Research", "Inquiries and Investigation", "Capstone Project"] },
+    { name: "MR. CALCEÑA", subjects: ["Pre-Calculus", "Basic Calculus", "General Physics"] },
+    { name: "MR. GARCIA", subjects: ["Filipino sa Piling Larang", "Komunikasyon at Pananaliksik", "Pagbasa at Pagsusuri"] },
+    { name: "MS. GAJIRAN", subjects: ["Entrepreneurship", "Business Ethics", "Principles of Marketing"] },
+    { name: "MR. R. GORDON", subjects: ["General Chemistry", "Physical Science", "Earth and Life Science"] },
+    { name: "MR. V. GORDON", subjects: ["Biology", "Environmental Science", "Research in Daily Life"] },
+    { name: "MR. JIMENEZ", subjects: ["Organization and Management", "Fundamentals of Accountancy", "Business Finance"] },
+    { name: "MS. LAGUADOR", subjects: ["Media and Information Literacy", "Empowerment Technologies", "Computer Systems Servicing"] },
+    { name: "MR. ORNACHO", subjects: ["Introduction to Philosophy", "Disciplines and Ideas in Social Sciences", "Trends and Issues"] },
+    { name: "MS. RENDORA", subjects: ["English for Academic Purposes", "Reading and Writing Skills", "Oral Communication"] },
+    { name: "MS. RIVERA", subjects: ["Personal Development", "Understanding Culture and Society", "Disaster Readiness"] },
+    { name: "MS. ROQUIOS", subjects: ["Contemporary Philippine Arts", "Creative Writing", "Creative Industries"] },
+    { name: "MR. RODRIGUEZ", subjects: ["Pre-Calculus", "Statistics and Probability", "Basic Calculus"] },
+    { name: "MR. SANTOS", subjects: ["Physical Education and Health", "Wellness and Fitness", "Recreational Activities"] },
+    { name: "MS. SANTOS", subjects: ["Applied Economics", "Social Sciences", "Philippine Politics and Governance"] },
+    { name: "MS. TESORO", subjects: ["Work Immersion", "Career Guidance", "Homeroom Guidance"] },
+    { name: "MRS. TESORO", subjects: ["Work Immersion", "Career Guidance", "Homeroom Guidance"] },
+    { name: "MS. TINGSON", subjects: ["Cookery", "Food and Beverage Services", "Bread and Pastry Production"] },
+    { name: "MR. UMALI", subjects: ["Electrical Installation and Maintenance", "Electronics Product Assembly", "Technical Drafting"] },
+    { name: "MRS. YABUT", subjects: ["Housekeeping Services", "Tourism Promotion Services", "Travel Services"] },
+  ].sort((a, b) => a.name.localeCompare(b.name));
+
+  const activeTeachers = activeTab === 'college' ? sortedCollegeTeachers : sortedSeniorHighTeachers;
+  const activeTabTitle = activeTab === 'college' ? 'College' : 'Senior High School';
 
   return (
     <section className="w-full py-20 px-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-950/20 dark:to-purple-950/20 relative overflow-hidden">
-      {/* Enhanced Background Animation */}
+      {/* Background Animation */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-r from-indigo-400 to-blue-500 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full blur-2xl animate-pulse delay-500"></div>
-        <div className="absolute top-1/3 right-1/4 w-20 h-20 bg-gradient-to-r from-[#7b1112] to-[#FFB302] rounded-full blur-2xl animate-pulse delay-700"></div>
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Enhanced Header Section */}
+        {/* Header Section */}
         <div className="text-center mb-16">
           <h2
             className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-[#7b1112] via-[#BC1F27] to-[#FFB302] bg-clip-text text-transparent"
             data-aos="fade-down"
             data-aos-duration="800"
           >
-            Meet Our Faculty
+            Faculty Directory
           </h2>
           <p
             className="text-lg text-gray-600 dark:text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed"
@@ -541,163 +519,236 @@ const FacultyShowcaseSection: React.FC = () => {
             data-aos-delay="300"
             data-aos-duration="700"
           >
-            Our distinguished faculty members bring years of experience, expertise, and passion for teaching to guide our students toward success.
+            Meet our dedicated faculty members from College and Senior High School. Each card displays the teacher's name and subjects they teach.
           </p>
         </div>
 
-        {/* Enhanced Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {facultyMembers.map((faculty, index) => (
-            <div
-              key={faculty.id}
-              className="group relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-500 hover:scale-105 hover:shadow-3xl"
-              data-aos="fade-up"
-              data-aos-delay={index * 150}
-              data-aos-duration="800"
-              data-aos-once="true"
+        {/* Tab Navigation */}
+        <div className="flex flex-col sm:flex-row justify-center mb-8 gap-4" data-aos="fade-up" data-aos-delay="200">
+          <button
+            onClick={() => setActiveTab('college')}
+            className={`px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center ${
+              activeTab === 'college'
+                ? 'bg-gradient-to-r from-[#7b1112] to-[#BC1F27] text-white shadow-lg'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 7l9-5-9-5-9 5 9 5z" />
+            </svg>
+            College Faculty ({sortedCollegeTeachers.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('seniorHigh')}
+            className={`px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center ${
+              activeTab === 'seniorHigh'
+                ? 'bg-gradient-to-r from-[#FFB302] to-[#BC1F27] text-white shadow-lg'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            Senior High Faculty ({sortedSeniorHighTeachers.length})
+          </button>
+        </div>
+
+        {/* Active Tab Indicator */}
+        <div className="mb-8 text-center" data-aos="fade-up" data-aos-delay="250">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-[#7b1112]/10 to-[#FFB302]/10">
+            <div className={`w-3 h-3 rounded-full mr-2 ${
+              activeTab === 'college' ? 'bg-[#7b1112]' : 'bg-[#FFB302]'
+            }`}></div>
+            <span className="font-semibold text-gray-700 dark:text-gray-300">
+              Currently viewing: <span className="text-[#7b1112] dark:text-[#FFB302]">{activeTabTitle} Teachers</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Alphabetical Index */}
+        <div className="mb-8 flex flex-wrap justify-center gap-2" data-aos="fade-up" data-aos-delay="300">
+          {Array.from(new Set(activeTeachers.map(teacher => teacher.name.charAt(4)))).map(letter => (
+            <a
+              key={letter}
+              href={`#letter-${letter}`}
+              className="w-10 h-10 flex items-center justify-center rounded-lg bg-gradient-to-r from-[#7b1112]/10 to-[#BC1F27]/10 hover:from-[#7b1112] hover:to-[#BC1F27] hover:text-white text-[#7b1112] dark:text-[#FFB302] font-bold transition-all duration-300"
             >
-              {/* Card Background Gradient Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[#7b1112]/5 dark:to-[#FFB302]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
-              {/* Enhanced Image Container */}
-              <div className="relative h-72 overflow-hidden">
-                <img
-                  src={faculty.image}
-                  alt={faculty.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&crop=face&auto=format&q=60`;
-                  }}
-                />
-                
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-60"></div>
-                
-                {/* Enhanced Department Badge */}
-                <div 
-                  className="absolute top-4 right-4"
-                  data-aos="zoom-in"
-                  data-aos-delay={index * 150 + 300}
-                  data-aos-duration="500"
-                >
-                  <span className="px-4 py-2 bg-gradient-to-r from-[#7b1112] to-[#BC1F27] text-white text-sm font-semibold rounded-full shadow-lg border border-white/20">
-                    {faculty.department}
-                  </span>
-                </div>
+              {letter}
+            </a>
+          ))}
+        </div>
 
-                {/* Faculty Name Overlay */}
-                <div className="absolute bottom-4 left-4">
-                  <h3 className="text-2xl font-bold text-white drop-shadow-lg">
-                    {faculty.name}
-                  </h3>
-                  <p className="text-[#FFB302] font-semibold drop-shadow-md">
-                    {faculty.role}
-                  </p>
-                </div>
-              </div>
-
-              {/* Enhanced Card Content */}
-              <div className="relative p-6 bg-white dark:bg-gray-800">
-                {/* Specialization Badge */}
-                <div className="mb-4">
-                  <span className="inline-block px-3 py-1 bg-gradient-to-r from-[#FFB302]/20 to-[#FFB302]/10 text-[#BC1F27] dark:text-[#FFB302] text-sm font-medium rounded-full border border-[#FFB302]/30">
-                    {faculty.specialization}
-                  </span>
-                </div>
-
-                {/* Experience & Education */}
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center text-gray-600 dark:text-gray-300">
-                    <div className="w-8 h-8 bg-gradient-to-r from-[#7b1112]/10 to-[#BC1F27]/10 rounded-lg flex items-center justify-center mr-3">
-                      <span className="text-[#7b1112] dark:text-[#BC1F27] text-sm font-bold">🎓</span>
+        {/* Faculty Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {activeTeachers.map((teacher, index) => (
+            <div
+              key={index}
+              id={`letter-${teacher.name.charAt(4)}`}
+              className="group relative"
+              data-aos="fade-up"
+              data-aos-delay={index * 30}
+              data-aos-duration="400"
+            >
+              {/* Faculty Card */}
+              <div className="h-full bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                {/* Card Header with Name */}
+                <div className={`p-5 border-b ${
+                  activeTab === 'college' 
+                    ? 'bg-gradient-to-r from-[#7b1112]/5 to-[#BC1F27]/5 border-[#7b1112]/10'
+                    : 'bg-gradient-to-r from-[#FFB302]/5 to-[#BC1F27]/5 border-[#FFB302]/10'
+                } dark:from-gray-800 dark:to-gray-900 dark:border-gray-700`}>
+                  <div className="flex items-center">
+                    {/* Initial Circle */}
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md mr-4 ${
+                      activeTab === 'college'
+                        ? 'bg-gradient-to-r from-[#7b1112] to-[#BC1F27]'
+                        : 'bg-gradient-to-r from-[#FFB302] to-[#BC1F27]'
+                    }`}>
+                      <span className="text-xl font-bold text-white">
+                        {teacher.name.split(' ')[1]?.charAt(0) || teacher.name.charAt(0)}
+                      </span>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Education</p>
-                      <p className="text-sm font-medium">{faculty.education}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center text-gray-600 dark:text-gray-300">
-                    <div className="w-8 h-8 bg-gradient-to-r from-[#FFB302]/10 to-[#FFB302]/20 rounded-lg flex items-center justify-center mr-3">
-                      <span className="text-[#BC1F27] dark:text-[#FFB302] text-sm font-bold">⏳</span>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Experience</p>
-                      <p className="text-sm font-medium">{faculty.experience}</p>
+                    
+                    {/* Name Section */}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-800 dark:text-white">
+                        {teacher.name}
+                      </h3>
+                      <div className="flex items-center mt-1">
+                        <span className={`px-2 py-1 text-xs font-medium rounded ${
+                          activeTab === 'college'
+                            ? 'bg-gradient-to-r from-[#FFB302]/20 to-[#FFB302]/10 text-[#BC1F27] dark:text-[#FFB302]'
+                            : 'bg-gradient-to-r from-[#7b1112]/20 to-[#7b1112]/10 text-[#7b1112] dark:text-[#FFB302]'
+                        }`}>
+                          {activeTabTitle} Teacher
+                        </span>
+                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                          {teacher.subjects.length} subjects
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Enhanced Achievements */}
-                <div className="mb-6">
-                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
-                    <span className="w-2 h-2 bg-gradient-to-r from-[#7b1112] to-[#BC1F27] rounded-full mr-2"></span>
-                    Key Achievements
-                  </h4>
+                {/* Card Body with Subjects */}
+                <div className="p-5">
+                  <div className="mb-3 flex items-center">
+                    <svg className={`w-4 h-4 mr-2 ${
+                      activeTab === 'college' ? 'text-[#FFB302]' : 'text-[#7b1112] dark:text-[#FFB302]'
+                    }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Subjects Handled</h4>
+                  </div>
+                  
                   <ul className="space-y-2">
-                    {faculty.achievements.slice(0, 2).map((achievement, idx) => (
+                    {teacher.subjects.map((subject, idx) => (
                       <li 
-                        key={idx} 
-                        className="flex items-center text-sm text-gray-600 dark:text-gray-400"
-                        data-aos="fade-right"
-                        data-aos-delay={index * 150 + idx * 100}
-                        data-aos-duration="400"
+                        key={idx}
+                        className="text-sm text-gray-600 dark:text-gray-400 pl-4 relative before:absolute before:left-0 before:top-1/2 before:transform before:-translate-y-1/2 before:w-1.5 before:h-1.5 before:rounded-full"
+                        style={{
+                          background: activeTab === 'college' 
+                            ? 'linear-gradient(to right, #FFB302, #BC1F27)'
+                            : 'linear-gradient(to right, #7b1112, #FFB302)'
+                        }}
                       >
-                        <span className="w-1.5 h-1.5 bg-[#FFB302] rounded-full mr-3 flex-shrink-0"></span>
-                        {achievement}
+                        {subject}
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                {/* Enhanced Action Buttons */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <a
-                    href={`mailto:${faculty.email}`}
-                    className="flex items-center text-[#7b1112] hover:text-[#BC1F27] text-sm font-medium transition-all duration-300 hover:translate-x-1"
-                  >
-                    <span className="mr-2">📧</span>
-                    Contact
-                  </a>
-                  <button className="group relative bg-gradient-to-r from-[#7b1112] to-[#BC1F27] hover:from-[#BC1F27] hover:to-[#FFB302] text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl overflow-hidden">
-                    <span className="relative z-10">View Profile</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#BC1F27] to-[#FFB302] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </button>
+                {/* Card Footer */}
+                <div className="px-5 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className={`font-medium ${
+                        activeTab === 'college' ? 'text-[#7b1112] dark:text-[#FFB302]' : 'text-[#FFB302]'
+                      }`}>
+                        {teacher.name.charAt(4)}
+                      </span>
+                      <span className="mx-1">•</span>
+                      Alphabetical
+                    </span>
+                    <div className={`text-xs px-2 py-1 rounded ${
+                      activeTab === 'college'
+                        ? 'bg-gradient-to-r from-[#7b1112]/10 to-[#BC1F27]/10 text-[#7b1112] dark:text-[#FFB302]'
+                        : 'bg-gradient-to-r from-[#FFB302]/10 to-[#BC1F27]/10 text-[#FFB302]'
+                    }`}>
+                      #{String(index + 1).padStart(2, '0')}
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              {/* Hover Border Effect */}
-              <div className="absolute inset-0 rounded-3xl border-2 border-transparent bg-gradient-to-r from-[#7b1112] via-[#BC1F27] to-[#FFB302] opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10">
-                <div className="absolute inset-[2px] rounded-3xl bg-white dark:bg-gray-800"></div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Enhanced CTA Button */}
+        {/* Summary Stats */}
         <div 
-          className="text-center mt-16"
+          className="mt-12 p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-gray-700"
           data-aos="fade-up"
-          data-aos-delay="600"
-          data-aos-duration="700"
+          data-aos-delay="400"
         >
+          <h3 className="text-xl font-bold text-center mb-6 text-gray-800 dark:text-white">
+            Faculty Statistics
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="text-center p-4">
+              <div className="text-3xl font-bold bg-gradient-to-r from-[#7b1112] to-[#BC1F27] bg-clip-text text-transparent">
+                {sortedCollegeTeachers.length}
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">College Teachers</p>
+            </div>
+            <div className="text-center p-4">
+              <div className="text-3xl font-bold bg-gradient-to-r from-[#FFB302] to-[#BC1F27] bg-clip-text text-transparent">
+                {sortedSeniorHighTeachers.length}
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">Senior High Teachers</p>
+            </div>
+            <div className="text-center p-4">
+              <div className="text-3xl font-bold bg-gradient-to-r from-[#7b1112] to-[#FFB302] bg-clip-text text-transparent">
+                {sortedCollegeTeachers.reduce((acc, teacher) => acc + teacher.subjects.length, 0) + 
+                 sortedSeniorHighTeachers.reduce((acc, teacher) => acc + teacher.subjects.length, 0)}
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">Total Subjects</p>
+            </div>
+            <div className="text-center p-4">
+              <div className="text-3xl font-bold bg-gradient-to-r from-[#BC1F27] to-[#FFB302] bg-clip-text text-transparent">
+                {sortedCollegeTeachers.length + sortedSeniorHighTeachers.length}
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">Total Faculty</p>
+            </div>
+          </div>
+          
+          {/* Quick Navigation */}
+          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <button
+                onClick={() => setActiveTab('college')}
+                className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+                  activeTab === 'college'
+                    ? 'bg-gradient-to-r from-[#7b1112] to-[#BC1F27] text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                Switch to College
+              </button>
+              <button
+                onClick={() => setActiveTab('seniorHigh')}
+                className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+                  activeTab === 'seniorHigh'
+                    ? 'bg-gradient-to-r from-[#FFB302] to-[#BC1F27] text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                Switch to Senior High
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Enhanced Custom Animation Styles */}
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-
-        .hover\\:shadow-3xl:hover {
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 30px rgba(123, 17, 18, 0.1);
-        }
-
-        .group:hover .group-hover\\:scale-110 {
-          transform: scale(1.1);
-        }
-      `}</style>
     </section>
   );
 };

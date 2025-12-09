@@ -17,7 +17,7 @@ import CollegePortal from "./components/CollegePortal";
 import SeniorHighPortal from "./components/SeniorHighPortal";
 import { useEffect } from "react";
 import ViewGrades from "./viewgrades";
-import ViewGradesSH from "./viewgradesSH";
+import ViewGradesSH from "./ViewGradesSH";
 
 const Home: React.FC = () => {
   useAOS(); // Enable AOS animations
@@ -66,7 +66,7 @@ const App: React.FC = () => {
         <Route path="/seniorhigh" element={<SeniorHigh />} />
         <Route path="/viewgrades" element={<ViewGrades />} />
         <Route path="/SeniorHighPortal" element={<SeniorHighPortal/>}/>
-        <Route path="/ViewGradesSH" element={<ViewGradesSH />} />
+        <Route path="/viewgradesSH" element={<ViewGradesSH />} />
       </Routes>
     </>
   );

@@ -14,7 +14,10 @@ import SeniorHigh from "./components/seniorhigh";
 import Login from "./dblogin/login";
 import VerifyEmail from "./dblogin/VerifyEmail";
 import CollegePortal from "./components/CollegePortal";
+import SeniorHighPortal from "./components/SeniorHighPortal";
 import { useEffect } from "react";
+import ViewGrades from "./viewgrades";
+import ViewGradesSH from "./viewgradesSH";
 
 const Home: React.FC = () => {
   useAOS(); // Enable AOS animations
@@ -61,6 +64,9 @@ const App: React.FC = () => {
         <Route path="/regular" element={<Regular />} />
         <Route path="/sunday" element={<Sunday />} />
         <Route path="/seniorhigh" element={<SeniorHigh />} />
+        <Route path="/viewgrades" element={<ViewGrades />} />
+        <Route path="/SeniorHighPortal" element={<SeniorHighPortal/>}/>
+        <Route path="/ViewGradesSH" element={<ViewGradesSH />} />
       </Routes>
     </>
   );

@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, User, Mail, Lock, UserCircle, Eye, EyeOff, School, Shield, RefreshCw, GraduationCap } from "lucide-react";
+import {
+  X, User, Mail, Lock, UserCircle, Eye, EyeOff, School, Shield,
+  RefreshCw, GraduationCap, BookOpen, Building, Hash, Calendar
+} from "lucide-react";
 import { supabase } from "../supabase";
+import { evaluatePasswordStrength, PasswordStrength } from "../Securities/PasswordStrength";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -9,19 +13,110 @@ const Login: React.FC = () => {
     email: "",
     password: "",
     role: "student",
-    fullName: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
     confirmPassword: "",
-    studentType: "" // New field for student type
+    studentType: "", // New field for student type
+    yearGrade: "",
+    section: "",
+    sectionData: null as any, // Store full section data
+    schoolID: "",
+    programStrand: "" // Will be either course (college) or strand (senior high)
   });
+
+  // Course/Strand options
+  const collegeCourses = [
+    "BSCS",
+    "BSOA",
+    "BTVTED"
+  ];
+
+  const seniorHighStrands = [
+    "STEM - Science, Technology, Engineering, and Mathematics",
+    "ABM - Accountancy, Business and Management",
+    "HUMSS - Humanities and Social Sciences",
+    "GAS - General Academic Strand",
+    "TVL - Technical-Vocational-Livelihood (ICT)",
+    "TVL - Technical-Vocational-Livelihood (HE)",
+    "TVL - Technical-Vocational-Livelihood (IA)"
+  ];
+
+  const yearGradeOptions = [
+    "Grade 11",
+    "Grade 12",
+    "1st Year College",
+    "2nd Year College",
+    "3rd Year College",
+    "4th Year College",
+    "5th Year College"
+  ];
+
   const [error, setError] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [signupEmail, setSignupEmail] = useState("");
+  const [availableSections, setAvailableSections] = useState<any[]>([]);
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>('Weak');
 
   // Constants for error messages
   const duplicateEmailError = "This email is already registered. Please use a different email or try signing in.";
+
+  const generateSchoolID = () => {
+    // Auto-generate based on current date
+    const date = new Date();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    const yyyy = String(date.getFullYear());
+    return `${mm}${dd}${yyyy}`;
+  };
+
+  // Initialize school ID on component mount for sign-up
+  useEffect(() => {
+    if (isSignUp) {
+      setFormData(prev => ({
+        ...prev,
+        schoolID: generateSchoolID()
+      }));
+    }
+  }, [isSignUp]);
+
+  // Update the section filtering useEffect
+  useEffect(() => {
+    const fetchSections = async () => {
+      if (formData.yearGrade && formData.programStrand && formData.studentType) {
+        try {
+          const { data, error } = await supabase
+            .from('sections')
+            .select('*')
+            .eq('program', formData.programStrand)
+            .eq('year_level', formData.yearGrade)
+            .eq('student_type', formData.studentType)
+            .order('section_code');
+
+          if (error) throw error;
+
+          setAvailableSections(data || []);
+        } catch (error) {
+          console.error('Error fetching sections:', error);
+          setAvailableSections([]);
+        }
+      } else {
+        setAvailableSections([]);
+      }
+    };
+
+    fetchSections();
+  }, [formData.yearGrade, formData.programStrand, formData.studentType]);
+
+  // Password strength evaluation
+  useEffect(() => {
+    if (isSignUp) {
+      setPasswordStrength(evaluatePasswordStrength(formData.password));
+    }
+  }, [formData.password, isSignUp]);
 
   const handleClose = () => {
     navigate("/");
@@ -30,7 +125,7 @@ const Login: React.FC = () => {
   const checkEmailExists = async (email: string): Promise<boolean> => {
     try {
       const { data, error: checkError } = await supabase
-        .from('users')
+        .from('users')  // ✅ UPDATED: Use 'users' table instead of 'profiles'
         .select('email')
         .eq('email', email)
         .maybeSingle();
@@ -59,8 +154,18 @@ const Login: React.FC = () => {
     setFormData({
       ...formData,
       studentType: type,
+      programStrand: "", // Reset program/strand when switching type
+      yearGrade: "", // Reset year grade when switching type
+      section: "" // Reset section when switching type
     });
     if (error) setError("");
+  };
+
+  const handleRefreshSchoolID = () => {
+    setFormData({
+      ...formData,
+      schoolID: generateSchoolID()
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,21 +190,46 @@ const Login: React.FC = () => {
 
     if (isSignUp) {
       // Additional validation for student type
-      if (formData.role === "student" && !formData.studentType) {
-        setError("Please select student type (Senior High or College)");
-        setIsLoading(false);
-        return;
+      if (formData.role === "student") {
+        if (!formData.studentType) {
+          setError("Please select student type (Senior High or College)");
+          setIsLoading(false);
+          return;
+        }
+
+        if (!formData.firstName || !formData.lastName) {
+          setError("First name and last name are required");
+          setIsLoading(false);
+          return;
+        }
+
+        if (!formData.yearGrade) {
+          setError("Please select year/grade");
+          setIsLoading(false);
+          return;
+        }
+
+        if (!formData.section) {
+          setError("Please select section");
+          setIsLoading(false);
+          return;
+        }
+
+        if (!formData.programStrand) {
+          setError(`Please select ${formData.studentType === 'college' ? 'course' : 'strand'}`);
+          setIsLoading(false);
+          return;
+        }
+
+        if (!formData.schoolID) {
+          setError("School ID is required");
+          setIsLoading(false);
+          return;
+        }
       }
 
-      if (!formData.fullName) {
-        setError("Full name is required");
-        setIsLoading(false);
-        return;
-      }
-
-      // Validate full name format
-      if (formData.fullName.trim().split(' ').length < 2) {
-        setError("Please enter your full name (first and last name)");
+      if (formData.role !== "student" && (!formData.firstName || !formData.lastName)) {
+        setError("First name and last name are required");
         setIsLoading(false);
         return;
       }
@@ -125,16 +255,27 @@ const Login: React.FC = () => {
           return;
         }
 
+        // ✅ UPDATED: Add plain_password to metadata for the trigger function
+         const userMetadata = {
+            first_name: formData.firstName,
+            middle_name: formData.middleName,
+            last_name: formData.lastName,
+            role: formData.role,
+            student_type: formData.studentType,
+            year_grade: formData.yearGrade,
+            section: formData.section, // This is already section_code (e.g., CS3M1)
+            school_id: formData.schoolID,
+            program_strand: formData.programStrand,
+            full_name: `${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}`,
+            plain_password: formData.password
+          };
+
         // Create auth user with OTP verification
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
-            data: {
-              full_name: formData.fullName,
-              role: formData.role,
-              student_type: formData.studentType
-            },
+            data: userMetadata,
             emailRedirectTo: undefined
           }
         });
@@ -152,10 +293,56 @@ const Login: React.FC = () => {
           return;
         }
 
+        // ✅ UPDATED: No need to manually insert into 'profiles' or 'users' table
+        // The trigger function 'handle_new_user()' will automatically create the user record
         if (authData.user) {
+          const user = authData.user;
+          
+          // Wait for trigger to complete (optional)
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // For students, enroll in subjects after trigger creates student record
+if (formData.role === 'student' && formData.sectionData) {
+  try {
+    // Wait for trigger to create student record
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Get all subjects for the section (use sectionData.id which is the UUID)
+    const { data: subjects, error: subjectsError } = await supabase
+      .from('subjects')
+      .select('id')
+      .eq('section_id', formData.sectionData.id); // Use sectionData.id (UUID)
+
+    if (subjectsError) {
+      console.error('Error fetching subjects:', subjectsError);
+      // Continue even if subjects enrollment fails
+    } else if (subjects && subjects.length > 0) {
+      // Enroll student in each subject
+      const enrollments = subjects.map(subject => ({
+        student_id: user.id,
+        subject_id: subject.id,
+        progress: 0,
+        grade: null
+      }));
+
+      const { error: enrollmentError } = await supabase
+        .from('student_subjects')
+        .insert(enrollments);
+
+      if (enrollmentError) {
+        console.error('Error enrolling in subjects:', enrollmentError);
+        // Continue even if enrollment fails
+      }
+    }
+  } catch (error) {
+    console.error('Error in enrollment process:', error);
+    // Continue even if enrollment fails - main account is created
+  }
+}
+
           // Show success message
           setError("✓ Account created successfully! Please check your email for verification code.");
-          
+
           // Show OTP modal after a delay
           setTimeout(() => {
             setSignupEmail(formData.email);
@@ -223,6 +410,7 @@ const Login: React.FC = () => {
             return;
           }
 
+          // ✅ UPDATED: Query from 'users' table instead of 'profiles'
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
@@ -240,7 +428,9 @@ const Login: React.FC = () => {
             throw new Error('Your account is inactive. Please contact admin.');
           }
 
+          // Get additional role-specific data
           let roleData = {};
+          let studentTypeForRedirect = formData.role;
           
           switch (formData.role) {
             case 'student':
@@ -250,6 +440,7 @@ const Login: React.FC = () => {
                 .eq('user_id', authData.user.id)
                 .single();
               roleData = studentData || {};
+              studentTypeForRedirect = studentData?.student_type || 'student';
               break;
 
             case 'teacher':
@@ -292,13 +483,11 @@ const Login: React.FC = () => {
           
           switch (formData.role) {
             case 'student':
-              // Check student type from the fetched student data
-              if (roleData && (roleData as any).student_type === 'seniorHigh') {
+              if (studentTypeForRedirect === 'seniorHigh') {
                 redirectPath = "/SeniorHighPortal";
-              } else if (roleData && (roleData as any).student_type === 'college') {
+              } else if (studentTypeForRedirect === 'college') {
                 redirectPath = "/CollegePortal";
               } else {
-                // Default fallback for students
                 redirectPath = "/StudentPortal";
               }
               break;
@@ -337,13 +526,20 @@ const Login: React.FC = () => {
     if (isSignUp) {
       setIsSignUp(false);
       setError("");
-      setFormData({ 
-        email: "", 
-        password: "", 
-        role: "student", 
-        fullName: "", 
-        confirmPassword: "", 
-        studentType: "" 
+      setFormData({
+        email: "",
+        password: "",
+        role: "student",
+        firstName: "",
+        middleName: "",
+        lastName: "",
+        confirmPassword: "",
+        studentType: "",
+        yearGrade: "",
+        section: "",
+        sectionData: null,
+        schoolID: "",
+        programStrand: ""
       });
     }
   };
@@ -352,13 +548,20 @@ const Login: React.FC = () => {
     if (!isSignUp) {
       setIsSignUp(true);
       setError("");
-      setFormData({ 
-        email: "", 
-        password: "", 
-        role: "student", 
-        fullName: "", 
-        confirmPassword: "", 
-        studentType: "" 
+      setFormData({
+        email: "",
+        password: "",
+        role: "student",
+        firstName: "",
+        middleName: "",
+        lastName: "",
+        confirmPassword: "",
+        studentType: "",
+        yearGrade: "",
+        section: "",
+        sectionData: null,
+        schoolID: generateSchoolID(),
+        programStrand: ""
       });
     }
   };
@@ -366,13 +569,20 @@ const Login: React.FC = () => {
   const handleCloseOtpModal = () => {
     setShowOtpModal(false);
     setIsSignUp(false);
-    setFormData({ 
-      email: "", 
-      password: "", 
-      role: "student", 
-      fullName: "", 
-      confirmPassword: "", 
-      studentType: "" 
+    setFormData({
+      email: "",
+      password: "",
+      role: "student",
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      confirmPassword: "",
+      studentType: "",
+      yearGrade: "",
+      section: "",
+      sectionData: null,
+      schoolID: "",
+      programStrand: ""
     });
     setError("");
   };
@@ -380,13 +590,20 @@ const Login: React.FC = () => {
   const handleVerificationSuccess = () => {
     setShowOtpModal(false);
     setIsSignUp(false);
-    setFormData({ 
-      email: "", 
-      password: "", 
-      role: "student", 
-      fullName: "", 
-      confirmPassword: "", 
-      studentType: "" 
+    setFormData({
+      email: "",
+      password: "",
+      role: "student",
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      confirmPassword: "",
+      studentType: "",
+      yearGrade: "",
+      section: "",
+      sectionData: null,
+      schoolID: "",
+      programStrand: ""
     });
     setError("✓ Email verified successfully! You can now sign in.");
   };
@@ -407,7 +624,7 @@ const Login: React.FC = () => {
       <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-br from-[#7B1112]/20 to-transparent rounded-full blur-2xl"></div>
       <div className="absolute bottom-10 right-10 w-40 h-40 bg-gradient-to-tr from-[#FFB302]/20 to-transparent rounded-full blur-2xl"></div>
 
-      <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-200 dark:border-gray-800">
+      <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
         {/* Classic Header */}
         <div className="relative bg-gradient-to-r from-[#7B1112] to-[#3a0a0a] p-6">
           <button
@@ -520,18 +737,18 @@ const Login: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleStudentTypeSelect("seniorHigh")}
-                    className={`py-4 px-4 rounded-lg border-2 transition-all duration-200 flex flex-col items-center justify-center ${formData.studentType === "seniorHigh" ? 'border-[#7B1112] bg-[#7B1112]/10 text-[#7B1112] font-semibold' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-[#7B1112]/50'}`}
+                    className={`py-3 px-4 rounded-lg border-2 transition-all duration-200 flex flex-col items-center justify-center ${formData.studentType === "seniorHigh" ? 'border-[#7B1112] bg-[#7B1112]/10 text-[#7B1112] font-semibold' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-[#7B1112]/50'}`}
                   >
-                    <GraduationCap className="mb-2" size={24} />
-                    <span>Senior High</span>
+                    <GraduationCap className="mb-1" size={20} />
+                    <span className="text-sm">Senior High</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleStudentTypeSelect("college")}
-                    className={`py-4 px-4 rounded-lg border-2 transition-all duration-200 flex flex-col items-center justify-center ${formData.studentType === "college" ? 'border-[#7B1112] bg-[#7B1112]/10 text-[#7B1112] font-semibold' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-[#7B1112]/50'}`}
+                    className={`py-3 px-4 rounded-lg border-2 transition-all duration-200 flex flex-col items-center justify-center ${formData.studentType === "college" ? 'border-[#7B1112] bg-[#7B1112]/10 text-[#7B1112] font-semibold' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-[#7B1112]/50'}`}
                   >
-                    <School className="mb-2" size={24} />
-                    <span>College</span>
+                    <School className="mb-1" size={20} />
+                    <span className="text-sm">College</span>
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
@@ -540,33 +757,221 @@ const Login: React.FC = () => {
               </div>
             )}
 
-            {/* Full Name (Sign Up Only) */}
+            {/* Name Fields (Sign Up Only) */}
             {isSignUp && (
-              <div className="space-y-2">
-                <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                  <User className="mr-2 text-[#7B1112]" size={18} />
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="fullName"
-                  required
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  placeholder="Enter your full name (First Last)"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200"
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Enter your complete name as it appears on official documents
-                </p>
-              </div>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* First Name */}
+                  <div className="space-y-2">
+                    <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <User className="mr-2 text-[#7B1112]" size={16} />
+                      First Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      required
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      placeholder="Enter first name"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200"
+                    />
+                  </div>
+
+                  {/* Middle Name */}
+                  <div className="space-y-2">
+                    <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <User className="mr-2 text-[#7B1112]" size={16} />
+                      Middle Name
+                    </label>
+                    <input
+                      type="text"
+                      name="middleName"
+                      value={formData.middleName}
+                      onChange={handleChange}
+                      placeholder="Enter middle name"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200"
+                    />
+                  </div>
+
+                  {/* Last Name */}
+                  <div className="space-y-2">
+                    <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <User className="mr-2 text-[#7B1112]" size={16} />
+                      Last Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      required
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      placeholder="Enter last name"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200"
+                    />
+                  </div>
+                </div>
+
+                {/* Student-specific fields */}
+                {isSignUp && formData.role === "student" && formData.studentType && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Year/Grade */}
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                          <Calendar className="mr-2 text-[#7B1112]" size={16} />
+                          Year/Grade *
+                        </label>
+                        <div className="relative">
+                          <select
+                            name="yearGrade"
+                            required
+                            value={formData.yearGrade}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200 cursor-pointer"
+                          >
+                            <option value="">Select Year/Grade</option>
+                            {formData.studentType === "seniorHigh" ? (
+                              <>
+                                <option value="Grade 11">Grade 11</option>
+                                <option value="Grade 12">Grade 12</option>
+                              </>
+                            ) : (
+                              <>
+                                <option value="1st Year College">1st Year College</option>
+                                <option value="2nd Year College">2nd Year College</option>
+                                <option value="3rd Year College">3rd Year College</option>
+                                <option value="4th Year College">4th Year College</option>
+                                {["BSOA", "BSCS", "BTVTED"].includes(formData.programStrand) }
+                              </>
+                            )}
+                          </select>
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+{/* Section */}
+<div className="space-y-2">
+  <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+    <Building className="mr-2 text-[#7B1112]" size={16} />
+    Section *
+  </label>
+  <div className="relative">
+    <select
+      name="section"
+      required
+      value={formData.section}
+      onChange={(e) => {
+        const sectionCode = e.target.value; // This should be section_code now
+        const selectedSection = availableSections.find(s => s.section_code === sectionCode);
+        setFormData({
+          ...formData,
+          section: sectionCode, // Store section_code, not UUID
+          sectionData: selectedSection // Store full section data
+        });
+      }}
+      disabled={!formData.yearGrade || !formData.programStrand}
+      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      <option value="">Select Section</option>
+      {availableSections.map((section) => (
+        <option key={section.section_code} value={section.section_code}>
+          {section.section_code} - {section.program} ({section.year_level})
+        </option>
+      ))}
+    </select>
+    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    </div>
+  </div>
+  {formData.sectionData && (
+    <p className="text-xs text-gray-500 dark:text-gray-400">
+      Selected: {formData.sectionData.section_code} - {formData.sectionData.program}
+    </p>
+  )}
+</div>
+
+                      {/* School ID */}
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                          <Hash className="mr-2 text-[#7B1112]" size={16} />
+                          School ID *
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            name="schoolID"
+                            required
+                            value={formData.schoolID}
+                            onChange={handleChange}
+                            className="flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200"
+                            readOnly
+                          />
+                          <button
+                            type="button"
+                            onClick={handleRefreshSchoolID}
+                            className="px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center"
+                            title="Generate new School ID"
+                          >
+                            <RefreshCw size={18} />
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Auto-generated School ID
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Program/Strand Selection */}
+                    <div className="space-y-2">
+                      <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <BookOpen className="mr-2 text-[#7B1112]" size={16} />
+                        {formData.studentType === "college" ? "Course *" : "Strand *"}
+                      </label>
+                      <div className="relative">
+                        <select
+                          name="programStrand"
+                          required
+                          value={formData.programStrand}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200 cursor-pointer"
+                        >
+                          <option value="">Select {formData.studentType === "college" ? "Course" : "Strand"}</option>
+                          {formData.studentType === "college"
+                            ? collegeCourses.map((course) => (
+                                <option key={course} value={course}>
+                                  {course}
+                                </option>
+                              ))
+                            : seniorHighStrands.map((strand) => (
+                                <option key={strand} value={strand}>
+                                  {strand}
+                                </option>
+                              ))}
+                        </select>
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </>
             )}
 
             {/* Email Field */}
             <div className="space-y-2">
               <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                 <Mail className="mr-2 text-[#7B1112]" size={18} />
-                Email Address
+                Email Address *
               </label>
               <div className="relative">
                 <input
@@ -590,7 +995,7 @@ const Login: React.FC = () => {
             <div className="space-y-2">
               <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                 <Lock className="mr-2 text-[#7B1112]" size={18} />
-                Password
+                Password *
               </label>
               <div className="relative">
                 <input
@@ -601,20 +1006,51 @@ const Login: React.FC = () => {
                   onChange={handleChange}
                   placeholder="Enter your password"
                   minLength={6}
-                  className="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200"
+                  className="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-700
+                    bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400
+                    focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112]
+                    transition-all duration-200"
                 />
+
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2
+                    text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {/* If showPassword = true → show EyeOff (meaning visible, tap to hide) */}
+                  {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
                 </button>
+
               </div>
               {isSignUp && (
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Password must be at least 6 characters long
-                </p>
+                <>
+                  {formData.password && (
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                          Password Strength:
+                        </span>
+                        <span className={`text-xs font-semibold ${
+                          passwordStrength === 'Weak' ? 'text-red-600 dark:text-red-400' :
+                          passwordStrength === 'Medium' ? 'text-yellow-600 dark:text-yellow-400' :
+                          'text-green-600 dark:text-green-400'
+                        }`}>
+                          {passwordStrength}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            passwordStrength === 'Weak' ? 'bg-red-500 w-1/3' :
+                            passwordStrength === 'Medium' ? 'bg-yellow-500 w-2/3' :
+                            'bg-green-500 w-full'
+                          }`}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -623,7 +1059,7 @@ const Login: React.FC = () => {
               <div className="space-y-2">
                 <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                   <Lock className="mr-2 text-[#7B1112]" size={18} />
-                  Confirm Password
+                  Confirm Password *
                 </label>
                 <div className="relative">
                   <input
@@ -734,7 +1170,7 @@ const Login: React.FC = () => {
         </div>
       </div>
 
-      {/* OTP Verification Modal */}
+      {/* OTP Verification Modal (unchanged) */}
       {showOtpModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="fixed inset-0 bg-black/70" onClick={handleCloseOtpModal}></div>
@@ -775,9 +1211,9 @@ const Login: React.FC = () => {
                       try {
                         const otpCode = (document.getElementById('modal-otp-code') as HTMLInputElement)?.value;
                         
-                        if (!otpCode || otpCode.length !== 6) {
-                          setError("Please enter a valid 6-digit code");
-                          return;
+                        if (!otpCode || otpCode.length !== 8) {
+                        setError("Please enter a valid 8-digit code");
+                        return;
                         }
 
                         const { error } = await supabase.auth.verifyOtp({
@@ -815,16 +1251,16 @@ const Login: React.FC = () => {
                         inputMode="numeric"
                         pattern="[0-9]*"
                         onChange={(e) => {
-                          const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+                          const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 8);
                           e.target.value = value;
                         }}
-                        placeholder="000000"
+                        placeholder="00000000"
                         required
-                        maxLength={6}
+                        maxLength={8}
                         className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 text-center text-2xl font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200"
                       />
                       <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                        Enter the 6-digit code from your email
+                        Enter the 8-digit code from your email
                       </p>
                     </div>
 

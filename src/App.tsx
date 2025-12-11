@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Router } from "react-router-dom";
 import { Navbar, HeroBackground, CampusSection, HistorySection, NewsAndAnnouncementsSection, TestimonialsSection, EnrollmentCTASection, Footer } from "./components/home";
 import { useAOS } from "./hooks/useAOS";
 import About from "./components/about";
@@ -18,6 +18,8 @@ import SeniorHighPortal from "./components/SeniorHighPortal";
 import { useEffect } from "react";
 import ViewGrades from "./viewgrades";
 import ViewGradesSH from "./ViewGradesSH";
+import TeachersPortal from "./components/TeachersPortal";
+import AdminPortal from "./components/AdminPortal";
 
 const Home: React.FC = () => {
   useAOS(); // Enable AOS animations
@@ -67,6 +69,8 @@ const App: React.FC = () => {
         <Route path="/viewgrades" element={<ViewGrades />} />
         <Route path="/SeniorHighPortal" element={<SeniorHighPortal/>}/>
         <Route path="/viewgradesSH" element={<ViewGradesSH />} />
+        <Route path="/TeachersPortal" element={<TeachersPortal />} />
+        <Route path="/AdminPortal" element={<AdminPortal />} />
       </Routes>
     </>
   );

@@ -330,7 +330,7 @@ const TeachersPortal: React.FC = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
-          navigate("/login");
+          navigate("/dblogin/login");
           return;
         }
 
@@ -366,7 +366,7 @@ const TeachersPortal: React.FC = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     localStorage.removeItem("authToken");
-    navigate("/login");
+    navigate("/dblogin/login");
   };
 
   // Filter data based on selected class

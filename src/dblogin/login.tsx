@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   X, User, Mail, Lock, UserCircle, Eye, EyeOff, School, Shield,
-  RefreshCw, GraduationCap, BookOpen, Building, Hash, Calendar
+  RefreshCw, GraduationCap, BookOpen, Building, Hash, Calendar, Users
 } from "lucide-react";
 import { supabase } from "../supabase";
 import { evaluatePasswordStrength, PasswordStrength } from "../Securities/PasswordStrength";
+import { enforceHTTPS, sanitizeInput, validateInput, handleSecureError } from "../Securities/HTTPSecurity";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +23,8 @@ const Login: React.FC = () => {
     section: "",
     sectionData: null as any, // Store full section data
     schoolID: "",
-    programStrand: "" // Will be either course (college) or strand (senior high)
+    programStrand: "", // Will be either course (college) or strand (senior high)
+    department: "" // New field for teacher department
   });
 
   // Course/Strand options
@@ -52,6 +54,13 @@ const Login: React.FC = () => {
     "5th Year College"
   ];
 
+  // Teacher department options
+  const teacherDepartments = [
+    "seniorHigh",
+    "college",
+    "both"
+  ];
+
   const [error, setError] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -65,12 +74,13 @@ const Login: React.FC = () => {
   const duplicateEmailError = "This email is already registered. Please use a different email or try signing in.";
 
   const generateSchoolID = () => {
-    // Auto-generate based on current date
+    // Auto-generate based on current date and time for uniqueness
     const date = new Date();
     const mm = String(date.getMonth() + 1).padStart(2, "0");
     const dd = String(date.getDate()).padStart(2, "0");
     const yyyy = String(date.getFullYear());
-    return `${mm}${dd}${yyyy}`;
+    const time = String(Date.now()).slice(-4); // Last 4 digits of timestamp
+    return `${mm}${dd}${yyyy}-${time}`;
   };
 
   // Initialize school ID on component mount for sign-up
@@ -84,32 +94,65 @@ const Login: React.FC = () => {
   }, [isSignUp]);
 
   // Update the section filtering useEffect
-  useEffect(() => {
-    const fetchSections = async () => {
-      if (formData.yearGrade && formData.programStrand && formData.studentType) {
-        try {
-          const { data, error } = await supabase
-            .from('sections')
-            .select('*')
-            .eq('program', formData.programStrand)
-            .eq('year_level', formData.yearGrade)
-            .eq('student_type', formData.studentType)
-            .order('section_code');
+// Replace your existing fetchSections useEffect with this version
 
-          if (error) throw error;
+// Add this useEffect to your login.tsx to debug the section fetching
 
-          setAvailableSections(data || []);
-        } catch (error) {
-          console.error('Error fetching sections:', error);
-          setAvailableSections([]);
-        }
-      } else {
-        setAvailableSections([]);
+// Replace your fetchSections useEffect with this fixed version
+
+useEffect(() => {
+  const fetchSections = async () => {
+    if (!formData.studentType || !formData.programStrand || !formData.yearGrade) {
+      console.log('❌ Missing required fields:', {
+        studentType: formData.studentType,
+        programStrand: formData.programStrand,
+        yearGrade: formData.yearGrade
+      });
+      setAvailableSections([]);
+      return;
+    }
+
+    // 🔥 TRANSFORM VALUES TO MATCH DATABASE FORMAT
+    const transformedStudentType = formData.studentType === 'seniorHigh' 
+      ? 'Senior High' 
+      : 'College';
+
+    console.log('🔍 Fetching sections with:', {
+      student_type: transformedStudentType,  // Now "Senior High" instead of "seniorHigh"
+      program: formData.programStrand,
+      year_level: formData.yearGrade
+    });
+
+    try {
+      const { data, error } = await supabase
+        .from('sections')
+        .select('*')
+        .eq('student_type', transformedStudentType)  // ✅ Use transformed value
+        .eq('program', formData.programStrand)
+        .eq('year_level', formData.yearGrade)
+        .order('section_code');
+
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw error;
       }
-    };
 
-    fetchSections();
-  }, [formData.yearGrade, formData.programStrand, formData.studentType]);
+      console.log('✅ Sections found:', data);
+      console.log('📊 Number of sections:', data?.length || 0);
+      
+      setAvailableSections(data || []);
+    } catch (error) {
+      console.error('❌ Error fetching sections:', error);
+      setAvailableSections([]);
+    }
+  };
+
+  fetchSections();
+}, [formData.studentType, formData.programStrand, formData.yearGrade]);
+  // Enforce HTTPS on component mount
+  useEffect(() => {
+    enforceHTTPS();
+  }, []);
 
   // Password strength evaluation
   useEffect(() => {
@@ -125,7 +168,7 @@ const Login: React.FC = () => {
   const checkEmailExists = async (email: string): Promise<boolean> => {
     try {
       const { data, error: checkError } = await supabase
-        .from('users')  // ✅ UPDATED: Use 'users' table instead of 'profiles'
+        .from('users')  // ✅ Use 'users' table
         .select('email')
         .eq('email', email)
         .maybeSingle();
@@ -143,9 +186,10 @@ const Login: React.FC = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const sanitizedValue = sanitizeInput(e.target.value);
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: sanitizedValue,
     });
     if (error) setError("");
   };
@@ -157,6 +201,15 @@ const Login: React.FC = () => {
       programStrand: "", // Reset program/strand when switching type
       yearGrade: "", // Reset year grade when switching type
       section: "" // Reset section when switching type
+    });
+    if (error) setError("");
+  };
+
+  // Handle teacher department selection
+  const handleTeacherDepartmentSelect = (department: string) => {
+    setFormData({
+      ...formData,
+      department
     });
     if (error) setError("");
   };
@@ -173,6 +226,22 @@ const Login: React.FC = () => {
     setIsLoading(true);
     setError("");
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // Email format validation
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address");
+      setIsLoading(false);
+      return;
+    }
+
+    // Password length validation
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setIsLoading(false);
+      return;
+    }
+
     // Validation
     if (!formData.email || !formData.password || !formData.role) {
       setError("Please fill in all required fields");
@@ -180,8 +249,7 @@ const Login: React.FC = () => {
       return;
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Additional email format validation (fallback)
     if (!emailRegex.test(formData.email)) {
       setError("Please enter a valid email address");
       setIsLoading(false);
@@ -228,7 +296,23 @@ const Login: React.FC = () => {
         }
       }
 
-      if (formData.role !== "student" && (!formData.firstName || !formData.lastName)) {
+      // Validation for teacher department
+      if (formData.role === "teacher") {
+        if (!formData.firstName || !formData.lastName) {
+          setError("First name and last name are required");
+          setIsLoading(false);
+          return;
+        }
+
+        if (!formData.department) {
+          setError("Please select teaching department");
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Validation for other roles (parent, admin)
+      if (formData.role !== "student" && formData.role !== "teacher" && (!formData.firstName || !formData.lastName)) {
         setError("First name and last name are required");
         setIsLoading(false);
         return;
@@ -255,20 +339,37 @@ const Login: React.FC = () => {
           return;
         }
 
-        // ✅ UPDATED: Add plain_password to metadata for the trigger function
-         const userMetadata = {
-            first_name: formData.firstName,
-            middle_name: formData.middleName,
-            last_name: formData.lastName,
-            role: formData.role,
-            student_type: formData.studentType,
-            year_grade: formData.yearGrade,
-            section: formData.section, // This is already section_code (e.g., CS3M1)
-            school_id: formData.schoolID,
-            program_strand: formData.programStrand,
-            full_name: `${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}`,
-            plain_password: formData.password
+        // Build user metadata based on role
+        let userMetadata: any = {
+          first_name: formData.firstName,
+          middle_name: formData.middleName,
+          last_name: formData.lastName,
+          role: formData.role,
+          full_name: `${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}`,
+          plain_password: formData.password
+        };
+
+        // Add role-specific metadata
+        if (formData.role === "student") {
+        // 🔥 TRANSFORM studentType to match database format
+        const transformedStudentType = formData.studentType === 'seniorHigh' 
+          ? 'Senior High' 
+          : 'College';
+
+        userMetadata = {
+          ...userMetadata,
+          student_type: transformedStudentType,  // ✅ "Senior High" or "College"
+          year_grade: formData.yearGrade,
+          section: formData.section,
+          school_id: formData.schoolID,
+          program_strand: formData.programStrand
+        };
+        } else if (formData.role === "teacher") {
+          userMetadata = {
+            ...userMetadata,
+            department: formData.department
           };
+        }
 
         // Create auth user with OTP verification
         const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -293,52 +394,61 @@ const Login: React.FC = () => {
           return;
         }
 
-        // ✅ UPDATED: No need to manually insert into 'profiles' or 'users' table
+        // ✅ No need to manually insert into 'profiles' or 'users' table
         // The trigger function 'handle_new_user()' will automatically create the user record
         if (authData.user) {
           const user = authData.user;
           
-          // Wait for trigger to complete (optional)
+          // Wait for trigger to complete
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           // For students, enroll in subjects after trigger creates student record
-if (formData.role === 'student' && formData.sectionData) {
-  try {
-    // Wait for trigger to create student record
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Get all subjects for the section (use sectionData.id which is the UUID)
-    const { data: subjects, error: subjectsError } = await supabase
-      .from('subjects')
-      .select('id')
-      .eq('section_id', formData.sectionData.id); // Use sectionData.id (UUID)
+          if (formData.role === 'student' && formData.section) {
+            try {
+              // Wait a bit more for trigger to create student record
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              
+              // Get section UUID using section_code
+              const { data: sectionData, error: sectionError } = await supabase
+                .from('sections')
+                .select('id')
+                .eq('section_code', formData.section)
+                .single();
 
-    if (subjectsError) {
-      console.error('Error fetching subjects:', subjectsError);
-      // Continue even if subjects enrollment fails
-    } else if (subjects && subjects.length > 0) {
-      // Enroll student in each subject
-      const enrollments = subjects.map(subject => ({
-        student_id: user.id,
-        subject_id: subject.id,
-        progress: 0,
-        grade: null
-      }));
+              if (sectionError) {
+                console.error('Error fetching section:', sectionError);
+              } else if (sectionData) {
+                // Get all subjects for the section
+                const { data: subjects, error: subjectsError } = await supabase
+                  .from('subjects')
+                  .select('id')
+                  .eq('section_id', sectionData.id);
 
-      const { error: enrollmentError } = await supabase
-        .from('student_subjects')
-        .insert(enrollments);
+                if (subjectsError) {
+                  console.error('Error fetching subjects:', subjectsError);
+                } else if (subjects && subjects.length > 0) {
+                  // Enroll student in each subject
+                  const enrollments = subjects.map(subject => ({
+                    student_id: user.id,
+                    subject_id: subject.id,
+                    progress: 0,
+                    grade: null
+                  }));
 
-      if (enrollmentError) {
-        console.error('Error enrolling in subjects:', enrollmentError);
-        // Continue even if enrollment fails
-      }
-    }
-  } catch (error) {
-    console.error('Error in enrollment process:', error);
-    // Continue even if enrollment fails - main account is created
-  }
-}
+                  const { error: enrollmentError } = await supabase
+                    .from('student_subjects')
+                    .insert(enrollments);
+
+                  if (enrollmentError) {
+                    console.error('Error enrolling in subjects:', enrollmentError);
+                  }
+                }
+              }
+            } catch (error) {
+              console.error('Error in enrollment process:', error);
+              // Continue even if enrollment fails - main account is created
+            }
+          }
 
           // Show success message
           setError("✓ Account created successfully! Please check your email for verification code.");
@@ -364,7 +474,7 @@ if (formData.role === 'student' && formData.sectionData) {
         setIsLoading(false);
       }
     } else {
-      // Sign In Logic
+      // Sign In Logic (remains the same as before)
       try {
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
           email: formData.email,
@@ -410,7 +520,7 @@ if (formData.role === 'student' && formData.sectionData) {
             return;
           }
 
-          // ✅ UPDATED: Query from 'users' table instead of 'profiles'
+          // ✅ Query from 'users' table
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
@@ -493,7 +603,7 @@ if (formData.role === 'student' && formData.sectionData) {
               break;
               
             case 'teacher':
-              redirectPath = "/TeacherPortal";
+              redirectPath = "/TeachersPortal";
               break;
               
             case 'parent':
@@ -539,7 +649,8 @@ if (formData.role === 'student' && formData.sectionData) {
         section: "",
         sectionData: null,
         schoolID: "",
-        programStrand: ""
+        programStrand: "",
+        department: ""
       });
     }
   };
@@ -561,7 +672,8 @@ if (formData.role === 'student' && formData.sectionData) {
         section: "",
         sectionData: null,
         schoolID: generateSchoolID(),
-        programStrand: ""
+        programStrand: "",
+        department: ""
       });
     }
   };
@@ -582,7 +694,8 @@ if (formData.role === 'student' && formData.sectionData) {
       section: "",
       sectionData: null,
       schoolID: "",
-      programStrand: ""
+      programStrand: "",
+      department: ""
     });
     setError("");
   };
@@ -603,7 +716,8 @@ if (formData.role === 'student' && formData.sectionData) {
       section: "",
       sectionData: null,
       schoolID: "",
-      programStrand: ""
+      programStrand: "",
+      department: ""
     });
     setError("✓ Email verified successfully! You can now sign in.");
   };
@@ -757,6 +871,43 @@ if (formData.role === 'student' && formData.sectionData) {
               </div>
             )}
 
+            {/* Teacher Department Selection (Only for teacher sign-up) */}
+            {isSignUp && formData.role === "teacher" && (
+              <div className="space-y-2">
+                <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <Users className="mr-2 text-[#7B1112]" size={18} />
+                  Teaching Department *
+                </label>
+                <div className="grid grid-cols-3 gap-4">
+                  {teacherDepartments.map((dept) => (
+                    <button
+                      key={dept}
+                      type="button"
+                      onClick={() => handleTeacherDepartmentSelect(dept)}
+                      className={`py-3 px-4 rounded-lg border-2 transition-all duration-200 flex flex-col items-center justify-center ${formData.department === dept ? 'border-[#7B1112] bg-[#7B1112]/10 text-[#7B1112] font-semibold' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-[#7B1112]/50'}`}
+                    >
+                      <School className="mb-1" size={20} />
+                      <span className="text-sm text-center">
+                        {dept === 'seniorHigh' ? 'Senior High' : 
+                         dept === 'college' ? 'College' : 
+                         'Both Departments'}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                  Select the department(s) you will be teaching in
+                </p>
+                {formData.department && (
+                  <p className="text-xs text-[#7B1112] font-medium text-center">
+                    Selected: {formData.department === 'seniorHigh' ? 'Senior High Department' : 
+                              formData.department === 'college' ? 'College Department' : 
+                              'Both Senior High & College Departments'}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Name Fields (Sign Up Only) */}
             {isSignUp && (
               <>
@@ -814,116 +965,171 @@ if (formData.role === 'student' && formData.sectionData) {
 
                 {/* Student-specific fields */}
                 {isSignUp && formData.role === "student" && formData.studentType && (
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* Year/Grade */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                          <Calendar className="mr-2 text-[#7B1112]" size={16} />
-                          Year/Grade *
-                        </label>
-                        <div className="relative">
-                          <select
-                            name="yearGrade"
-                            required
-                            value={formData.yearGrade}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200 cursor-pointer"
-                          >
-                            <option value="">Select Year/Grade</option>
-                            {formData.studentType === "seniorHigh" ? (
-                              <>
-                                <option value="Grade 11">Grade 11</option>
-                                <option value="Grade 12">Grade 12</option>
-                              </>
-                            ) : (
-                              <>
-                                <option value="1st Year College">1st Year College</option>
-                                <option value="2nd Year College">2nd Year College</option>
-                                <option value="3rd Year College">3rd Year College</option>
-                                <option value="4th Year College">4th Year College</option>
-                                {["BSOA", "BSCS", "BTVTED"].includes(formData.programStrand) }
-                              </>
-                            )}
-                          </select>
-                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-
-{/* Section */}
-<div className="space-y-2">
-  <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-    <Building className="mr-2 text-[#7B1112]" size={16} />
-    Section *
-  </label>
-  <div className="relative">
-    <select
-      name="section"
-      required
-      value={formData.section}
-      onChange={(e) => {
-        const sectionCode = e.target.value; // This should be section_code now
-        const selectedSection = availableSections.find(s => s.section_code === sectionCode);
-        setFormData({
-          ...formData,
-          section: sectionCode, // Store section_code, not UUID
-          sectionData: selectedSection // Store full section data
-        });
-      }}
-      disabled={!formData.yearGrade || !formData.programStrand}
-      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      <option value="">Select Section</option>
-      {availableSections.map((section) => (
-        <option key={section.section_code} value={section.section_code}>
-          {section.section_code} - {section.program} ({section.year_level})
-        </option>
-      ))}
-    </select>
-    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-      </svg>
+  <>
+    {/* Program/Strand Selection - DAPAT UNA ITO! */}
+    <div className="space-y-2">
+      <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+        <BookOpen className="mr-2 text-[#7B1112]" size={16} />
+        {formData.studentType === "college" ? "Course *" : "Strand *"}
+      </label>
+      <div className="relative">
+        <select
+          name="programStrand"
+          required
+          value={formData.programStrand}
+          onChange={handleChange}
+          className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200 cursor-pointer"
+        >
+          <option value="">Select {formData.studentType === "college" ? "Course" : "Strand"}</option>
+          {formData.studentType === "college"
+            ? collegeCourses.map((course) => (
+                <option key={course} value={course}>
+                  {course}
+                </option>
+              ))
+            : seniorHighStrands.map((strand) => (
+                <option key={strand} value={strand}>
+                  {strand}
+                </option>
+              ))}
+        </select>
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        Select your {formData.studentType === "college" ? "course" : "strand"} first
+      </p>
     </div>
-  </div>
-  {formData.sectionData && (
-    <p className="text-xs text-gray-500 dark:text-gray-400">
-      Selected: {formData.sectionData.section_code} - {formData.sectionData.program}
-    </p>
-  )}
-</div>
 
-                      {/* School ID */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                          <Hash className="mr-2 text-[#7B1112]" size={16} />
-                          School ID *
-                        </label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            name="schoolID"
-                            required
-                            value={formData.schoolID}
-                            onChange={handleChange}
-                            className="flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200"
-                            readOnly
-                          />
-                          <button
-                            type="button"
-                            onClick={handleRefreshSchoolID}
-                            className="px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center"
-                            title="Generate new School ID"
-                          >
-                            <RefreshCw size={18} />
-                          </button>
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Auto-generated School ID
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Year/Grade */}
+      <div className="space-y-2">
+        <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+          <Calendar className="mr-2 text-[#7B1112]" size={16} />
+          Year/Grade *
+        </label>
+        <div className="relative">
+          <select
+            name="yearGrade"
+            required
+            value={formData.yearGrade}
+            onChange={handleChange}
+            disabled={!formData.programStrand}
+            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <option value="">Select Year/Grade</option>
+            {formData.studentType === "seniorHigh" ? (
+              <>
+                <option value="Grade 11">Grade 11</option>
+                <option value="Grade 12">Grade 12</option>
+              </>
+            ) : (
+              <>
+                <option value="1st Year College">1st Year College</option>
+                <option value="2nd Year College">2nd Year College</option>
+                <option value="3rd Year College">3rd Year College</option>
+                <option value="4th Year College">4th Year College</option>
+                {formData.programStrand === "BTVTED" && (
+                  <option value="5th Year College">5th Year College</option>
+                )}
+              </>
+            )}
+          </select>
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+        {!formData.programStrand && (
+          <p className="text-xs text-yellow-600 dark:text-yellow-400">
+            Select {formData.studentType === "college" ? "course" : "strand"} first
+          </p>
+        )}
+      </div>
+
+      {/* Section */}
+      <div className="space-y-2">
+        <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+          <Building className="mr-2 text-[#7B1112]" size={16} />
+          Section *
+        </label>
+        <div className="relative">
+          <select
+            name="section"
+            required
+            value={formData.section}
+            onChange={(e) => {
+              const sectionCode = e.target.value;
+              const selectedSection = availableSections.find(s => s.section_code === sectionCode);
+              setFormData({
+                ...formData,
+                section: sectionCode,
+                sectionData: selectedSection
+              });
+            }}
+            disabled={!formData.studentType || !formData.programStrand || !formData.yearGrade}
+            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <option value="">
+              {availableSections.length === 0 && formData.programStrand && formData.yearGrade 
+                ? "No sections available" 
+                : "Select Section"}
+            </option>
+            {availableSections.map((section) => (
+              <option key={section.section_code} value={section.section_code}>
+                {section.section_code}
+              </option>
+            ))}
+          </select>
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+        {formData.sectionData && (
+          <p className="text-xs text-green-600 dark:text-green-400">
+            ✓ {formData.sectionData.section_code} - {formData.sectionData.program}
+          </p>
+        )}
+        {!formData.programStrand || !formData.yearGrade ? (
+          <p className="text-xs text-yellow-600 dark:text-yellow-400">
+            Select course/strand and year first
+          </p>
+        ) : null}
+      </div>
+
+      {/* School ID */}
+      <div className="space-y-2">
+        <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+          <Hash className="mr-2 text-[#7B1112]" size={16} />
+          School ID *
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            name="schoolID"
+            required
+            value={formData.schoolID}
+            onChange={handleChange}
+            className="flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7B1112]/50 focus:border-[#7B1112] transition-all duration-200"
+            readOnly
+          />
+          <button
+            type="button"
+            onClick={handleRefreshSchoolID}
+            className="px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center"
+            title="Generate new School ID"
+          >
+            <RefreshCw size={18} />
+          </button>
+        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Auto-generated School ID
                         </p>
                       </div>
                     </div>
@@ -1018,10 +1224,8 @@ if (formData.role === 'student' && formData.sectionData) {
                   className="absolute right-3 top-1/2 transform -translate-y-1/2
                     text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
                 >
-                  {/* If showPassword = true → show EyeOff (meaning visible, tap to hide) */}
                   {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
                 </button>
-
               </div>
               {isSignUp && (
                 <>
@@ -1170,7 +1374,7 @@ if (formData.role === 'student' && formData.sectionData) {
         </div>
       </div>
 
-      {/* OTP Verification Modal (unchanged) */}
+      {/* OTP Verification Modal */}
       {showOtpModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="fixed inset-0 bg-black/70" onClick={handleCloseOtpModal}></div>
